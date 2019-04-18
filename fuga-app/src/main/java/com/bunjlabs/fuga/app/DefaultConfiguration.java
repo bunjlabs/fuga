@@ -22,6 +22,11 @@ public class DefaultConfiguration implements Configuration {
     }
 
     @Override
+    public void add(Object targetInstance) {
+        objectRegisterList.add(new ObjectDefinition(targetInstance));
+    }
+
+    @Override
     public <T> void add(Class<T> targetClass, T targetInstance) {
         objectRegisterList.add(new ObjectDefinition(targetClass, targetInstance));
     }
@@ -29,6 +34,10 @@ public class DefaultConfiguration implements Configuration {
     public static class ObjectDefinition {
         private Class type;
         private Object instance;
+
+        public ObjectDefinition(Object instance) {
+            this.instance = instance;
+        }
 
         public ObjectDefinition(Class type, Object instance) {
             this.type = type;
@@ -41,6 +50,10 @@ public class DefaultConfiguration implements Configuration {
 
         public Object getInstance() {
             return instance;
+        }
+
+        public boolean isTypeDefined() {
+            return type != null;
         }
     }
 }

@@ -6,7 +6,7 @@
 package com.bunjlabs.fuga.examples.minimal;
 
 import com.bunjlabs.fuga.app.StaticApplicationContext;
-import com.bunjlabs.fuga.dependency.DefaultIocContainer;
+import com.bunjlabs.fuga.dependency.support.DefaultIocContainer;
 import com.bunjlabs.fuga.dependency.IocContainer;
 import com.bunjlabs.fuga.settings.DefaultSettingsProvider;
 import com.bunjlabs.fuga.settings.SettingsProvider;

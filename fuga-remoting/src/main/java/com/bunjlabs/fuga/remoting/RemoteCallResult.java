@@ -36,4 +36,18 @@ public class RemoteCallResult {
     public boolean hasException() {
         return this.exception != null;
     }
+
+    @Override
+    public String toString() {
+        if (hasException()) {
+            return "RemoteCallResult{" +
+                    "exception=" + exception +
+                    '}';
+        } else {
+            return "RemoteCallResult{" +
+                    "value=" + value +
+                    '}';
+        }
+
+    }
 }

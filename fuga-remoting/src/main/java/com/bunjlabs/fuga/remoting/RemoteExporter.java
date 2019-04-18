@@ -5,7 +5,7 @@ import com.bunjlabs.fuga.util.Assert;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public abstract class RemoteExporter {
+public class RemoteExporter {
 
     private Object service;
 
@@ -16,6 +16,8 @@ public abstract class RemoteExporter {
     }
 
     public void setService(Object service) {
+        Assert.notNull(serviceInterface, "'service' must not be null");
+
         this.service = service;
     }
 
@@ -26,6 +28,7 @@ public abstract class RemoteExporter {
     public void setServiceInterface(Class<?> serviceInterface) {
         Assert.notNull(serviceInterface, "'serviceInterface' must not be null");
         Assert.isTrue(serviceInterface.isInterface(), "'serviceInterface' must be an interface");
+
         this.serviceInterface = serviceInterface;
     }
 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.bunjlabs.fuga.dependency;
+package com.bunjlabs.fuga.dependency.support;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,7 +1,5 @@
 package com.bunjlabs.fuga.remoting;
 
-import java.lang.reflect.Method;
-
 public class RemoteCall {
 
     private String methodName;

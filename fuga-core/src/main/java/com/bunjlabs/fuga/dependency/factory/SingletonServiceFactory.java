@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.dependency.factory;
 
 import com.bunjlabs.fuga.dependency.DependencyException;
-import com.bunjlabs.fuga.dependency.MapBinder;
+import com.bunjlabs.fuga.dependency.support.MapBinder;
 import com.bunjlabs.fuga.dependency.injector.Injector;
 
 public class SingletonServiceFactory<T> extends InjectableServiceFactory<T> {

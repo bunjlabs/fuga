@@ -1,11 +1,15 @@
-package com.bunjlabs.fuga.dependency;
+package com.bunjlabs.fuga.dependency.support;
 
+import com.bunjlabs.fuga.dependency.DependencyException;
+import com.bunjlabs.fuga.dependency.Environment;
+import com.bunjlabs.fuga.dependency.IocContainer;
 import com.bunjlabs.fuga.dependency.annotations.Inject;
 import com.bunjlabs.fuga.dependency.factory.ExplictSingletonServiceFactory;
 import com.bunjlabs.fuga.dependency.factory.ServiceFactory;
 import com.bunjlabs.fuga.dependency.factory.SingletonServiceFactory;
 import com.bunjlabs.fuga.dependency.injector.ConstructorInjector;
 import com.bunjlabs.fuga.dependency.injector.Injector;
+import com.bunjlabs.fuga.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -16,36 +20,78 @@ public class DefaultIocContainer implements IocContainer {
     private final Map<Class<?>, ServiceFactory<?>> factoryRegistry = new HashMap<>();
     private final ThreadLocal<Object> prototypesCurrentlyInCreation = new ThreadLocal<>();
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> T getService(Class<T> requiredType) throws DependencyException {
-        ServiceFactory<T> serviceFactory = (ServiceFactory<T>) factoryRegistry.get(requiredType);
+    public <T> T getService(Class<T> serviceType) throws DependencyException {
+        ServiceFactory<T> serviceFactory = getServiceFactory(serviceType);
 
         if (serviceFactory == null) {
             throw new DependencyException("ServiceFactory not found for required service type");
         }
 
-        if (isPrototypeCurrentlyInCreation(requiredType)) {
+        if (isPrototypeCurrentlyInCreation(serviceType)) {
             throw new IllegalStateException("Requested service is currently in creation.");
         }
 
-        this.beforePrototypeCreation(requiredType);
+        this.beforePrototypeCreation(serviceType);
         try {
-            Class[] dependencyTypes = serviceFactory.getDependencyTypes();
-            Object[] dependencies = new Object[dependencyTypes.length];
-
-            for (int i = 0; i < dependencyTypes.length; i++) {
-                dependencies[i] = this.getService(dependencyTypes[i]);
-            }
+            Object[] dependencies = resolveDependencies(serviceFactory.getDependencyTypes());
 
             return serviceFactory.getService(dependencies);
         } finally {
-            this.afterPrototypeCreation(requiredType);
+            this.afterPrototypeCreation(serviceType);
         }
     }
 
     @Override
     public <T> void register(Class<T> serviceType) throws DependencyException {
+        ServiceFactory<T> serviceFactory = createServiceFactory(serviceType);
+
+        factoryRegistry.put(serviceType, serviceFactory);
+    }
+
+    @Override
+    public void register(Object serviceInstance) throws DependencyException {
+        Class<?> serviceClass;
+
+        if (ReflectionUtils.isJdkDynamicProxy(serviceInstance)) {
+            Class<?>[] proxiedInterfaces = ReflectionUtils.getProxiedInterfaces(serviceInstance);
+
+            if (proxiedInterfaces.length == 1) {
+                serviceClass = proxiedInterfaces[0];
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        } else {
+            serviceClass = serviceInstance.getClass();
+        }
+
+        this.register(serviceClass, serviceInstance);
+    }
+
+    @Override
+    public void register(Class serviceType, Object serviceInstance) throws DependencyException {
+        ServiceFactory serviceFactory = new ExplictSingletonServiceFactory<>(serviceInstance);
+
+        factoryRegistry.put(serviceType, serviceFactory);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object[] resolveDependencies(Class[] dependencyTypes) {
+        Object[] dependencies = new Object[dependencyTypes.length];
+
+        for (int i = 0; i < dependencyTypes.length; i++) {
+            dependencies[i] = this.getService(dependencyTypes[i]);
+        }
+
+        return dependencies;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> ServiceFactory<T> getServiceFactory(Class<T> serviceType) {
+        return (ServiceFactory<T>) factoryRegistry.get(serviceType);
+    }
+
+    private <T> ServiceFactory<T> createServiceFactory(Class<T> serviceType) {
         MapBinder mapBinder = new DefaultMapBinder();
         Constructor<T> constructor;
 
@@ -74,15 +120,8 @@ public class DefaultIocContainer implements IocContainer {
         }
 
         Injector<T> injector = new ConstructorInjector<>(constructor);
-        ServiceFactory<T> serviceFactory = new SingletonServiceFactory<>(injector, mapBinder);
 
-        factoryRegistry.put(serviceType, serviceFactory);
-    }
-
-    public void register(Class serviceType, Object serviceInstance) throws DependencyException {
-        ServiceFactory serviceFactory = new ExplictSingletonServiceFactory<>(serviceInstance);
-
-        factoryRegistry.put(serviceType, serviceFactory);
+        return new SingletonServiceFactory<>(injector, mapBinder);
     }
 
     @SuppressWarnings("unchecked")

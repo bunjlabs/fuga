@@ -14,7 +14,7 @@
 package com.bunjlabs.fuga.dependency.annotations;
 
 import com.bunjlabs.fuga.dependency.Environment;
-import com.bunjlabs.fuga.dependency.GlobalEnvironment;
+import com.bunjlabs.fuga.dependency.support.GlobalEnvironment;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

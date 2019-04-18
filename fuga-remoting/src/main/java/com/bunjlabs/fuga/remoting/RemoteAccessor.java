@@ -9,23 +9,17 @@ import java.lang.reflect.Proxy;
 
 public class RemoteAccessor {
 
-    private Class<?> serviceInterface;
-
-    public Class<?> getServiceInterface() {
-        return serviceInterface;
-    }
-
-    public void setServiceInterface(Class<?> serviceInterface) {
+    public <T> T getServiceProxy(RemoteExecutor executor, Class<T> serviceInterface) {
         Assert.notNull(serviceInterface, "'serviceInterface' must not be null");
         Assert.isTrue(serviceInterface.isInterface(), "'serviceInterface' must be an interface");
 
-        this.serviceInterface = serviceInterface;
+        InvocationHandler handler = new DefaultInvocationHandler(executor);
+
+        return createProxy(serviceInterface, handler);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getServiceProxy(RemoteExecutor executor, Class<T> targetClass) {
-        InvocationHandler handler = new DefaultInvocationHandler(executor);
-
+    private <T> T createProxy(Class<T> serviceInterface, InvocationHandler handler) {
         return (T) Proxy.newProxyInstance(serviceInterface.getClassLoader(), new Class[]{serviceInterface}, handler);
     }
 

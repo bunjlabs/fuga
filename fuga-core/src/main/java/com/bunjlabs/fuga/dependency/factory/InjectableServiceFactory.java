@@ -1,6 +1,6 @@
 package com.bunjlabs.fuga.dependency.factory;
 
-import com.bunjlabs.fuga.dependency.MapBinder;
+import com.bunjlabs.fuga.dependency.support.MapBinder;
 import com.bunjlabs.fuga.dependency.injector.Injector;
 
 public abstract class InjectableServiceFactory<T> implements ServiceFactory<T> {
