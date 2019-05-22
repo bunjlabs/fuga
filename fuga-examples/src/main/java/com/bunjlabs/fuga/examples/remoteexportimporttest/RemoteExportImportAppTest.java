@@ -1,25 +1,38 @@
 package com.bunjlabs.fuga.examples.remoteexportimporttest;
 
-import com.bunjlabs.fuga.app.StaticApplicationContext;
+import com.bunjlabs.fuga.context.StaticApplicationContext;
+import com.bunjlabs.fuga.examples.remoteexportimporttest.modules.RemoteExportModule;
+import com.bunjlabs.fuga.examples.remoteexportimporttest.services.TestExportedService;
+import com.bunjlabs.fuga.examples.remoteexportimporttest.services.TestExportedServiceImpl;
+import com.bunjlabs.fuga.examples.remoteexportimporttest.settings.TextExportedServiceSettings;
 import com.bunjlabs.fuga.remoting.RemoteCall;
 import com.bunjlabs.fuga.remoting.RemoteCallResult;
 import com.bunjlabs.fuga.remoting.RemoteExporter;
+import com.bunjlabs.fuga.remoting.support.DefaultRemoteExporter;
+import com.bunjlabs.fuga.settings.SettingsModuleBuilder;
+import com.bunjlabs.fuga.settings.source.LocalFilesSettingsSource;
 
 public class RemoteExportImportAppTest {
 
     public static void main(String[] args) throws Exception {
         StaticApplicationContext applicationContext = new StaticApplicationContext();
 
-        applicationContext.runConfigurator((c) -> {
-            c.add(TestExportedServiceImpl.class);
-        });
+        // Settings
+        applicationContext.insertModule(new SettingsModuleBuilder()
+                .withSettingsSource(new LocalFilesSettingsSource(".", "input.yaml"))
+                .withInterfaces(TextExportedServiceSettings.class)
+                .build());
 
-        applicationContext.runConfigurator(RemoteExportConfigurator.class);
+        // Exported service
+        applicationContext.insertModule((c) ->
+                c.add(TestExportedService.class, TestExportedServiceImpl.class));
 
-        RemoteExporter remoteExporter = applicationContext.getIocContainer().getService(RemoteExporter.class);
+        // Remote exporter
+        applicationContext.insertModule(RemoteExportModule.class);
 
+        // Test
+        RemoteExporter remoteExporter = applicationContext.getIocContainer().getService(DefaultRemoteExporter.class);
         RemoteCallResult callResult = remoteExporter.handleCall(new RemoteCall("test", new Class[]{int.class, int.class}, new Object[]{5, 7}));
-
         System.out.println(callResult);
     }
 }

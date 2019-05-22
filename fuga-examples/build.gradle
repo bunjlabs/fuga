@@ -1,5 +1,6 @@
 dependencies {
-    compile project(":fuga-app")
+    compile project(":fuga-core")
+    compile project(":fuga-settings")
     compile project(":fuga-remoting")
     compile project(":fuga-remoting-rpc")
     compile project(":fuga-transport-http")

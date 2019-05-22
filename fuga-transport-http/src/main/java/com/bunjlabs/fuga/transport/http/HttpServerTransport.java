@@ -6,7 +6,7 @@
 package com.bunjlabs.fuga.transport.http;
 
 import com.bunjlabs.fuga.channel.ChannelHandler;
-import com.bunjlabs.fuga.dependency.annotations.Inject;
+import com.bunjlabs.fuga.ioc.Inject;
 import com.bunjlabs.fuga.transport.Transport;
 import com.bunjlabs.fuga.transport.TransportException;
 import org.eclipse.jetty.server.Server;

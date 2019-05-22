@@ -2,39 +2,45 @@ package com.bunjlabs.fuga.util;
 
 public abstract class Assert {
 
-    public static void notNull(Object object) {
-        notNull(object, "[Assertion failed] - this argument is required; it must not be null");
+    public static <T> T notNull(T object) {
+        return notNull(object, "[Assertion failed] - this argument is required; it must not be null");
     }
 
-    public static void notNull(Object object, String message) {
+    public static <T> T notNull(T object, String message) {
         if (object == null) {
             throw new IllegalArgumentException(message);
         }
+
+        return object;
     }
 
-    public static void isFalse(boolean expression, String message) {
+    public static boolean isFalse(boolean expression, String message) {
         if (expression) {
             throw new IllegalArgumentException(message);
         }
+        return expression;
     }
 
-    public static void isTrue(boolean expression, String message) {
+    public static boolean isTrue(boolean expression, String message) {
         if (!expression) {
             throw new IllegalArgumentException(message);
         }
+        return expression;
     }
 
 
-    public static void notEmpty(Object[] array, String message) {
+    public static <T> T[] notEmpty(T[] array, String message) {
         if (array.length <= 0) {
             throw new IllegalArgumentException(message);
         }
+        return array;
     }
 
-    public static void isEmpty(Object[] array, String message) {
+    public static <T> T[] isEmpty(T[] array, String message) {
         if (array.length > 0) {
             throw new IllegalArgumentException(message);
         }
+        return array;
     }
 }
 
