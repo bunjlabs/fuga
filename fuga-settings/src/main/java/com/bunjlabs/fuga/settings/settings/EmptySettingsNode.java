@@ -3,15 +3,15 @@ package com.bunjlabs.fuga.settings.settings;
 import java.util.Collections;
 import java.util.Set;
 
-public final class EmptySettings implements Settings {
+public final class EmptySettingsNode implements SettingsNode {
 
-    public static final EmptySettings INSTANCE = new EmptySettings();
+    public static final EmptySettingsNode INSTANCE = new EmptySettingsNode();
 
-    EmptySettings() {
+    EmptySettingsNode() {
     }
 
     @Override
-    public Settings node(String name) {
+    public SettingsNode node(String name) {
         return this;
     }
 

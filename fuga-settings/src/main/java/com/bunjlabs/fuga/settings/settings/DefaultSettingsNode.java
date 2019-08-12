@@ -6,24 +6,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DefaultSettings implements MutableSettings {
+public class DefaultSettingsNode implements MutableSettingsNode {
 
-    private final Map<String, MutableSettings> nodes;
+    private final Map<String, MutableSettingsNode> nodes;
     private final Map<String, SettingsValue> values;
 
-    public DefaultSettings() {
+    public DefaultSettingsNode() {
         this.nodes = new HashMap<>();
         this.values = new HashMap<>();
     }
 
     @Override
-    public MutableSettings node(String name) {
+    public MutableSettingsNode node(String name) {
         Assert.notNull(name);
 
         var settings = nodes.get(name);
 
         if (settings == null) {
-            settings = new DefaultSettings();
+            settings = new DefaultSettingsNode();
             nodes.put(name, settings);
         }
 
@@ -43,7 +43,7 @@ public class DefaultSettings implements MutableSettings {
     @Override
     public boolean isValuesPresent() {
         if (!values.values().stream().allMatch(SettingsValue::isValuePresent)) return false;
-        return nodes.values().stream().allMatch(Settings::isValuesPresent);
+        return nodes.values().stream().allMatch(SettingsNode::isValuesPresent);
     }
 
     @Override
@@ -55,25 +55,25 @@ public class DefaultSettings implements MutableSettings {
     }
 
     @Override
-    public void setAll(Settings settings) {
-        Set<String> keys = settings.keys();
-        Set<String> childrenNames = settings.childrenNames();
+    public void setAll(SettingsNode settingsNode) {
+        Set<String> keys = settingsNode.keys();
+        Set<String> childrenNames = settingsNode.childrenNames();
 
-        keys.forEach(k -> this.set(k, settings.get(k)));
-        childrenNames.forEach(c -> this.node(c).setAll(settings.node(c)));
+        keys.forEach(k -> this.set(k, settingsNode.get(k)));
+        childrenNames.forEach(c -> this.node(c).setAll(settingsNode.node(c)));
     }
 
     @Override
-    public void merge(Settings settings) {
-        Set<String> keys = settings.keys();
-        Set<String> childrenNames = settings.childrenNames();
+    public void merge(SettingsNode settingsNode) {
+        Set<String> keys = settingsNode.keys();
+        Set<String> childrenNames = settingsNode.childrenNames();
 
         keys.stream().filter(this::contains).forEach(k ->
-                this.get(k).setValue(settings.get(k).getValue())
+                this.get(k).setValue(settingsNode.get(k).getValue())
         );
 
         childrenNames.stream().filter(this::nodeExists).forEach(c ->
-                this.node(c).merge(settings.node(c))
+                this.node(c).merge(settingsNode.node(c))
         );
     }
 

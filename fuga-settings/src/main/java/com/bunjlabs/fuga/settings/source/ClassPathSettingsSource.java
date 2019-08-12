@@ -3,9 +3,8 @@ package com.bunjlabs.fuga.settings.source;
 import com.bunjlabs.fuga.settings.environment.Environment;
 import com.bunjlabs.fuga.settings.environment.EnvironmentException;
 import com.bunjlabs.fuga.settings.provider.*;
-import com.bunjlabs.fuga.settings.settings.DefaultSettings;
-import com.bunjlabs.fuga.settings.settings.MutableSettings;
-import com.bunjlabs.fuga.settings.settings.Settings;
+import com.bunjlabs.fuga.settings.settings.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.settings.SettingsNode;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,8 +52,8 @@ public class ClassPathSettingsSource implements SettingsSource {
         this.providerSelector = providerSelector;
     }
 
-    public Settings getSettings(Environment environment) {
-        var settings = new DefaultSettings();
+    public SettingsNode getSettings(Environment environment) {
+        var settings = new DefaultSettingsNode();
 
         for (String resource : resourceNames) {
             try (InputStream is = classLoader.getResourceAsStream(resource)) {
@@ -66,7 +65,7 @@ public class ClassPathSettingsSource implements SettingsSource {
                 SettingsProvider settingsProvider = providerSelector.getProvider(resource);
                 settings.setAll(settingsProvider.load(is));
             } catch (FileNotFoundException e) {
-                throw new EnvironmentException("SettingsScope file doesn't exist: " + resource);
+                throw new EnvironmentException("Settings file doesn't exist: " + resource);
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to load settings file: " + resource);
             }

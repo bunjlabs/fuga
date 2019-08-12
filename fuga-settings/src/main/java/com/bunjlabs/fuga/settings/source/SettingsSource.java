@@ -1,9 +1,9 @@
 package com.bunjlabs.fuga.settings.source;
 
 import com.bunjlabs.fuga.settings.environment.Environment;
-import com.bunjlabs.fuga.settings.settings.Settings;
+import com.bunjlabs.fuga.settings.settings.SettingsNode;
 
 public interface SettingsSource {
 
-    Settings getSettings(Environment environment);
+    SettingsNode getSettings(Environment environment);
 }

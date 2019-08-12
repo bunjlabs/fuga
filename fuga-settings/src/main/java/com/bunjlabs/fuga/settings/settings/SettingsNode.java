@@ -2,9 +2,9 @@ package com.bunjlabs.fuga.settings.settings;
 
 import java.util.Set;
 
-public interface Settings {
+public interface SettingsNode {
 
-    Settings node(String name);
+    SettingsNode node(String name);
 
     boolean nodeExists(String name);
 

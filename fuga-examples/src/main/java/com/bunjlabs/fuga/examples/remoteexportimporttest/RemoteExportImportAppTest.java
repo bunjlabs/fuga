@@ -17,7 +17,7 @@ public class RemoteExportImportAppTest {
     public static void main(String[] args) throws Exception {
         StaticApplicationContext applicationContext = new StaticApplicationContext();
 
-        // Settings
+        // SettingsNode
         applicationContext.insertModule(new SettingsUnitBuilder()
                 .withSettingsSources(new LocalFilesSettingsSource(".", "input.yaml"))
                 .withInterfaces(TextExportedServiceSettings.class)

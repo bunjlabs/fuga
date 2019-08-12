@@ -3,9 +3,8 @@ package com.bunjlabs.fuga.settings.source;
 import com.bunjlabs.fuga.settings.environment.Environment;
 import com.bunjlabs.fuga.settings.environment.EnvironmentException;
 import com.bunjlabs.fuga.settings.provider.*;
-import com.bunjlabs.fuga.settings.settings.DefaultSettings;
-import com.bunjlabs.fuga.settings.settings.MutableSettings;
-import com.bunjlabs.fuga.settings.settings.Settings;
+import com.bunjlabs.fuga.settings.settings.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.settings.SettingsNode;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class LocalFilesSettingsSource implements SettingsSource {
@@ -68,7 +66,7 @@ public class LocalFilesSettingsSource implements SettingsSource {
     }
 
     @Override
-    public Settings getSettings(Environment environment) {
+    public SettingsNode getSettings(Environment environment) {
         Path settingsPath;
 
         if (environment.getName().trim().isEmpty()) {
@@ -86,7 +84,7 @@ public class LocalFilesSettingsSource implements SettingsSource {
             settingsPaths.add(settingsPath.resolve(path));
         }
 
-        var settings = new DefaultSettings();
+        var settings = new DefaultSettingsNode();
 
         for (Path path : settingsPaths) {
             try (InputStream is = new FileInputStream(path.toFile())) {
@@ -95,7 +93,7 @@ public class LocalFilesSettingsSource implements SettingsSource {
                 settings.setAll(settingsProvider.load(is));
 
             } catch (FileNotFoundException e) {
-                throw new EnvironmentException("SettingsScope file doesn't exist: " + path);
+                throw new EnvironmentException("Settings file doesn't exist: " + path);
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to load settings file: " + path);
             }

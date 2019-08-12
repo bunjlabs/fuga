@@ -1,9 +1,9 @@
 package com.bunjlabs.fuga.examples.minimal.settings;
 
-import com.bunjlabs.fuga.settings.annotations.SettingsScope;
+import com.bunjlabs.fuga.settings.annotations.Settings;
 import com.bunjlabs.fuga.settings.annotations.Value;
 
-@SettingsScope("http")
+@Settings("http")
 public interface HttpSettings {
 
     @Value("localhost")

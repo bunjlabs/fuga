@@ -8,6 +8,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(value = {TYPE})
 @Retention(value = RUNTIME)
-public @interface SettingsScope {
+public @interface Settings {
     String value();
 }

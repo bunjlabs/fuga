@@ -3,7 +3,7 @@ package com.bunjlabs.fuga.settings.support;
 import com.bunjlabs.fuga.settings.SettingsException;
 import com.bunjlabs.fuga.settings.SettingsFactory;
 import com.bunjlabs.fuga.settings.SettingsHandler;
-import com.bunjlabs.fuga.settings.annotations.SettingsScope;
+import com.bunjlabs.fuga.settings.annotations.Settings;
 import com.bunjlabs.fuga.settings.annotations.Value;
 import com.bunjlabs.fuga.settings.environment.Environment;
 import com.bunjlabs.fuga.settings.settings.*;
@@ -16,10 +16,10 @@ import java.lang.reflect.Proxy;
 
 public class DefaultSettingsFactory implements SettingsFactory {
 
-    private final MutableSettings rootNode;
+    private final MutableSettingsNode rootNode;
 
     public DefaultSettingsFactory() {
-        this.rootNode = new DefaultSettings();
+        this.rootNode = new DefaultSettingsNode();
     }
 
     @Override
@@ -54,8 +54,8 @@ public class DefaultSettingsFactory implements SettingsFactory {
         return (T) proxyInstance;
     }
 
-    private <T> void populateValuesForHandler(MutableSettings currentNode, SettingsHandler invocationHandler, Class<T> requiredSettings) {
-        var settingsScopeAnnotation = requiredSettings.getAnnotation(SettingsScope.class);
+    private <T> void populateValuesForHandler(MutableSettingsNode currentNode, SettingsHandler invocationHandler, Class<T> requiredSettings) {
+        var settingsScopeAnnotation = requiredSettings.getAnnotation(Settings.class);
         var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredSettings.getSimpleName();
 
         currentNode = currentNode.node(scopeName);

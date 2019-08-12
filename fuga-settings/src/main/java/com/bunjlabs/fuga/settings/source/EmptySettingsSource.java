@@ -1,12 +1,12 @@
 package com.bunjlabs.fuga.settings.source;
 
 import com.bunjlabs.fuga.settings.environment.Environment;
-import com.bunjlabs.fuga.settings.settings.EmptySettings;
-import com.bunjlabs.fuga.settings.settings.Settings;
+import com.bunjlabs.fuga.settings.settings.EmptySettingsNode;
+import com.bunjlabs.fuga.settings.settings.SettingsNode;
 
 public class EmptySettingsSource implements SettingsSource {
     @Override
-    public Settings getSettings(Environment environment) {
-        return EmptySettings.INSTANCE;
+    public SettingsNode getSettings(Environment environment) {
+        return EmptySettingsNode.INSTANCE;
     }
 }

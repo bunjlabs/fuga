@@ -5,12 +5,10 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class JacksonBasedSettingsProvider implements SettingsProvider {
@@ -22,8 +20,8 @@ public class JacksonBasedSettingsProvider implements SettingsProvider {
     }
 
     @Override
-    public Settings load(InputStream is) throws SettingsProviderException {
-        var settings = new DefaultSettings();
+    public SettingsNode load(InputStream is) throws SettingsProviderException {
+        var settings = new DefaultSettingsNode();
         JsonNode rootNode;
 
         try {
@@ -39,7 +37,7 @@ public class JacksonBasedSettingsProvider implements SettingsProvider {
         return settings;
     }
 
-    private void populateSettings(MutableSettings settings, JsonNode node) {
+    private void populateSettings(MutableSettingsNode settings, JsonNode node) {
         node.fields().forEachRemaining(element -> {
             var n = element.getValue();
             var nType = n.getNodeType();
