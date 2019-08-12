@@ -6,7 +6,6 @@ public abstract class MethodUtils {
 
         for (int i = 0; i < params1.length; i++) {
             if (params1[i] != params2[i]) return false;
-
         }
 
         return true;

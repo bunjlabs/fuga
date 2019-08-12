@@ -1,6 +1,7 @@
 package com.bunjlabs.fuga.ioc.support;
 
 import com.bunjlabs.fuga.ioc.*;
+import com.bunjlabs.fuga.ioc.Unit;
 import com.bunjlabs.fuga.ioc.factory.ExplicitSingletonServiceFactory;
 import com.bunjlabs.fuga.ioc.factory.ServiceFactory;
 import com.bunjlabs.fuga.ioc.factory.SingletonServiceFactory;
@@ -19,7 +20,7 @@ public class DefaultIocContainer implements IocContainer {
 
     @Override
     public <T> T getService(Class<T> type) throws DependencyException {
-        ServiceFactory<T> serviceFactory = getServiceFactory(type);
+        var serviceFactory = getServiceFactory(type);
 
         if (serviceFactory == null) {
             throw new DependencyException("Requested service not found: " + type);
@@ -31,8 +32,7 @@ public class DefaultIocContainer implements IocContainer {
 
         this.beforePrototypeCreation(type);
         try {
-            Object[] dependencies = resolveDependencies(serviceFactory.getDependencyTypes());
-
+            var dependencies = resolveDependencies(serviceFactory.getDependencyTypes());
             return serviceFactory.getService(dependencies);
         } finally {
             this.afterPrototypeCreation(type);
@@ -49,7 +49,7 @@ public class DefaultIocContainer implements IocContainer {
         Class<?> serviceClass;
 
         if (ReflectionUtils.isJdkDynamicProxy(instance)) {
-            Class<?>[] proxiedInterfaces = ReflectionUtils.getProxiedInterfaces(instance);
+            var proxiedInterfaces = ReflectionUtils.getProxiedInterfaces(instance);
 
             if (proxiedInterfaces.length == 1) {
                 serviceClass = proxiedInterfaces[0];
@@ -65,22 +65,18 @@ public class DefaultIocContainer implements IocContainer {
 
     @Override
     public void register(Class type, Class<?> servicePrototype) throws DependencyException {
-        ServiceFactory serviceFactory = createServiceFactory(servicePrototype);
-
-        factoryRegistry.put(type, serviceFactory);
+        factoryRegistry.put(type, createServiceFactory(servicePrototype));
     }
 
     @Override
     public void register(Class serviceType, Object serviceInstance) throws DependencyException {
-        ServiceFactory serviceFactory = new ExplicitSingletonServiceFactory<>(serviceInstance);
-
-        factoryRegistry.put(serviceType, serviceFactory);
+        factoryRegistry.put(serviceType, new ExplicitSingletonServiceFactory<>(serviceInstance));
     }
 
-    public void configureModule(Module module) throws Exception {
-        DefaultConfiguration configuration = new DefaultConfiguration();
+    public void configureUnit(Unit unit) throws Exception {
+        var configuration = new DefaultConfiguration();
 
-        module.configure(configuration);
+        unit.configure(configuration);
 
         configuration.getBindings().forEach(b -> {
             if (b.getBindingType() == BindingType.INSTANCE) {
@@ -93,7 +89,7 @@ public class DefaultIocContainer implements IocContainer {
 
     @SuppressWarnings("unchecked")
     private Object[] resolveDependencies(Class[] dependencyTypes) {
-        Object[] dependencies = new Object[dependencyTypes.length];
+        var dependencies = new Object[dependencyTypes.length];
 
         for (int i = 0; i < dependencyTypes.length; i++) {
             dependencies[i] = this.getService(dependencyTypes[i]);
@@ -110,7 +106,7 @@ public class DefaultIocContainer implements IocContainer {
     private <T> ServiceFactory<T> createServiceFactory(Class<T> serviceType) {
         Constructor<T> constructor;
 
-        Optional<Constructor<T>> optionalAnnotatedConstructor = getAnnotatedConstructor(serviceType);
+        var optionalAnnotatedConstructor = getAnnotatedConstructor(serviceType);
 
         if (optionalAnnotatedConstructor.isPresent()) {
             constructor = optionalAnnotatedConstructor.get();
@@ -122,9 +118,7 @@ public class DefaultIocContainer implements IocContainer {
             }
         }
 
-        Injector<T> injector = new ConstructorInjector<>(constructor);
-
-        return new SingletonServiceFactory<>(injector);
+        return new SingletonServiceFactory<>(new ConstructorInjector<>(constructor));
     }
 
     @SuppressWarnings("unchecked")
@@ -135,19 +129,19 @@ public class DefaultIocContainer implements IocContainer {
     }
 
     private boolean isPrototypeCurrentlyInCreation(Class<?> serviceType) {
-        Object curVal = this.prototypesCurrentlyInCreation.get();
+        var curVal = this.prototypesCurrentlyInCreation.get();
         return (curVal != null &&
                 (curVal.equals(serviceType) || (curVal instanceof Set && ((Set<?>) curVal).contains(serviceType))));
     }
 
     @SuppressWarnings("unchecked")
     private void beforePrototypeCreation(Class<?> serviceType) {
-        Object curVal = this.prototypesCurrentlyInCreation.get();
+        var curVal = this.prototypesCurrentlyInCreation.get();
 
         if (curVal == null) {
             this.prototypesCurrentlyInCreation.set(serviceType);
         } else if (curVal instanceof Class) {
-            Set<Class> classSet = new HashSet<>(2);
+            var classSet = new HashSet<>(2);
             classSet.add((Class) curVal);
             classSet.add(serviceType);
             this.prototypesCurrentlyInCreation.set(classSet);
@@ -159,12 +153,12 @@ public class DefaultIocContainer implements IocContainer {
 
     @SuppressWarnings("unchecked")
     private void afterPrototypeCreation(Class<?> serviceType) {
-        Object curVal = this.prototypesCurrentlyInCreation.get();
+        var curVal = this.prototypesCurrentlyInCreation.get();
 
         if (curVal instanceof Class) {
             this.prototypesCurrentlyInCreation.remove();
         } else if (curVal instanceof Set) {
-            Set<Class> classSet = (Set<Class>) curVal;
+            var classSet = (Set<Class>) curVal;
             classSet.remove(serviceType);
             if (classSet.isEmpty()) {
                 this.prototypesCurrentlyInCreation.remove();

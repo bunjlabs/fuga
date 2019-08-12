@@ -1,6 +1,10 @@
 ### IDEA ###
 .idea
+.project
+.settings
+.classpath
 out
+bin
 test-output
 atlassian-ide-plugin.xml
 .gradletasknamecache

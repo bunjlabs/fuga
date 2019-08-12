@@ -26,7 +26,7 @@ public abstract class TypeUtils {
         Assert.notNull(input);
         Assert.notNull(type);
 
-        Function<String, ?> converter = primitiveParsers.get(type);
+        var converter = primitiveParsers.get(type);
 
         return converter.apply(input);
     }

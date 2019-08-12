@@ -10,7 +10,6 @@ public abstract class Assert {
         if (object == null) {
             throw new IllegalArgumentException(message);
         }
-
         return object;
     }
 

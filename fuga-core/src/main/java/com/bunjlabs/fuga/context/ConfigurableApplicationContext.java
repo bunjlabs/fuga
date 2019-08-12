@@ -1,10 +1,10 @@
 package com.bunjlabs.fuga.context;
 
-import com.bunjlabs.fuga.ioc.Module;
+import com.bunjlabs.fuga.ioc.Unit;
 
 public interface ConfigurableApplicationContext extends ApplicationContext {
 
-    void insertModule(Class<? extends Module> moduleClass);
+    void insertModule(Class<? extends Unit> moduleClass);
 
-    void insertModule(Module module);
+    void insertModule(Unit unit);
 }

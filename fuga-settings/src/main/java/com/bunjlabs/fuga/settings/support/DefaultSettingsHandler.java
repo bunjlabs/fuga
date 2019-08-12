@@ -21,7 +21,7 @@ public class DefaultSettingsHandler implements SettingsHandler {
             return method.invoke(this, args);
         }
 
-        SettingsValue value = wrappedValues.get(method);
+        var value = wrappedValues.get(method);
 
         if (value == null) {
             throw new NullPointerException();

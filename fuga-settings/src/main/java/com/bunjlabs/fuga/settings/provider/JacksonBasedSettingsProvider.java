@@ -23,7 +23,7 @@ public class JacksonBasedSettingsProvider implements SettingsProvider {
 
     @Override
     public Settings load(InputStream is) throws SettingsProviderException {
-        MutableSettings settings = new DefaultSettings();
+        var settings = new DefaultSettings();
         JsonNode rootNode;
 
         try {
@@ -41,30 +41,29 @@ public class JacksonBasedSettingsProvider implements SettingsProvider {
 
     private void populateSettings(MutableSettings settings, JsonNode node) {
         node.fields().forEachRemaining(element -> {
-            JsonNode n = element.getValue();
-            JsonNodeType nType = n.getNodeType();
+            var n = element.getValue();
+            var nType = n.getNodeType();
 
             switch (nType) {
                 case BOOLEAN:
                 case NUMBER:
                 case STRING: {
-                    SettingsValue value = switchPrimitive(n);
+                    var value = switchPrimitive(n);
                     settings.set(element.getKey(), value);
                     break;
                 }
                 case ARRAY: {
-                    Iterator<JsonNode> elements = n.elements();
+                    var elements = n.elements();
 
-                    List<Object> arrayList = new ArrayList<>();
+                    var arrayList = new ArrayList<Object>();
                     elements.forEachRemaining(arrayElement -> arrayList.add(switchPrimitive(arrayElement).getValue()));
 
-                    SettingsValue value = new DefaultSettingsValue(List.class, arrayList);
+                    var value = new DefaultSettingsValue(List.class, arrayList);
                     settings.set(element.getKey(), value);
                     break;
                 }
                 case OBJECT: {
-                    MutableSettings childSettingsNode = settings.node(element.getKey());
-
+                    var childSettingsNode = settings.node(element.getKey());
                     populateSettings(childSettingsNode, n);
                     break;
                 }
@@ -73,7 +72,7 @@ public class JacksonBasedSettingsProvider implements SettingsProvider {
     }
 
     private SettingsValue switchPrimitive(JsonNode node) {
-        JsonNodeType type = node.getNodeType();
+        var type = node.getNodeType();
 
         switch (type) {
             case BOOLEAN: {

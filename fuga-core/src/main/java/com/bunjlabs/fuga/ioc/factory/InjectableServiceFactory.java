@@ -12,7 +12,7 @@ public abstract class InjectableServiceFactory<T> implements ServiceFactory<T> {
 
     @Override
     public Class[] getDependencyTypes() {
-        Class[] originalArgumentTypes = injector.getRequiredTypes();
+        var originalArgumentTypes = injector.getRequiredTypes();
         return this.bindArgumentTypes(originalArgumentTypes);
     }
 
@@ -22,11 +22,9 @@ public abstract class InjectableServiceFactory<T> implements ServiceFactory<T> {
 
 
     private Class[] bindArgumentTypes(Class[] input) {
-        Class[] bindTypes = new Class[input.length];
+        var bindTypes = new Class[input.length];
 
-        for (int i = 0; i < input.length; i++) {
-            bindTypes[i] = input[i];
-        }
+        System.arraycopy(input, 0, bindTypes, 0, input.length);
 
         return bindTypes;
     }

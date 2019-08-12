@@ -9,7 +9,7 @@ public abstract class ReflectionUtils {
     }
 
     public static Class<?>[] getProxiedInterfaces(Object proxy) {
-        Class<?>[] proxyInterfaces = proxy.getClass().getInterfaces();
+        var proxyInterfaces = proxy.getClass().getInterfaces();
 
         Assert.notEmpty(proxyInterfaces, "dynamic proxy must implement one or more interfaces");
 

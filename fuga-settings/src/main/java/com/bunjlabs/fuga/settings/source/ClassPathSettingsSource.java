@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class ClassPathSettingsSource implements SettingsSource {
-    
+
     private final ClassLoader classLoader;
     private final Iterable<String> resourceNames;
     private final SettingsProviderSelector providerSelector;
@@ -54,7 +54,7 @@ public class ClassPathSettingsSource implements SettingsSource {
     }
 
     public Settings getSettings(Environment environment) {
-        MutableSettings settings = new DefaultSettings();
+        var settings = new DefaultSettings();
 
         for (String resource : resourceNames) {
             try (InputStream is = classLoader.getResourceAsStream(resource)) {

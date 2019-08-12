@@ -81,12 +81,12 @@ public class LocalFilesSettingsSource implements SettingsSource {
             throw new EnvironmentException("Directory doesn't exist: " + settingsPath);
         }
 
-        List<Path> settingsPaths = new ArrayList();
+        var settingsPaths = new ArrayList<Path>();
         for (Path path : settingFiles) {
             settingsPaths.add(settingsPath.resolve(path));
         }
 
-        MutableSettings settings = new DefaultSettings();
+        var settings = new DefaultSettings();
 
         for (Path path : settingsPaths) {
             try (InputStream is = new FileInputStream(path.toFile())) {

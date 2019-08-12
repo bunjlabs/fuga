@@ -19,7 +19,8 @@ public class DefaultSettings implements MutableSettings {
     @Override
     public MutableSettings node(String name) {
         Assert.notNull(name);
-        MutableSettings settings = nodes.get(name);
+
+        var settings = nodes.get(name);
 
         if (settings == null) {
             settings = new DefaultSettings();
@@ -49,6 +50,7 @@ public class DefaultSettings implements MutableSettings {
     public void set(String key, SettingsValue value) {
         Assert.notNull(key);
         Assert.notNull(value);
+
         values.put(key, value);
     }
 

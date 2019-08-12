@@ -48,7 +48,7 @@ public class DefaultSettingsValue implements SettingsValue {
         if (type.isAssignableFrom(value.getClass())) return value;
 
         if (value instanceof Number) {
-            Number num = (Number) value;
+            var num = (Number) value;
             if (type == int.class || type == Integer.class) {
                 return num.intValue();
             } else if (type == long.class || type == Long.class) {

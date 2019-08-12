@@ -1,8 +1,9 @@
 package com.bunjlabs.fuga.ioc.support;
 
+import com.bunjlabs.fuga.ioc.Binding;
 import com.bunjlabs.fuga.ioc.BindingType;
 
-class DefaultBinding implements com.bunjlabs.fuga.ioc.Binding {
+class DefaultBinding implements Binding {
 
     private final Class<?> target;
 

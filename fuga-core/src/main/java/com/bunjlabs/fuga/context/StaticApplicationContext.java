@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.context;
 
 import com.bunjlabs.fuga.ioc.IocContainer;
-import com.bunjlabs.fuga.ioc.Module;
+import com.bunjlabs.fuga.ioc.Unit;
 import com.bunjlabs.fuga.ioc.support.DefaultIocContainer;
 
 public class StaticApplicationContext implements ConfigurableApplicationContext {
@@ -9,23 +9,21 @@ public class StaticApplicationContext implements ConfigurableApplicationContext 
     private final DefaultIocContainer container = new DefaultIocContainer();
 
     @Override
-    public void insertModule(Class<? extends Module> moduleClass) {
+    public void insertModule(Class<? extends Unit> unitClass) {
         try {
-            container.register(moduleClass);
-            Module module = container.getService(moduleClass);
-
-            container.configureModule(module);
+            container.register(unitClass);
+            container.configureUnit(container.getService(unitClass));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to configure module: " + moduleClass, e);
+            throw new IllegalArgumentException("Unable to configure unit: " + unitClass, e);
         }
     }
 
     @Override
-    public void insertModule(Module module) {
+    public void insertModule(Unit unit) {
         try {
-            container.configureModule(module);
+            container.configureUnit(unit);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to configure module: " + module.getClass(), e);
+            throw new IllegalArgumentException("Unable to configure unit: " + unit.getClass(), e);
         }
     }
 

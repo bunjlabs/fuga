@@ -27,7 +27,7 @@ public class DefaultSettingsFactory implements SettingsFactory {
         Assert.notNull(requiredSettings);
         Assert.isTrue(requiredSettings.isInterface(), "requiredSettings argument must be an interface");
 
-        SettingsHandler invocationHandler = new DefaultSettingsHandler();
+        var invocationHandler = new DefaultSettingsHandler();
 
         populateValuesForHandler(rootNode, invocationHandler, requiredSettings);
 
@@ -38,7 +38,7 @@ public class DefaultSettingsFactory implements SettingsFactory {
         Assert.notNull(settingsSource);
         Assert.notNull(environment);
 
-        Settings settings = settingsSource.getSettings(environment);
+        var settings = settingsSource.getSettings(environment);
 
         rootNode.merge(settings);
     }
@@ -49,14 +49,14 @@ public class DefaultSettingsFactory implements SettingsFactory {
 
     @SuppressWarnings("unchecked")
     private <T> T generateProxy(Class<T> requiredSettings, InvocationHandler invocationHandler) throws SettingsException {
-        Object proxyInstance = Proxy.newProxyInstance(requiredSettings.getClassLoader(), new Class[]{requiredSettings}, invocationHandler);
+        var proxyInstance = Proxy.newProxyInstance(requiredSettings.getClassLoader(), new Class[]{requiredSettings}, invocationHandler);
 
         return (T) proxyInstance;
     }
 
     private <T> void populateValuesForHandler(MutableSettings currentNode, SettingsHandler invocationHandler, Class<T> requiredSettings) {
-        SettingsScope settingsScopeAnnotation = requiredSettings.getAnnotation(SettingsScope.class);
-        String scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredSettings.getSimpleName();
+        var settingsScopeAnnotation = requiredSettings.getAnnotation(SettingsScope.class);
+        var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredSettings.getSimpleName();
 
         currentNode = currentNode.node(scopeName);
 
@@ -64,7 +64,7 @@ public class DefaultSettingsFactory implements SettingsFactory {
             Class<?> returnType = method.getReturnType();
             Object defaultValue = null;
 
-            Value defaultValueAnnotation = method.getAnnotation(Value.class);
+            var defaultValueAnnotation = method.getAnnotation(Value.class);
 
             if (defaultValueAnnotation != null) {
                 String defaultValueString = defaultValueAnnotation.value();
@@ -79,7 +79,7 @@ public class DefaultSettingsFactory implements SettingsFactory {
                 }
             }
 
-            SettingsValue settingsValue = new DefaultSettingsValue(method.getReturnType(), defaultValue);
+            var settingsValue = new DefaultSettingsValue(method.getReturnType(), defaultValue);
 
             currentNode.set(method.getName(), settingsValue);
             invocationHandler.addSettingValue(method, settingsValue);
