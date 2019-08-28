@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.settings.support;
 
 import com.bunjlabs.fuga.settings.SettingsHandler;
-import com.bunjlabs.fuga.settings.settings.SettingsValue;
+import com.bunjlabs.fuga.settings.SettingsValue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

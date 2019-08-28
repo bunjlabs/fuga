@@ -27,6 +27,12 @@ public abstract class Assert {
         return expression;
     }
 
+    public static String hasText(String str, String message) {
+        if (str == null || str.isEmpty()) {
+            throw new IllegalArgumentException(message);
+        }
+        return str;
+    }
 
     public static <T> T[] notEmpty(T[] array, String message) {
         if (array.length <= 0) {

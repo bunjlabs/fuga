@@ -1,6 +1,11 @@
 package com.bunjlabs.fuga.settings;
 
-public class SettingsException extends RuntimeException {
+import com.bunjlabs.fuga.inject.ProvisionException;
+
+public class SettingsException extends ProvisionException {
+    public SettingsException() {
+    }
+
     public SettingsException(String msg) {
         super(msg);
     }

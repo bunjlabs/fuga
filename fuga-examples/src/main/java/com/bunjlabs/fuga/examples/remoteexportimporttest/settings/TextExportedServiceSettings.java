@@ -1,6 +1,6 @@
 package com.bunjlabs.fuga.examples.remoteexportimporttest.settings;
 
-import com.bunjlabs.fuga.settings.annotations.Settings;
+import com.bunjlabs.fuga.settings.Settings;
 
 @Settings("test")
 public interface TextExportedServiceSettings {

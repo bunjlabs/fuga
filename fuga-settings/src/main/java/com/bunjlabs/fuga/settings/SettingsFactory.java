@@ -1,6 +1,9 @@
 package com.bunjlabs.fuga.settings;
 
-public interface SettingsFactory {
+import com.bunjlabs.fuga.inject.Factory;
 
-    <T> T provide(Class<T> requiredSettings) throws SettingsException;
+public interface SettingsFactory extends Factory {
+
+    <T> T get(Class<T> requiredSettings) throws SettingsException;
+
 }

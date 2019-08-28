@@ -1,13 +1,11 @@
 package com.bunjlabs.fuga.settings.support;
 
-import com.bunjlabs.fuga.settings.SettingsException;
-import com.bunjlabs.fuga.settings.SettingsFactory;
-import com.bunjlabs.fuga.settings.SettingsHandler;
-import com.bunjlabs.fuga.settings.annotations.Settings;
-import com.bunjlabs.fuga.settings.annotations.Value;
+import com.bunjlabs.fuga.settings.*;
 import com.bunjlabs.fuga.settings.environment.Environment;
-import com.bunjlabs.fuga.settings.settings.*;
 import com.bunjlabs.fuga.settings.source.SettingsSource;
+import com.bunjlabs.fuga.settings.support.settings.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.support.settings.DefaultSettingsValue;
+import com.bunjlabs.fuga.settings.support.settings.MutableSettingsNode;
 import com.bunjlabs.fuga.util.Assert;
 
 import java.lang.reflect.InvocationHandler;
@@ -23,7 +21,7 @@ public class DefaultSettingsFactory implements SettingsFactory {
     }
 
     @Override
-    public <T> T provide(Class<T> requiredSettings) throws SettingsException {
+    public <T> T get(Class<T> requiredSettings) throws SettingsException {
         Assert.notNull(requiredSettings);
         Assert.isTrue(requiredSettings.isInterface(), "requiredSettings argument must be an interface");
 
@@ -69,13 +67,13 @@ public class DefaultSettingsFactory implements SettingsFactory {
             if (defaultValueAnnotation != null) {
                 String defaultValueString = defaultValueAnnotation.value();
                 if (defaultValueString.isEmpty()) {
-                    throw new SettingsException("Default value of method :'" + method + "' is empty.");
+                    throw new SettingsException("Default value of method '" + method + "' is empty.");
                 }
 
                 try {
                     defaultValue = TypeUtils.convertStringToPrimitive(defaultValueString, returnType);
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    throw new SettingsException("Method :'" + method + "' provide default value with unsupported format.", e);
+                    throw new SettingsException("Method '" + method + "' provide default value with unsupported format.", e);
                 }
             }
 

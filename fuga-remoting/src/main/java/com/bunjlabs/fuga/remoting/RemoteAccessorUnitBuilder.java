@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.remoting;
 
-import com.bunjlabs.fuga.ioc.Unit;
-import com.bunjlabs.fuga.ioc.UnitBuilder;
+import com.bunjlabs.fuga.inject.Unit;
+import com.bunjlabs.fuga.inject.UnitBuilder;
 import com.bunjlabs.fuga.remoting.support.DefaultRemoteAccessor;
 import com.bunjlabs.fuga.remoting.support.DefaultRemoteCallResult;
 import com.bunjlabs.fuga.util.Assert;
@@ -36,7 +36,7 @@ public class RemoteAccessorUnitBuilder implements UnitBuilder {
         return configuration -> {
             RemoteAccessor remoteAccessor = new DefaultRemoteAccessor();
 
-            interfacesSet.forEach(i -> configuration.add(i, remoteAccessor.getServiceProxy(remoteExecutor, i)));
+            //interfacesSet.forEach(i -> configuration.bind(i, remoteAccessor.getServiceProxy(remoteExecutor, i)));
         };
     }
 }

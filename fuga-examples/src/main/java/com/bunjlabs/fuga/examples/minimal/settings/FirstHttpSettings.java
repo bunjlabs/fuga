@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.examples.minimal.settings;
 
-import com.bunjlabs.fuga.settings.annotations.Settings;
-import com.bunjlabs.fuga.settings.annotations.Value;
+import com.bunjlabs.fuga.settings.Settings;
+import com.bunjlabs.fuga.settings.Value;
 
 @Settings("first")
 public interface FirstHttpSettings extends HttpSettings {

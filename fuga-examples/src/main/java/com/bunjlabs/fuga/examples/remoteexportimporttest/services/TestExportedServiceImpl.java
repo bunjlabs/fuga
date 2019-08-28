@@ -1,7 +1,7 @@
 package com.bunjlabs.fuga.examples.remoteexportimporttest.services;
 
 import com.bunjlabs.fuga.examples.remoteexportimporttest.settings.TextExportedServiceSettings;
-import com.bunjlabs.fuga.ioc.Inject;
+import com.bunjlabs.fuga.inject.Inject;
 
 public class TestExportedServiceImpl implements TestExportedService {
 

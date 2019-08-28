@@ -2,9 +2,9 @@ package com.bunjlabs.fuga.settings.source;
 
 import com.bunjlabs.fuga.settings.environment.Environment;
 import com.bunjlabs.fuga.settings.environment.EnvironmentException;
-import com.bunjlabs.fuga.settings.provider.*;
-import com.bunjlabs.fuga.settings.settings.DefaultSettingsNode;
-import com.bunjlabs.fuga.settings.settings.SettingsNode;
+import com.bunjlabs.fuga.settings.loader.*;
+import com.bunjlabs.fuga.settings.support.settings.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.SettingsNode;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class ClassPathSettingsSource implements SettingsSource {
 
     private final ClassLoader classLoader;
     private final Iterable<String> resourceNames;
-    private final SettingsProviderSelector providerSelector;
+    private final SettingsLoaderSelector providerSelector;
 
     public ClassPathSettingsSource() {
         this(SettingsSource.class.getClassLoader());
@@ -40,13 +40,13 @@ public class ClassPathSettingsSource implements SettingsSource {
     }
 
     public ClassPathSettingsSource(ClassLoader classLoader, Iterable<String> resourceNames) {
-        this(classLoader, resourceNames, new FileExtensionSettingsProviderSelector(
-                new YamlSettingsProvider(),
-                new JsonSettingsProvider()
+        this(classLoader, resourceNames, new FileExtensionSettingsLoaderSelector(
+                new YamlSettingsLoader(),
+                new JsonSettingsLoader()
         ));
     }
 
-    public ClassPathSettingsSource(ClassLoader classLoader, Iterable<String> resourceNames, SettingsProviderSelector providerSelector) {
+    public ClassPathSettingsSource(ClassLoader classLoader, Iterable<String> resourceNames, SettingsLoaderSelector providerSelector) {
         this.classLoader = classLoader;
         this.resourceNames = resourceNames;
         this.providerSelector = providerSelector;
@@ -62,8 +62,8 @@ public class ClassPathSettingsSource implements SettingsSource {
                     throw new FileNotFoundException();
                 }
 
-                SettingsProvider settingsProvider = providerSelector.getProvider(resource);
-                settings.setAll(settingsProvider.load(is));
+                SettingsLoader settingsLoader = providerSelector.getProvider(resource);
+                settings.setAll(settingsLoader.load(is));
             } catch (FileNotFoundException e) {
                 throw new EnvironmentException("Settings file doesn't exist: " + resource);
             } catch (IOException e) {

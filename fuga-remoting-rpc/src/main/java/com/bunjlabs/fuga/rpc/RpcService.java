@@ -7,7 +7,7 @@ package com.bunjlabs.fuga.rpc;
 
 import com.bunjlabs.fuga.channel.ChannelHandler;
 import com.bunjlabs.fuga.channel.ChannelHandlerException;
-import com.bunjlabs.fuga.ioc.Inject;
+import com.bunjlabs.fuga.inject.Inject;
 import com.bunjlabs.fuga.rpc.annotations.*;
 
 import java.lang.reflect.Method;
