@@ -2,11 +2,11 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Key;
 
-public class DelegatedFactory<T> implements InternalFactory<T> {
+public class DelegatedKeyFactory<T> implements InternalFactory<T> {
 
     private final Key<? extends T> targetKey;
 
-    DelegatedFactory(Key<? extends T> targetKey) {
+    DelegatedKeyFactory(Key<? extends T> targetKey) {
         this.targetKey = targetKey;
     }
 

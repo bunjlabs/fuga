@@ -1,5 +1,6 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.inject.BindingVisitor;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.util.ObjectUtils;
 
@@ -11,6 +12,11 @@ public class InstanceBinding<T> extends AbstractBinding<T> {
 
     InstanceBinding(Key<T> key, T instance) {
         super(key);
+        this.instance = instance;
+    }
+
+    public InstanceBinding(Key<T> key, T instance, InternalFactory<T> internalFactory) {
+        super(key, internalFactory);
         this.instance = instance;
     }
 
@@ -42,8 +48,8 @@ public class InstanceBinding<T> extends AbstractBinding<T> {
         return Objects.hash(getKey(), instance);
     }
 
-    @Override
-    public InternalFactory<T> getInternalFactory() {
-        return new InitializableFactory<>(() -> instance);
+    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
+        return visitor.visit(this);
     }
+
 }

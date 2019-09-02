@@ -1,13 +1,13 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.Factory;
+import com.bunjlabs.fuga.inject.Composer;
 
 public class ProxyFactory<T> implements InternalFactory<T> {
 
-    private final Factory proxiedFactory;
+    private final Composer proxiedComposer;
 
-    ProxyFactory(Factory proxiedFactory) {
-        this.proxiedFactory = proxiedFactory;
+    ProxyFactory(Composer proxiedComposer) {
+        this.proxiedComposer = proxiedComposer;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class ProxyFactory<T> implements InternalFactory<T> {
     @SuppressWarnings("unchecked")
     private T getFromProxiedFactory(Class<?> type) throws InternalProvisionException {
         try {
-            return (T) proxiedFactory.get(type);
+            return (T) proxiedComposer.get(type);
         } catch (ClassCastException e) {
             throw new InternalProvisionException(e);
         }

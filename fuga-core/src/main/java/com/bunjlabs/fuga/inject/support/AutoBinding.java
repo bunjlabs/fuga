@@ -6,9 +6,9 @@ import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class UntargettedBinding<T> extends AbstractBinding<T> {
+public class AutoBinding<T> extends AbstractBinding<T> {
 
-    UntargettedBinding(Key<T> key) {
+    AutoBinding(Key<T> key) {
         super(key);
     }
 

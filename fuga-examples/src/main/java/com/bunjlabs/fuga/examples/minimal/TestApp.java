@@ -6,9 +6,15 @@
 package com.bunjlabs.fuga.examples.minimal;
 
 import com.bunjlabs.fuga.context.ApplicationContext;
+import com.bunjlabs.fuga.context.FugaBoot;
+import com.bunjlabs.fuga.examples.minimal.services.TestInterface;
+import com.bunjlabs.fuga.examples.minimal.services.TestInterfaceImpl;
 import com.bunjlabs.fuga.examples.minimal.services.TestService;
-import com.bunjlabs.fuga.examples.minimal.units.AppUnit;
+import com.bunjlabs.fuga.examples.minimal.services.TestServiceImpl;
+import com.bunjlabs.fuga.examples.minimal.settings.FirstHttpSettings;
 import com.bunjlabs.fuga.inject.Injector;
+import com.bunjlabs.fuga.settings.SettingsUnitBuilder;
+import com.bunjlabs.fuga.settings.source.LocalFilesSettingsSource;
 
 /**
  * @author Artem Shurygin <artem.shurygin@bunjlabs.com>
@@ -16,11 +22,26 @@ import com.bunjlabs.fuga.inject.Injector;
 public class TestApp {
 
     public static void main(String[] args) {
-        ApplicationContext context = ApplicationContext.fromUnit(new AppUnit());
+        ApplicationContext context = FugaBoot.start(c -> {
+            c.install(new SettingsUnitBuilder()
+                    .withSettingsSources(new LocalFilesSettingsSource("."))
+                    .build());
+
+            c.bind(FirstHttpSettings.class).auto();
+
+            c.bind(TestServiceImpl.class).auto();
+            c.bind(TestInterfaceImpl.class).auto();
+
+            c.bind(TestService.class).to(TestServiceImpl.class);
+            c.bind(TestInterface.class).to(TestInterfaceImpl.class);
+        });
 
         Injector injector = context.getInjector();
 
         TestService testService = injector.getInstance(TestService.class);
+        System.out.println(testService.test());
+        System.out.println(testService.test());
+        System.out.println(testService.test());
     }
 
 }

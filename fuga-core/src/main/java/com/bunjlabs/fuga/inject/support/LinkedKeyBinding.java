@@ -6,37 +6,38 @@ import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class ConstructorBinding<T> extends AbstractBinding<T> {
-    private final InjectionPoint injectionPoint;
+public class LinkedKeyBinding<T> extends AbstractBinding<T> {
 
-    ConstructorBinding(Key<T> key, InjectionPoint injectionPoint) {
+    private final Key<? extends T> linkedKey;
+
+    LinkedKeyBinding(Key<T> key, Key<? extends T> linkedKey) {
         super(key);
-        this.injectionPoint = injectionPoint;
+        this.linkedKey = linkedKey;
     }
 
-    ConstructorBinding(Key<T> key, InjectionPoint injectionPoint, InternalFactory<T> internalFactory) {
+    LinkedKeyBinding(Key<T> key, Key<? extends T> linkedKey, InternalFactory<T> internalFactory) {
         super(key, internalFactory);
-        this.injectionPoint = injectionPoint;
+        this.linkedKey = linkedKey;
     }
 
-    InjectionPoint getInjectionPoint() {
-        return injectionPoint;
+    Key<? extends T> getLinkedKey() {
+        return linkedKey;
     }
 
     @Override
     public String toString() {
         return ObjectUtils.toStringJoiner(this)
                 .add("key", getKey())
-                .add("injectionPoint", injectionPoint)
+                .add("linkedKey", linkedKey)
                 .toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ConstructorBinding) {
-            ConstructorBinding<?> other = (ConstructorBinding<?>) o;
+        if (o instanceof LinkedKeyBinding) {
+            LinkedKeyBinding<?> other = (LinkedKeyBinding<?>) o;
             return getKey().equals(other.getKey())
-                    && Objects.equals(injectionPoint, other.injectionPoint);
+                    && Objects.equals(linkedKey, other.linkedKey);
         } else {
             return false;
         }
@@ -44,9 +45,9 @@ public class ConstructorBinding<T> extends AbstractBinding<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getKey(), injectionPoint);
+        return Objects.hash(getKey(), linkedKey);
     }
-    
+
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
     }

@@ -6,7 +6,7 @@ import com.bunjlabs.fuga.inject.Unit;
 
 public class HttpServerUnit implements Unit {
     @Override
-    public void configure(Configuration c) {
+    public void setup(Configuration c) {
         c.bind(HttpSettings.class).to(HttpSettings.class);
     }
 }

@@ -1,42 +1,43 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.BindingVisitor;
+import com.bunjlabs.fuga.inject.Composer;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class ConstructorBinding<T> extends AbstractBinding<T> {
-    private final InjectionPoint injectionPoint;
+public class ComposerInstanceBinding<T> extends AbstractBinding<T> {
+    private final Composer composer;
 
-    ConstructorBinding(Key<T> key, InjectionPoint injectionPoint) {
+    ComposerInstanceBinding(Key<T> key, Composer composer) {
         super(key);
-        this.injectionPoint = injectionPoint;
+        this.composer = composer;
     }
 
-    ConstructorBinding(Key<T> key, InjectionPoint injectionPoint, InternalFactory<T> internalFactory) {
+    ComposerInstanceBinding(Key<T> key, Composer composer, InternalFactory<T> internalFactory) {
         super(key, internalFactory);
-        this.injectionPoint = injectionPoint;
+        this.composer = composer;
     }
 
-    InjectionPoint getInjectionPoint() {
-        return injectionPoint;
+    Composer getComposer() {
+        return composer;
     }
 
     @Override
     public String toString() {
         return ObjectUtils.toStringJoiner(this)
                 .add("key", getKey())
-                .add("injectionPoint", injectionPoint)
+                .add("composer", composer)
                 .toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ConstructorBinding) {
-            ConstructorBinding<?> other = (ConstructorBinding<?>) o;
+        if (o instanceof ComposerInstanceBinding) {
+            ComposerInstanceBinding<?> other = (ComposerInstanceBinding<?>) o;
             return getKey().equals(other.getKey())
-                    && Objects.equals(injectionPoint, other.injectionPoint);
+                    && Objects.equals(composer, other.composer);
         } else {
             return false;
         }
@@ -44,9 +45,9 @@ public class ConstructorBinding<T> extends AbstractBinding<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getKey(), injectionPoint);
+        return Objects.hash(getKey(), composer);
     }
-    
+
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
     }

@@ -18,7 +18,7 @@ public class InitializableFactory<T> implements InternalFactory<T> {
     @Override
     public String toString() {
         return ObjectUtils.toStringJoiner(this)
-                .add("value", initializable)
+                .add("initializable", initializable)
                 .toString();
     }
 }

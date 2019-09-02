@@ -7,38 +7,38 @@ import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class ProviderInstanceBinding<T> extends AbstractBinding<T> {
+public class ProviderBinding<T> extends AbstractBinding<T> {
 
-    private final Provider<? extends T> provider;
+    private final Key<? extends Provider<? extends T>> providerKey;
 
-    ProviderInstanceBinding(Key<T> key, Provider<? extends T> provider) {
+    ProviderBinding(Key<T> key, Key<? extends Provider<? extends T>> providerKey) {
         super(key);
-        this.provider = provider;
+        this.providerKey = providerKey;
     }
 
-    public ProviderInstanceBinding(Key<T> key, Provider<? extends T> provider, InternalFactory<T> internalFactory) {
+    ProviderBinding(Key<T> key, Key<? extends Provider<? extends T>> providerKey, InternalFactory<T> internalFactory) {
         super(key, internalFactory);
-        this.provider = provider;
+        this.providerKey = providerKey;
     }
 
-    Provider<? extends T> getProvider() {
-        return provider;
+    Key<? extends Provider<? extends T>> getProviderKey() {
+        return providerKey;
     }
 
     @Override
     public String toString() {
         return ObjectUtils.toStringJoiner(this)
                 .add("key", getKey())
-                .add("provider", provider)
+                .add("providerKey", providerKey)
                 .toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ProviderInstanceBinding) {
-            ProviderInstanceBinding<?> other = (ProviderInstanceBinding<?>) o;
+        if (o instanceof ProviderBinding) {
+            ProviderBinding<?> other = (ProviderBinding<?>) o;
             return getKey().equals(other.getKey())
-                    && Objects.equals(provider, other.provider);
+                    && Objects.equals(providerKey, other.providerKey);
         } else {
             return false;
         }
@@ -46,7 +46,7 @@ public class ProviderInstanceBinding<T> extends AbstractBinding<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getKey(), provider);
+        return Objects.hash(getKey(), providerKey);
     }
 
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {

@@ -12,24 +12,24 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-public class DefaultSettingsFactory implements SettingsFactory {
+public class DefaultSettingsComposer implements SettingsComposer {
 
     private final MutableSettingsNode rootNode;
 
-    public DefaultSettingsFactory() {
+    public DefaultSettingsComposer() {
         this.rootNode = new DefaultSettingsNode();
     }
 
     @Override
-    public <T> T get(Class<T> requiredSettings) throws SettingsException {
-        Assert.notNull(requiredSettings);
-        Assert.isTrue(requiredSettings.isInterface(), "requiredSettings argument must be an interface");
+    public <T> T get(Class<T> requiredClass) throws SettingsException {
+        Assert.notNull(requiredClass);
+        Assert.isTrue(requiredClass.isInterface(), "requiredSettings argument must be an interface");
 
         var invocationHandler = new DefaultSettingsHandler();
 
-        populateValuesForHandler(rootNode, invocationHandler, requiredSettings);
+        populateValuesForHandler(rootNode, invocationHandler, requiredClass);
 
-        return generateProxy(requiredSettings, invocationHandler);
+        return generateProxy(requiredClass, invocationHandler);
     }
 
     public void loadFromSettingsSource(SettingsSource settingsSource, Environment environment) {

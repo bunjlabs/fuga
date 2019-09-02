@@ -17,7 +17,7 @@ public class RemoteExportUnit implements Unit {
     }
 
     @Override
-    public void configure(Configuration configuration) {
+    public void setup(Configuration configuration) {
         RemoteExporter exporter = new DefaultRemoteExporter(service, TestExportedService.class);
     }
 }

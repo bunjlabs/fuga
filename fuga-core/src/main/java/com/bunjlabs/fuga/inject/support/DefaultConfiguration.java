@@ -6,9 +6,13 @@ import com.bunjlabs.fuga.inject.Unit;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DefaultConfiguration extends DefaultMapBinder implements Configuration {
+public class DefaultConfiguration extends DefaultBinder implements Configuration {
 
     private List<Unit> installedUnits = new LinkedList<>();
+
+    public DefaultConfiguration(BindingProcessor bindingProcessor) {
+        super(bindingProcessor);
+    }
 
     List<Unit> getInstalledUnits() {
         return installedUnits;

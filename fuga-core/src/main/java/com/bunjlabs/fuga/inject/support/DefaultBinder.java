@@ -8,11 +8,11 @@ import com.bunjlabs.fuga.inject.Key;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DefaultMapBinder implements Binder {
-    private final List<Binding<?>> bindings = new LinkedList<>();
+public class DefaultBinder implements Binder {
+    private final BindingProcessor bindingProcessor;
 
-    List<Binding<?>> getBindings() {
-        return bindings;
+    public DefaultBinder(BindingProcessor bindingProcessor) {
+        this.bindingProcessor = bindingProcessor;
     }
 
     @Override
@@ -22,6 +22,6 @@ public class DefaultMapBinder implements Binder {
 
     @Override
     public <T> BindingBuilder<T> bind(Key<T> type) {
-        return new DefaultBindingBuilder<>(type, bindings);
+        return new DefaultBindingBuilder<>(type, bindingProcessor);
     }
 }

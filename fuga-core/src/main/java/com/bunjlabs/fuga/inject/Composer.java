@@ -1,6 +1,6 @@
 package com.bunjlabs.fuga.inject;
 
-public interface Factory {
+public interface Composer {
 
     <T> T get(Class<T> requiredSettings) throws ProvisionException;
 

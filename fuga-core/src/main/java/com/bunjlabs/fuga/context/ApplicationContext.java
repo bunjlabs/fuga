@@ -12,9 +12,9 @@ public class ApplicationContext {
         this.injector = injector;
     }
 
-    public static ApplicationContext fromUnit(Unit unit) {
+    public static ApplicationContext fromUnits(Unit... units) {
         Injector injector = new InjectorBuilder()
-                .withUnits(unit)
+                .withUnits(units)
                 .build();
 
         return new ApplicationContext(injector);

@@ -5,7 +5,7 @@ import com.bunjlabs.fuga.inject.UnitBuilder;
 import com.bunjlabs.fuga.settings.environment.DefaultEnvironment;
 import com.bunjlabs.fuga.settings.environment.Environment;
 import com.bunjlabs.fuga.settings.source.SettingsSource;
-import com.bunjlabs.fuga.settings.support.DefaultSettingsFactory;
+import com.bunjlabs.fuga.settings.support.DefaultSettingsComposer;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,11 +36,11 @@ public class SettingsUnitBuilder implements UnitBuilder {
     @Override
     public Unit build() {
         return configuration -> {
-            DefaultSettingsFactory settingsFactory = new DefaultSettingsFactory();
+            DefaultSettingsComposer settingsFactory = new DefaultSettingsComposer();
 
             settingsSourcesSet.forEach(source -> settingsFactory.loadFromSettingsSource(source, environment));
 
-            configuration.bind(SettingsFactory.class).toInstance(settingsFactory);
+            configuration.bind(SettingsComposer.class).toInstance(settingsFactory);
         };
     }
 }

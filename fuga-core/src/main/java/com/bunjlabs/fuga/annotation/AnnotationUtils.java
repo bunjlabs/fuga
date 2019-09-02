@@ -2,22 +2,48 @@ package com.bunjlabs.fuga.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AnnotationUtils {
 
     public static <A extends Annotation> A findAnnotation(AnnotatedElement source, Class<A> annotationType) {
+        return findAnnotation(source, annotationType, AnnotationFilter.ALL);
+
+    }
+
+    public static <A extends Annotation> A findAnnotation(AnnotatedElement source, Class<A> annotationType, AnnotationFilter annotationFilter) {
         if (annotationType == null) return null;
 
-        Annotation[] annotations = source.getDeclaredAnnotations();
-
-        if (annotations.length != 0) {
-
+        if (AnnotationFilter.PLAIN.matches(annotationType)) {
+            return source.getDeclaredAnnotation(annotationType);
         }
+
+        Annotation[] annotations = getDeclaredAnnotations(source, annotationFilter);
+
+        if (annotations.length == 0) {
+            return null;
+        }
+
+        A annotation = findAnnotation(annotations, annotationType);
+
+        if (annotation != null) {
+            return annotation;
+        }
+
+        for (Annotation metaAnnotation : annotations) {
+            if (AnnotationFilter.PLAIN.matches(metaAnnotation)) continue;
+
+            annotation = findAnnotation(metaAnnotation.annotationType(), annotationType, annotationFilter);
+
+            if (annotation != null) return annotation;
+        }
+
+        return null;
     }
 
     @SuppressWarnings("unchecked")
-    static <A extends Annotation> A getDeclaredAnnotation(AnnotatedElement source, Class<A> annotationType) {
-        Annotation[] annotations = getDeclaredAnnotations(source);
+    static <A extends Annotation> A findAnnotation(Annotation[] annotations, Class<A> annotationType) {
         for (Annotation annotation : annotations) {
             if (annotation != null && annotationType == annotation.annotationType()) {
                 return (A) annotation;
@@ -26,15 +52,16 @@ public abstract class AnnotationUtils {
         return null;
     }
 
-    private static Annotation[] getDeclaredAnnotations(AnnotatedElement source) {
+    private static Annotation[] getDeclaredAnnotations(AnnotatedElement source, AnnotationFilter annotationFilter) {
         Annotation[] annotations = source.getDeclaredAnnotations();
 
         if (annotations.length != 0) {
-            return annotations;
+            return Stream.of(annotations)
+                    .filter(annotationFilter::matches)
+                    .collect(Collectors.toUnmodifiableList())
+                    .toArray(new Annotation[]{});
         }
 
         return annotations.clone();
     }
-
-    private static boolean hasPlainJavaAnnotationsOnly()
 }

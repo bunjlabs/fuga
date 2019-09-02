@@ -11,6 +11,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Inherited
 @Target(value = {TYPE, ANNOTATION_TYPE})
 @Retention(value = RUNTIME)
-public @interface FabricatedBy {
-    Class<? extends Factory> value();
+public @interface ComposedBy {
+    Class<? extends Composer> value();
 }

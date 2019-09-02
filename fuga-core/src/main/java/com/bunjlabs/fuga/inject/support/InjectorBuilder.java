@@ -23,33 +23,28 @@ public class InjectorBuilder {
     }
 
     public Injector build() {
+
         Container container = new InheritedContainer(Container.EMPTY);
+        BindingProcessor bindingProcessor = new DefaultBindingProcessor(container);
 
         for (var unit : installedUnits) {
-            configureUnit(unit, container);
+            setupUnit(unit, bindingProcessor);
         }
-
-        ContainerProcessor processor = new DefaultContainerProcessor();
-        processor.process(container);
 
         return new DefaultInjector(container);
     }
 
-    private void configureUnit(Unit unit, Container container) {
-        var configuration = new DefaultConfiguration();
+    private void setupUnit(Unit unit, BindingProcessor bindingProcessor) {
+        var configuration = new DefaultConfiguration(bindingProcessor);
 
         try {
-            unit.configure(configuration);
+            unit.setup(configuration);
         } catch (RuntimeException e) {
-            throw new ConfigurationException("Unable to configure unit " + unit, e);
-        }
-
-        for (var binding : configuration.getBindings()) {
-            container.putBinding(binding);
+            throw new ConfigurationException("Unable to setup unit " + unit, e);
         }
 
         for (var innerUnit : configuration.getInstalledUnits()) {
-            configureUnit(innerUnit, container);
+            setupUnit(innerUnit, bindingProcessor);
         }
     }
 }
