@@ -3,7 +3,7 @@ package com.bunjlabs.fuga.util;
 public abstract class Assert {
 
     public static <T> T notNull(T object) {
-        return notNull(object, "[Assertion failed] - this argument is required; it must not be null");
+        return notNull(object, "[Assertion failed] - must not be null");
     }
 
     public static <T> T notNull(T object, String message) {
@@ -13,11 +13,19 @@ public abstract class Assert {
         return object;
     }
 
+    public static boolean isFalse(boolean expression) {
+        return isFalse(expression, "[Assertion failed] - must be false");
+    }
+
     public static boolean isFalse(boolean expression, String message) {
         if (expression) {
             throw new IllegalArgumentException(message);
         }
         return expression;
+    }
+
+    public static boolean isTrue(boolean expression) {
+        return isTrue(expression, "[Assertion failed] - must be true");
     }
 
     public static boolean isTrue(boolean expression, String message) {

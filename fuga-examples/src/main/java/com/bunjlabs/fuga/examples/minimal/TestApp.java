@@ -15,6 +15,7 @@ import com.bunjlabs.fuga.examples.minimal.settings.FirstHttpSettings;
 import com.bunjlabs.fuga.inject.Injector;
 import com.bunjlabs.fuga.settings.SettingsUnitBuilder;
 import com.bunjlabs.fuga.settings.source.LocalFilesSettingsSource;
+import com.bunjlabs.fuga.util.FullType;
 
 /**
  * @author Artem Shurygin <artem.shurygin@bunjlabs.com>
@@ -39,6 +40,11 @@ public class TestApp {
         Injector injector = context.getInjector();
 
         TestService testService = injector.getInstance(TestService.class);
+
+        FullType<? extends TestService> fullType = FullType.of(testService.getClass());
+        FullType superType = fullType.getSuperType();
+        FullType[] interfaces = fullType.getInterfaces();
+        FullType[] generics = fullType.getGenerics();
         System.out.println(testService.test());
         System.out.println(testService.test());
         System.out.println(testService.test());
