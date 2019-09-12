@@ -1,8 +1,10 @@
 package com.bunjlabs.fuga.settings.loader;
 
+import com.bunjlabs.fuga.settings.MutableSettingsNode;
 import com.bunjlabs.fuga.settings.SettingsNode;
 import com.bunjlabs.fuga.settings.SettingsValue;
-import com.bunjlabs.fuga.settings.support.settings.*;
+import com.bunjlabs.fuga.settings.support.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.support.DefaultSettingsValue;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,12 +36,12 @@ public class JacksonBasedSettingsLoader implements SettingsLoader {
             throw new SettingsLoaderException("Read error", e);
         }
 
-        populateSettings(settings, rootNode);
+        fillSettings(settings, rootNode);
 
         return settings;
     }
 
-    private void populateSettings(MutableSettingsNode settings, JsonNode node) {
+    private void fillSettings(MutableSettingsNode settings, JsonNode node) {
         node.fields().forEachRemaining(element -> {
             var n = element.getValue();
             var nType = n.getNodeType();
@@ -54,17 +56,16 @@ public class JacksonBasedSettingsLoader implements SettingsLoader {
                 }
                 case ARRAY: {
                     var elements = n.elements();
+                    var list = new ArrayList<>();
+                    elements.forEachRemaining(e -> list.add(switchPrimitive(e).value()));
 
-                    var arrayList = new ArrayList<Object>();
-                    elements.forEachRemaining(arrayElement -> arrayList.add(switchPrimitive(arrayElement).getValue()));
-
-                    var value = new DefaultSettingsValue(List.class, arrayList);
+                    var value = new DefaultSettingsValue(List.class, list);
                     settings.set(element.getKey(), value);
                     break;
                 }
                 case OBJECT: {
                     var childSettingsNode = settings.node(element.getKey());
-                    populateSettings(childSettingsNode, n);
+                    fillSettings(childSettingsNode, n);
                     break;
                 }
             }

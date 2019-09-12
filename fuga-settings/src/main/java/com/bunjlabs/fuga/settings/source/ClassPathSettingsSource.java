@@ -1,9 +1,9 @@
 package com.bunjlabs.fuga.settings.source;
 
-import com.bunjlabs.fuga.settings.environment.Environment;
-import com.bunjlabs.fuga.settings.environment.EnvironmentException;
+import com.bunjlabs.fuga.environment.Environment;
+import com.bunjlabs.fuga.environment.EnvironmentException;
 import com.bunjlabs.fuga.settings.loader.*;
-import com.bunjlabs.fuga.settings.support.settings.DefaultSettingsNode;
+import com.bunjlabs.fuga.settings.support.DefaultSettingsNode;
 import com.bunjlabs.fuga.settings.SettingsNode;
 
 import java.io.FileNotFoundException;

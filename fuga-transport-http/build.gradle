@@ -1,5 +1,6 @@
 dependencies {
+    compile project(":fuga-common")
+    compile project(":fuga-inject")
     compile project(":fuga-transport")
-    compile project(":fuga-core")
     compile 'org.eclipse.jetty:jetty-server:9.4.12.v20180830'
 }

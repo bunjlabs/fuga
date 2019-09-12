@@ -2,13 +2,15 @@ package com.bunjlabs.fuga.settings;
 
 public interface SettingsValue {
 
-    Class getType();
+    Class type();
 
-    Object getValue();
+    Object value();
 
-    void setValue(Object value);
+    void value(Object value);
 
-    void setDefaultValue(Object defaultValue);
+    Object defaultValue();
+
+    void defaultValue(Object defaultValue);
 
     boolean isValuePresent();
 }

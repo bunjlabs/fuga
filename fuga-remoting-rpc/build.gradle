@@ -1,5 +1,5 @@
 dependencies {
-    compile project(":fuga-core")
+    compile project(":fuga-common")
     compile project(":fuga-transport-http")
     compile 'com.google.code.gson:gson:2.8.5'
 }

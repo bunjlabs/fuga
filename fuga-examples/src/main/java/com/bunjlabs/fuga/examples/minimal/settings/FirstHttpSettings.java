@@ -1,10 +1,12 @@
 package com.bunjlabs.fuga.examples.minimal.settings;
 
+import com.bunjlabs.fuga.settings.SettingDefault;
 import com.bunjlabs.fuga.settings.Settings;
-import com.bunjlabs.fuga.settings.Value;
 
 @Settings("first")
-public interface FirstHttpSettings extends HttpSettings {
-    @Value("default")
+public interface FirstHttpSettings {
+    @SettingDefault("default")
     String name();
+
+    HttpSettings first();
 }

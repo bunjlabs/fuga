@@ -1,14 +1,14 @@
 package com.bunjlabs.fuga.examples.minimal.settings;
 
 import com.bunjlabs.fuga.settings.Settings;
-import com.bunjlabs.fuga.settings.Value;
+import com.bunjlabs.fuga.settings.SettingDefault;
 
 @Settings("http")
 public interface HttpSettings {
 
-    @Value("localhost")
+    @SettingDefault("localhost")
     String host();
 
-    @Value("8080")
+    @SettingDefault("8080")
     int port();
 }

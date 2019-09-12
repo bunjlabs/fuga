@@ -1,5 +1,7 @@
 dependencies {
-    compile project(":fuga-core")
+    compile project(":fuga-common")
+    compile project(":fuga-inject")
+    compile project(":fuga-context")
     compile project(":fuga-settings")
     compile project(":fuga-remoting")
     compile project(":fuga-remoting-rpc")

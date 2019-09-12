@@ -1,6 +1,8 @@
 rootProject.name = 'Fuga-Framework'
 
-include 'fuga-core'
+include 'fuga-common'
+include 'fuga-inject'
+include 'fuga-context'
 include 'fuga-settings'
 include 'fuga-channel'
 include 'fuga-transport'

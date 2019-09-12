@@ -33,7 +33,7 @@ public class TestServiceImpl implements TestService {
     public String test() {
         testInterface.setCounter(counter++);
 
-        return testInterface.getCounter() + " " + firstHttpSettings.name();
+        return testInterface.getCounter() + " " + firstHttpSettings.name() + " " + firstHttpSettings.first().host() + ":" + firstHttpSettings.first().port();
     }
 
 }
