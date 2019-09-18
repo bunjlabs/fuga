@@ -45,8 +45,9 @@ public class ConstructorFactory<T> implements InternalFactory<T> {
         Object[] objects = new Object[parameterTypes.length];
 
         for (int i = 0; i < objects.length; i++) {
-            Key<?> parameterKey = Key.of(parameterTypes[i]);
-            objects[i] = context.getInjector().getInstance(parameterKey);
+            var parameterKey = Key.of(parameterTypes[i]);
+            var provider = context.getInjector().getProviderFor(parameterKey, constructorProxy.getType());
+            objects[i] = provider.get();
         }
 
         return objects;

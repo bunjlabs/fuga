@@ -44,9 +44,4 @@ public final class EmptySettingsNode implements SettingsNode {
     public boolean contains(String key) {
         return false;
     }
-
-    @Override
-    public boolean isValuesPresent() {
-        return false;
-    }
 }

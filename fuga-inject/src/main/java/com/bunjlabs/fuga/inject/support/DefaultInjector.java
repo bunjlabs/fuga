@@ -40,11 +40,15 @@ public class DefaultInjector implements Injector {
 
     @Override
     public <T> Provider<T> getProvider(Key<T> key) {
+        return getProviderFor(key, Injector.class);
+    }
+
+    <T> Provider<T> getProviderFor(Key<T> key, Class<?> requester) {
         AbstractBinding<T> binding = getBinding(key);
         InternalFactory<T> internalFactory = binding.getInternalFactory();
 
         return () -> {
-            InjectorContext context = new InjectorContext(this);
+            InjectorContext context = new InjectorContext(this, requester);
 
             try {
                 return internalFactory.get(context, Dependency.of(binding.getKey()));

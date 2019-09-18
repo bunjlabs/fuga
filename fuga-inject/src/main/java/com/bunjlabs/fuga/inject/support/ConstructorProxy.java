@@ -6,5 +6,7 @@ public interface ConstructorProxy<T> {
 
     T newInstance(Object[] parameters) throws InvocationTargetException;
 
+    Class<T> getType();
+
     Class<?>[] getParameterTypes();
 }

@@ -20,6 +20,11 @@ public class ReflectConstructionProxy<T> implements ConstructorProxy<T> {
     }
 
     @Override
+    public Class<T> getType() {
+        return constructor.getDeclaringClass();
+    }
+
+    @Override
     public Class<?>[] getParameterTypes() {
         return constructor.getParameterTypes();
     }

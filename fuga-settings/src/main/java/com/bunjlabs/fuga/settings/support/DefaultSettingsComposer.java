@@ -20,7 +20,7 @@ public class DefaultSettingsComposer implements SettingsComposer {
     }
 
     @Override
-    public <T> T get(Class<T> requiredClass) throws SettingsException {
+    public <T> T get(Class<?> requester, Class<T> requiredClass) throws SettingsException {
         Assert.notNull(requiredClass);
         Assert.isTrue(requiredClass.isInterface(), "requiredSettings argument must be an interface");
 
@@ -35,12 +35,12 @@ public class DefaultSettingsComposer implements SettingsComposer {
         var settingsScopeAnnotation = requiredClass.getAnnotation(Settings.class);
         var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredClass.getSimpleName();
 
-        T t = generateProxy(settingsTree.node(scopeName), requiredClass);
+        T proxy = generateProxy(settingsTree.node(scopeName), requiredClass);
 
         container.persist(settingsTree);
-        settingsCache.put(requiredClass, t);
+        settingsCache.put(requiredClass, proxy);
 
-        return t;
+        return proxy;
     }
 
     @SuppressWarnings("unchecked")
@@ -62,13 +62,13 @@ public class DefaultSettingsComposer implements SettingsComposer {
                 if (settingDefaultAnnotation != null) {
                     String defaultValueString = settingDefaultAnnotation.value();
                     if (defaultValueString.isEmpty()) {
-                        throw new SettingsException("Default merge of method '" + method + "' is empty.");
+                        throw new SettingsException("Default value for method '" + method + "' is empty.");
                     }
 
                     try {
                         defaultValue = TypeUtils.convertStringToPrimitive(defaultValueString, settingType);
-                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                        throw new SettingsException("Method '" + method + "' provide default merge with unsupported format.", e);
+                    } catch (Exception e) {
+                        throw new SettingsException("Default value for method '" + method + "' contains unsupported format.", e);
                     }
                 }
 

@@ -8,6 +8,10 @@ public class DefaultSettingsValue implements SettingsValue {
     private Object defaultValue;
     private Object value;
 
+    public DefaultSettingsValue(Class<?> type) {
+        this.type = type;
+    }
+
     public DefaultSettingsValue(Class<?> type, Object value) {
         this.type = type;
         this.value = value;

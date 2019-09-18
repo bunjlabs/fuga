@@ -12,7 +12,7 @@ public class ProxyFactory<T> implements InternalFactory<T> {
 
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        T instance = getFromProxiedFactory(dependency.getKey().getType());
+        T instance = getFromProxiedFactory(context.getRequester(), dependency.getKey().getType());
 
         if (instance == null) {
             throw new InternalProvisionException();
@@ -22,9 +22,9 @@ public class ProxyFactory<T> implements InternalFactory<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private T getFromProxiedFactory(Class<?> type) throws InternalProvisionException {
+    private T getFromProxiedFactory(Class<?> requester, Class<?> type) throws InternalProvisionException {
         try {
-            return (T) proxiedComposer.get(type);
+            return (T) proxiedComposer.get(requester, type);
         } catch (ClassCastException e) {
             throw new InternalProvisionException(e);
         }

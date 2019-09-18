@@ -15,7 +15,7 @@ public class DelegatedComposerFactory<T> implements InternalFactory<T> {
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
         Composer composer = context.getInjector().getInstance(composerKey);
 
-        T instance = getFromComposer(composer, dependency.getKey().getType());
+        T instance = getFromComposer(composer, context.getRequester(), dependency.getKey().getType());
 
         if (instance == null) {
             throw new InternalProvisionException();
@@ -25,9 +25,9 @@ public class DelegatedComposerFactory<T> implements InternalFactory<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private T getFromComposer(Composer composer, Class<?> type) throws InternalProvisionException {
+    private T getFromComposer(Composer composer, Class<?> requester, Class<?> requested) throws InternalProvisionException {
         try {
-            return (T) composer.get(type);
+            return (T) composer.get(requester, requested);
         } catch (ClassCastException e) {
             throw new InternalProvisionException(e);
         }

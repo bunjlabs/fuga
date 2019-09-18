@@ -44,12 +44,6 @@ public class DefaultSettingsNode implements MutableSettingsNode {
     }
 
     @Override
-    public boolean isValuesPresent() {
-        if (!values.values().stream().allMatch(SettingsValue::isValuePresent)) return false;
-        return nodes.values().stream().allMatch(SettingsNode::isValuesPresent);
-    }
-
-    @Override
     public void set(String key, SettingsValue value) {
         Assert.notNull(key);
         Assert.notNull(value);

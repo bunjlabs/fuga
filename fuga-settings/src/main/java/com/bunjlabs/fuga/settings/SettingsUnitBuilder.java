@@ -39,7 +39,7 @@ public class SettingsUnitBuilder implements UnitBuilder {
 
     @Override
     public Unit build() {
-        return configuration -> {
+        return c -> {
             var container = settingsTree != null
                     ? new DefaultSettingsContainer(settingsTree)
                     : new DefaultSettingsContainer();
@@ -47,8 +47,8 @@ public class SettingsUnitBuilder implements UnitBuilder {
 
             settingsSourcesSet.forEach(source -> container.load(source, environment));
 
-            configuration.bind(SettingsContainer.class).toInstance(container);
-            configuration.bind(SettingsComposer.class).toInstance(composer);
+            c.bind(SettingsContainer.class).toInstance(container);
+            c.bind(SettingsComposer.class).toInstance(composer);
         };
     }
 }

@@ -6,10 +6,16 @@ import java.util.Map;
 class InjectorContext {
 
     private final DefaultInjector injector;
+    private final Class<?> requester;
     private final Map<Object, ConstructionContext<?>> constructionContexts = new IdentityHashMap<>();
 
-    InjectorContext(DefaultInjector injector) {
+    InjectorContext(DefaultInjector injector, Class<?> requester) {
         this.injector = injector;
+        this.requester = requester;
+    }
+
+    Class<?> getRequester() {
+        return requester;
     }
 
     DefaultInjector getInjector() {

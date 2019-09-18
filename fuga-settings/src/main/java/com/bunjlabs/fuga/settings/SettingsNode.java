@@ -15,6 +15,4 @@ public interface SettingsNode {
     Set<String> keys();
 
     boolean contains(String key);
-
-    boolean isValuesPresent();
 }

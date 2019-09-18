@@ -23,7 +23,6 @@ public class InjectorBuilder {
     }
 
     public Injector build() {
-
         Container container = new InheritedContainer(Container.EMPTY);
         BindingProcessor bindingProcessor = new DefaultBindingProcessor(container);
 
