@@ -5,31 +5,38 @@
  */
 package com.bunjlabs.fuga.examples.minimal.services;
 
+import com.bunjlabs.fuga.context.ApplicationEventManager;
+import com.bunjlabs.fuga.context.ApplicationListener;
+import com.bunjlabs.fuga.context.events.ContextStartedEvent;
 import com.bunjlabs.fuga.examples.minimal.settings.FirstHttpSettings;
 import com.bunjlabs.fuga.inject.Inject;
-import com.bunjlabs.fuga.rpc.annotations.MethodFamily;
-import com.bunjlabs.fuga.rpc.annotations.MethodFamilyPolicy;
-import com.bunjlabs.fuga.rpc.annotations.Rpc;
-import com.bunjlabs.fuga.rpc.annotations.RpcMethod;
 
 /**
  * @author Artem Shurygin <artem.shurygin@bunjlabs.com>
  */
-@Rpc(methodFamily = @MethodFamily(policy = MethodFamilyPolicy.CUSTOM, name = "test"))
 public class TestServiceImpl implements TestService {
 
     private final TestInterface testInterface;
     private final FirstHttpSettings firstHttpSettings;
+    private final ApplicationEventManager eventManager;
 
     private int counter = 0;
 
     @Inject
-    public TestServiceImpl(TestInterface testInterface, FirstHttpSettings firstHttpSettings) {
+    public TestServiceImpl(TestInterface testInterface, FirstHttpSettings firstHttpSettings, ApplicationEventManager eventManager) {
         this.testInterface = testInterface;
         this.firstHttpSettings = firstHttpSettings;
+        this.eventManager = eventManager;
+
+        ApplicationListener<ContextStartedEvent> listener = this::onStart;
+
+        eventManager.addEventListener(listener);
     }
 
-    @RpcMethod
+    private void onStart(ContextStartedEvent event) {
+        System.out.println(event.getApplicationContext().getApplicationName());
+    }
+
     public String test() {
         testInterface.setCounter(counter++);
 

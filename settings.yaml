@@ -1,9 +1,0 @@
-first:
-  name: 'Not default value'
-  http:
-    host: 'localhost'
-    port: 8080
-
-test:
-  intValue: 32424
-  stringValue: "This is a string value"

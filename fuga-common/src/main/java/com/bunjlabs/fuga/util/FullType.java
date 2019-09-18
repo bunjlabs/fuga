@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.lang.reflect.*;
 
 public class FullType<T> {
-    private static final FullType<EmptyType> EMPTY = new FullType<>(EmptyType.TYPE);
-    private static final FullType[] EMPTY_ARRAY = new FullType[0];
+    public static final FullType<EmptyType> EMPTY = new FullType<>(EmptyType.TYPE);
+    public static final FullType[] EMPTY_ARRAY = new FullType[0];
 
     private final Type type;
-    private final Class<? super T> rawType;
+    private final Class<T> rawType;
     private final int hashCode;
 
     private volatile FullType<?> superType;
@@ -20,7 +20,7 @@ public class FullType<T> {
     @SuppressWarnings("unchecked")
     private FullType(Type type) {
         this.type = Assert.notNull(type);
-        this.rawType = (Class<? super T>) resolveType(type);
+        this.rawType = (Class<T>) resolveType(type);
         this.hashCode = type.hashCode();
     }
 
@@ -70,6 +70,14 @@ public class FullType<T> {
         return getSuperType().as(type);
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public Class<T> getRawType() {
+        return rawType;
+    }
+
     public FullType getSuperType() {
         if (rawType == null || rawType.getGenericSuperclass() == null) {
             return EMPTY;
@@ -96,6 +104,22 @@ public class FullType<T> {
         }
 
         return interfaces;
+    }
+
+    public FullType<?> getGeneric(int... indexes) {
+        FullType[] generics = getGenerics();
+        if (indexes == null || indexes.length == 0) {
+            return (generics.length == 0 ? EMPTY : generics[0]);
+        }
+        FullType generic = this;
+        for (int index : indexes) {
+            generics = generic.getGenerics();
+            if (index < 0 || index >= generics.length) {
+                return EMPTY;
+            }
+            generic = generics[index];
+        }
+        return generic;
     }
 
     public FullType[] getGenerics() {

@@ -1,6 +1,7 @@
 package com.bunjlabs.fuga.context;
 
 import com.bunjlabs.fuga.context.support.DefaultApplicationEventDispatcher;
+import com.bunjlabs.fuga.context.support.DefaultApplicationEventManager;
 import com.bunjlabs.fuga.context.support.DefaultApplicationEventPublisher;
 import com.bunjlabs.fuga.context.support.StaticApplicationContext;
 import com.bunjlabs.fuga.environment.Environment;
@@ -33,12 +34,15 @@ public class ApplicationContextBuilder {
         var context = new StaticApplicationContext(environment);
         var eventDispatcher = new DefaultApplicationEventDispatcher();
         var eventPublisher = new DefaultApplicationEventPublisher(eventDispatcher);
+        var eventManager = new DefaultApplicationEventManager(eventDispatcher);
 
         units.add((c) -> {
             c.bind(ApplicationContext.class).toInstance(context);
             c.bind(ConfigurableApplicationContext.class).toInstance(context);
+
             c.bind(ApplicationEventDispatcher.class).toInstance(eventDispatcher);
             c.bind(ApplicationEventPublisher.class).toInstance(eventPublisher);
+            c.bind(ApplicationEventManager.class).toInstance(eventManager);
         });
 
         var injector = new InjectorBuilder().withUnits(units).build();
