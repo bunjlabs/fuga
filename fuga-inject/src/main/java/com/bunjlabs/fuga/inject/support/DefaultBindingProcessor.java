@@ -94,7 +94,14 @@ public class DefaultBindingProcessor extends AbstractBindingProcessor {
                 var injectionPoint = InjectionPoint.forConstructorOf(key);
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
-                var internalFactory = new ConstructorFactory<>(new ReflectConstructionProxy<>(constructor));
+                var constructorFactory = new ConstructorFactory<>(new ReflectConstructionProxy<>(constructor));
+
+                InternalFactory<T> internalFactory;
+                if (injectionPoint.containsAnnotation(Singleton.class)) {
+                    internalFactory = new SingletonCachedFactory<>(constructorFactory);
+                } else {
+                    internalFactory = constructorFactory;
+                }
                 putBinding(new ConstructorBinding<>(key, injectionPoint, internalFactory));
                 return true;
             }
