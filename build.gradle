@@ -1,4 +1,4 @@
-apply plugin: 'base' // To add "clean" task to the root project.
+apply plugin: 'base'
 
 subprojects {
     apply from: rootProject.file('common.gradle')
