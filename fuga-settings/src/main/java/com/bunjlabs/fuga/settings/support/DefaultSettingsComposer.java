@@ -5,13 +5,18 @@ import com.bunjlabs.fuga.util.Assert;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultSettingsComposer implements SettingsComposer {
 
     private final SettingsContainer container;
+    private final Map<Class<?>, Object> settingsCache;
 
     public DefaultSettingsComposer(SettingsContainer container) {
         this.container = container;
+        this.settingsCache = new HashMap<>();
     }
 
     @Override
@@ -19,18 +24,24 @@ public class DefaultSettingsComposer implements SettingsComposer {
         Assert.notNull(requiredClass);
         Assert.isTrue(requiredClass.isInterface(), "requiredSettings argument must be an interface");
 
-        var settingsTree = new DefaultSettingsNode();
+        @SuppressWarnings("unchecked")
+        T cached = (T) settingsCache.get(requiredClass);
 
+        if (cached != null) {
+            return cached;
+        }
+
+        var settingsTree = new DefaultSettingsNode();
         var settingsScopeAnnotation = requiredClass.getAnnotation(Settings.class);
         var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredClass.getSimpleName();
 
         T t = generateProxy(settingsTree.node(scopeName), requiredClass);
 
         container.persist(settingsTree);
+        settingsCache.put(requiredClass, t);
 
         return t;
     }
-
 
     @SuppressWarnings("unchecked")
     private <T> T generateProxy(MutableSettingsNode settingsTree, Class<T> requiredClass) throws SettingsException {
@@ -47,10 +58,7 @@ public class DefaultSettingsComposer implements SettingsComposer {
             var settingType = method.getReturnType();
             Object defaultValue = null;
 
-            if (settingType.isInterface()) {
-                var value = generateProxy(currentNode.node(settingName), settingType);
-                invocationHandler.putSupplier(method, () -> value);
-            } else {
+            if (!settingType.isInterface() || Collection.class.isAssignableFrom(settingType)) {
                 if (settingDefaultAnnotation != null) {
                     String defaultValueString = settingDefaultAnnotation.value();
                     if (defaultValueString.isEmpty()) {
@@ -68,6 +76,9 @@ public class DefaultSettingsComposer implements SettingsComposer {
                 currentNode.set(settingName, settingsValue);
 
                 invocationHandler.putSupplier(method, settingsValue::value);
+            } else {
+                var value = generateProxy(currentNode.node(settingName), settingType);
+                invocationHandler.putSupplier(method, () -> value);
             }
 
             for (Class<?> innerSettings : requiredSettings.getInterfaces()) {
