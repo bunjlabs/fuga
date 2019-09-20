@@ -59,7 +59,7 @@ public class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ComposerInstanceBinding<? extends T> binding) {
                 var composer = binding.getComposer();
-                var internalFactory = new ProxyFactory<T>(composer);
+                var internalFactory = new ComposerInstanceFactory<T>(composer);
                 putBinding(new ComposerInstanceBinding<>(key, composer, internalFactory));
                 return true;
             }

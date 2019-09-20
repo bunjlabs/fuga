@@ -11,7 +11,13 @@ public class InitializableFactory<T> implements InternalFactory<T> {
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) {
+    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
+        T instance = initializable.get();
+
+        if (instance == null) {
+            throw new InternalProvisionException("Initializable returned null");
+        }
+
         return initializable.get();
     }
 

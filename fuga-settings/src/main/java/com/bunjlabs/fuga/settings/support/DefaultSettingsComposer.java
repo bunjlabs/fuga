@@ -1,5 +1,6 @@
 package com.bunjlabs.fuga.settings.support;
 
+import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.settings.*;
 import com.bunjlabs.fuga.util.Assert;
 
@@ -20,25 +21,26 @@ public class DefaultSettingsComposer implements SettingsComposer {
     }
 
     @Override
-    public <T> T get(Class<?> requester, Class<T> requiredClass) throws SettingsException {
-        Assert.notNull(requiredClass);
-        Assert.isTrue(requiredClass.isInterface(), "requiredSettings argument must be an interface");
+    public <T> T get(Key<T> requester, Key<T> requested) throws SettingsException {
+        Assert.notNull(requested);
+        Assert.isTrue(requested.getType().isInterface(), "requested type argument must be an interface");
 
+        var requestedClass = requested.getType();
         @SuppressWarnings("unchecked")
-        T cached = (T) settingsCache.get(requiredClass);
+        T cached = (T) settingsCache.get(requestedClass);
 
         if (cached != null) {
             return cached;
         }
 
         var settingsTree = new DefaultSettingsNode();
-        var settingsScopeAnnotation = requiredClass.getAnnotation(Settings.class);
-        var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requiredClass.getSimpleName();
+        var settingsScopeAnnotation = requestedClass.getAnnotation(Settings.class);
+        var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requestedClass.getSimpleName();
 
-        T proxy = generateProxy(settingsTree.node(scopeName), requiredClass);
+        T proxy = generateProxy(settingsTree.node(scopeName), requestedClass);
 
         container.persist(settingsTree);
-        settingsCache.put(requiredClass, proxy);
+        settingsCache.put(requestedClass, proxy);
 
         return proxy;
     }

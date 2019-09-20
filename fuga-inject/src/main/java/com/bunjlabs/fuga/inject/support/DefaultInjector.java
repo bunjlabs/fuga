@@ -1,9 +1,9 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.ConfigurationException;
 import com.bunjlabs.fuga.inject.Injector;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.inject.Provider;
+import com.bunjlabs.fuga.inject.ProvisionException;
 
 public class DefaultInjector implements Injector {
     private final Container container;
@@ -30,7 +30,7 @@ public class DefaultInjector implements Injector {
             return binding;
         }
 
-        throw new ConfigurationException("No binding found for " + key);
+        throw new ProvisionException("No binding found for " + key);
     }
 
     @Override
@@ -40,16 +40,14 @@ public class DefaultInjector implements Injector {
 
     @Override
     public <T> Provider<T> getProvider(Key<T> key) {
-        return getProviderFor(key, Injector.class);
+        return getProviderFor(key, new InjectorContext(this, Key.of(Injector.class)));
     }
 
-    <T> Provider<T> getProviderFor(Key<T> key, Class<?> requester) {
+    <T> Provider<T> getProviderFor(Key<T> key, InjectorContext context) {
         AbstractBinding<T> binding = getBinding(key);
         InternalFactory<T> internalFactory = binding.getInternalFactory();
 
         return () -> {
-            InjectorContext context = new InjectorContext(this, requester);
-
             try {
                 return internalFactory.get(context, Dependency.of(binding.getKey()));
             } catch (InternalProvisionException e) {

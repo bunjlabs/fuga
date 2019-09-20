@@ -1,20 +1,22 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.inject.Key;
+
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 class InjectorContext {
 
     private final DefaultInjector injector;
-    private final Class<?> requester;
+    private final Key<?> requester;
     private final Map<Object, ConstructionContext<?>> constructionContexts = new IdentityHashMap<>();
 
-    InjectorContext(DefaultInjector injector, Class<?> requester) {
+    InjectorContext(DefaultInjector injector, Key<?> requester) {
         this.injector = injector;
         this.requester = requester;
     }
 
-    Class<?> getRequester() {
+    Key<?> getRequester() {
         return requester;
     }
 

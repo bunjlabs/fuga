@@ -2,6 +2,7 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.ConfigurationException;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.ProvisionException;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -17,7 +18,7 @@ public class ConstructorFactory<T> implements InternalFactory<T> {
         ConstructionContext<T> constructionContext = context.getConstructionContext(this);
 
         if (constructionContext.isConstructing()) {
-            throw new ConfigurationException("Circular construction " + dependency);
+            throw new ProvisionException("Circular construction " + dependency);
         }
 
         constructionContext.startConstruction();
@@ -46,7 +47,7 @@ public class ConstructorFactory<T> implements InternalFactory<T> {
 
         for (int i = 0; i < objects.length; i++) {
             var parameterKey = Key.of(parameterTypes[i]);
-            var provider = context.getInjector().getProviderFor(parameterKey, constructorProxy.getType());
+            var provider = context.getInjector().getProviderFor(parameterKey, context);
             objects[i] = provider.get();
         }
 

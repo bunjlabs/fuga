@@ -2,6 +2,6 @@ package com.bunjlabs.fuga.inject;
 
 public interface Composer {
 
-    <T> T get(Class<?> requester, Class<T> required) throws ProvisionException;
+    <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException;
 
 }
