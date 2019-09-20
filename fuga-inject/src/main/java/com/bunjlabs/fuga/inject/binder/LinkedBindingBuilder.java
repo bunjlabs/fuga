@@ -1,10 +1,12 @@
-package com.bunjlabs.fuga.inject;
+package com.bunjlabs.fuga.inject.binder;
+
+import com.bunjlabs.fuga.inject.Composer;
+import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.Provider;
 
 import java.lang.reflect.Constructor;
 
-public interface BindingBuilder<T> {
-
-    void auto();
+public interface LinkedBindingBuilder<T> extends ScopedBindingBuilder {
 
     void to(Class<? extends T> target);
 

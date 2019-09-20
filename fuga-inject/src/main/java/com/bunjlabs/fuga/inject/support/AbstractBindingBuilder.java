@@ -1,9 +1,10 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.BindingBuilder;
+import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.binder.ScopedBindingBuilder;
 
-public abstract class AbstractBindingBuilder<T> implements BindingBuilder<T> {
+public abstract class AbstractBindingBuilder<T> {
 
     private final Key<T> key;
     private final BindingProcessor bindingProcessor;
@@ -24,5 +25,4 @@ public abstract class AbstractBindingBuilder<T> implements BindingBuilder<T> {
 
         return binding;
     }
-
 }

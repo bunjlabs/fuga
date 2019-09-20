@@ -6,7 +6,7 @@ import com.bunjlabs.fuga.context.support.DefaultApplicationEventPublisher;
 import com.bunjlabs.fuga.context.support.StaticApplicationContext;
 import com.bunjlabs.fuga.environment.Environment;
 import com.bunjlabs.fuga.inject.Unit;
-import com.bunjlabs.fuga.inject.support.InjectorBuilder;
+import com.bunjlabs.fuga.inject.InjectorBuilder;
 
 import java.util.Arrays;
 import java.util.LinkedList;

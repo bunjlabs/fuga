@@ -8,7 +8,7 @@ import com.bunjlabs.fuga.inject.ProvisionException;
 public class DefaultInjector implements Injector {
     private final Container container;
 
-    DefaultInjector(Container container) {
+    public DefaultInjector(Container container) {
         this.container = container;
     }
 
@@ -40,18 +40,18 @@ public class DefaultInjector implements Injector {
 
     @Override
     public <T> Provider<T> getProvider(Key<T> key) {
-        return getProviderFor(key, new InjectorContext(this, Key.of(Injector.class)));
-    }
-
-    <T> Provider<T> getProviderFor(Key<T> key, InjectorContext context) {
         AbstractBinding<T> binding = getBinding(key);
         InternalFactory<T> internalFactory = binding.getInternalFactory();
 
         return () -> {
+            var context = new InjectorContext(this);
+            context.enterRequester(Key.of(Injector.class));
             try {
                 return internalFactory.get(context, Dependency.of(binding.getKey()));
             } catch (InternalProvisionException e) {
                 throw e.toProvisionException();
+            } finally {
+                context.exitRequester();
             }
         };
     }

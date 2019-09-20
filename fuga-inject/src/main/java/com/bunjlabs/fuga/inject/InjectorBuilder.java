@@ -1,8 +1,6 @@
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.inject.ConfigurationException;
-import com.bunjlabs.fuga.inject.Injector;
-import com.bunjlabs.fuga.inject.Unit;
+import com.bunjlabs.fuga.inject.support.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;

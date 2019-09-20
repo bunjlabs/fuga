@@ -7,12 +7,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class InheritedContainer implements Container {
+public class InheritedContainer implements Container {
     private final Map<Key<?>, Binding<?>> explicitBindingsMutable = new LinkedHashMap<>();
     private final Map<Key<?>, Binding<?>> explicitBindings = Collections.unmodifiableMap(explicitBindingsMutable);
     private final Container parent;
 
-    InheritedContainer(Container parent) {
+    public InheritedContainer(Container parent) {
         this.parent = parent;
     }
 

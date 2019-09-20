@@ -3,10 +3,14 @@ package com.bunjlabs.fuga.inject.support;
 import com.bunjlabs.fuga.inject.Composer;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.inject.Provider;
+import com.bunjlabs.fuga.inject.Scope;
+import com.bunjlabs.fuga.inject.binder.BindingBuilder;
+import com.bunjlabs.fuga.inject.binder.ScopedBindingBuilder;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 
-public class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> {
+public class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements BindingBuilder<T>, ScopedBindingBuilder {
 
     DefaultBindingBuilder(Key<T> key, BindingProcessor bindingProcessor) {
         super(key, bindingProcessor);
@@ -74,5 +78,15 @@ public class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> {
         AbstractBinding<T> base = getBinding();
         setBinding(new ComposerBinding<>(base.getKey(), composer));
 
+    }
+
+    @Override
+    public void in(Class<? extends Annotation> scopeAnnotation) {
+        //getBinding().setScope(scope);
+    }
+
+    @Override
+    public void in(Scope scope) {
+        getBinding().setScope(scope);
     }
 }

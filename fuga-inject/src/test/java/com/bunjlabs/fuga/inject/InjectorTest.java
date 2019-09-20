@@ -1,6 +1,5 @@
 package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.inject.support.InjectorBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

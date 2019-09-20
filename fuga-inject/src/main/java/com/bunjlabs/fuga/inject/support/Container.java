@@ -6,7 +6,7 @@ import com.bunjlabs.fuga.inject.Key;
 import java.util.Collections;
 import java.util.Map;
 
-interface Container {
+public interface Container {
 
     Container EMPTY = new Container() {
         @Override

@@ -6,8 +6,12 @@ import com.bunjlabs.fuga.inject.*;
 import java.lang.reflect.Constructor;
 
 public class DefaultBindingProcessor extends AbstractBindingProcessor {
-    DefaultBindingProcessor(Container container) {
+    public DefaultBindingProcessor(Container container) {
         super(container);
+    }
+
+    public <T> InternalFactory<T> scope(Scope scope, InternalFactory<T> internalFactory) {
+        return internalFactory;
     }
 
     @Override

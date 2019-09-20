@@ -2,22 +2,32 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Key;
 
+import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 class InjectorContext {
 
     private final DefaultInjector injector;
-    private final Key<?> requester;
+    private final Deque<Key<?>> requesters;
     private final Map<Object, ConstructionContext<?>> constructionContexts = new IdentityHashMap<>();
 
-    InjectorContext(DefaultInjector injector, Key<?> requester) {
+    InjectorContext(DefaultInjector injector) {
         this.injector = injector;
-        this.requester = requester;
+        this.requesters = new ConcurrentLinkedDeque<>();
     }
 
     Key<?> getRequester() {
-        return requester;
+        return requesters.peekFirst();
+    }
+
+    void enterRequester(Key<?> requester) {
+        requesters.addFirst(requester);
+    }
+
+    void exitRequester() {
+        requesters.removeFirst();
     }
 
     DefaultInjector getInjector() {

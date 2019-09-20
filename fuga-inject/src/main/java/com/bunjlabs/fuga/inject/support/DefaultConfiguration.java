@@ -14,7 +14,7 @@ public class DefaultConfiguration extends DefaultBinder implements Configuration
         super(bindingProcessor);
     }
 
-    List<Unit> getInstalledUnits() {
+    public List<Unit> getInstalledUnits() {
         return installedUnits;
     }
 
