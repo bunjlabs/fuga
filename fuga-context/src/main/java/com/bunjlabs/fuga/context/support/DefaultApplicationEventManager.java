@@ -25,6 +25,6 @@ public class DefaultApplicationEventManager implements ApplicationEventManager {
         @SuppressWarnings("unchecked")
         FullType<? extends ApplicationEvent> eventType = genericType;
 
-        eventDispatcher.addEventListener(eventType.getRawType(), listener);
+        eventDispatcher.addEventListener(genericType.getRawType(), listener);
     }
 }

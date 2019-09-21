@@ -67,7 +67,7 @@ public class FullType<T> {
         return bounds[0];
     }
 
-    public <V> FullType<?> as(Class<V> type) {
+    public <V> FullType as(Class<V> type) {
         if (this == EMPTY) {
             return EMPTY;
         }
