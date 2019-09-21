@@ -4,24 +4,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 
 public abstract class ReflectionUtils {
 
-    public static boolean isJdkDynamicProxy(Object object) {
-        return Proxy.isProxyClass(object.getClass());
-    }
+    private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
 
-    @SuppressWarnings("unchecked")
-    public static <T> Class<? super T>[] getProxiedInterfaces(T proxy) {
-        var proxyInterfaces = proxy.getClass().getInterfaces();
-
-        Assert.notEmpty(proxyInterfaces, "dynamic proxy must implement one or more interfaces");
-
-        return (Class<? super T>[]) proxyInterfaces;
-    }
 
     public static List<Class<?>> getParameterTypes(Member methodOrConstructor) {
         Class<?>[] parameterTypes;
@@ -46,10 +35,11 @@ public abstract class ReflectionUtils {
                 return true;
             }
         }
+
         return false;
     }
 
     public static boolean isObjectMethod(Method m) {
-        return Arrays.asList(Object.class.getMethods()).contains(m);
+        return OBJECT_METHODS.contains(m);
     }
 }

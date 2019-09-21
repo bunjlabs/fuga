@@ -1,0 +1,50 @@
+package com.bunjlabs.fuga.util;
+
+import org.junit.jupiter.api.Test;
+
+import static com.bunjlabs.fuga.util.ObjectUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ObjectUtilsTest {
+
+    @Test
+    public void testIdentityStrings() {
+        assertEquals("", identityToString(null));
+        assertFalse(() -> identityToString(new Object()).isEmpty());
+        assertEquals("0", getIdentityHexString(null));
+        assertFalse(() -> getIdentityHexString(new Object()).isEmpty());
+    }
+
+    @Test
+    public void testToStringJoiner() {
+        Object o = null;
+        Class c = null;
+        String s = "";
+        assertThrows(IllegalArgumentException.class, () -> toStringJoiner(o));
+        assertThrows(IllegalArgumentException.class, () -> toStringJoiner(c));
+        assertThrows(IllegalArgumentException.class, () -> toStringJoiner(s));
+        assertEquals("Object[]", toStringJoiner(Object.class).toString());
+        assertEquals("Object[]", toStringJoiner(new Object()).toString());
+        assertEquals("Object[]", toStringJoiner("Object").toString());
+        assertEquals("Object[a=1]", toStringJoiner(Object.class).add("a", 1).toString());
+        assertEquals("Object[a=1]", toStringJoiner(Object.class).add("a", 1L).toString());
+        assertEquals("Object[a=1.0]", toStringJoiner(Object.class).add("a", 1f).toString());
+        assertEquals("Object[a=1.0]", toStringJoiner(Object.class).add("a", 1d).toString());
+        assertEquals("Object[a=c]", toStringJoiner(Object.class).add("a", 'c').toString());
+        assertEquals("Object[a=true]", toStringJoiner(Object.class).add("a", true).toString());
+        assertEquals("Object[a=test]", toStringJoiner(Object.class).add("a", new Sample()).toString());
+        assertEquals("Object[a=1, b=2.0, c=true]",
+                toStringJoiner(Object.class)
+                        .add("a", 1)
+                        .add("b", 2f)
+                        .add("c", true)
+                        .toString());
+    }
+
+    static class Sample {
+        @Override
+        public String toString() {
+            return "test";
+        }
+    }
+}

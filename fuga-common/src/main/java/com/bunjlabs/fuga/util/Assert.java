@@ -35,6 +35,10 @@ public abstract class Assert {
         return expression;
     }
 
+    public static String hasText(String str) {
+        return hasText(str, "[Assertion failed] - string must not be empty");
+    }
+
     public static String hasText(String str, String message) {
         if (str == null || str.isEmpty()) {
             throw new IllegalArgumentException(message);
@@ -42,11 +46,19 @@ public abstract class Assert {
         return str;
     }
 
+    public static <T> T[] notEmpty(T[] array) {
+        return notEmpty(array, "[Assertion failed] - array must not be empty");
+    }
+
     public static <T> T[] notEmpty(T[] array, String message) {
         if (array.length <= 0) {
             throw new IllegalArgumentException(message);
         }
         return array;
+    }
+
+    public static <T> T[] isEmpty(T[] array) {
+        return isEmpty(array, "[Assertion failed] - array must be empty");
     }
 
     public static <T> T[] isEmpty(T[] array, String message) {

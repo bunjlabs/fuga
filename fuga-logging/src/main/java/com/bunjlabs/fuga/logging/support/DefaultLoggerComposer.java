@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultLoggerComposer implements LoggerComposer {
     @Override
-    public <T> T get(Key<T> requester, Key<T> requested) throws ProvisionException {
+    public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
         if (!Logger.class.equals(requested.getType())) {
             throw new ProvisionException("This composer can create org.slf4j.Logger only");
         }

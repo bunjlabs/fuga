@@ -21,7 +21,7 @@ public class DefaultSettingsComposer implements SettingsComposer {
     }
 
     @Override
-    public <T> T get(Key<T> requester, Key<T> requested) throws SettingsException {
+    public <T> T get(Key<?> requester, Key<T> requested) throws SettingsException {
         Assert.notNull(requested);
         Assert.isTrue(requested.getType().isInterface(), "requested type argument must be an interface");
 

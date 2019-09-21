@@ -11,6 +11,18 @@ public class ComposerTest {
     }
 
     @Test
+    public void testComposerRequested() {
+        createInjector(c -> c.bind(SampleC.class).toComposer(new Composer() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+                assertSame(SampleC.class, requested.getType());
+                return (T) new SampleC();
+            }
+        })).getInstance(SampleC.class);
+    }
+
+    @Test
     public void testComposerRequester() {
         createInjector(c -> c.bind(SampleC.class).toComposer(new Composer() {
             @Override

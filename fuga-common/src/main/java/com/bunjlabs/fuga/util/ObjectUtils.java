@@ -18,14 +18,17 @@ public abstract class ObjectUtils {
     }
 
     public static ToStringJoiner toStringJoiner(Object obj) {
+        Assert.notNull(obj);
         return new ToStringJoiner(obj.getClass().getSimpleName());
     }
 
     public static ToStringJoiner toStringJoiner(Class<?> clazz) {
+        Assert.notNull(clazz);
         return new ToStringJoiner(clazz.getSimpleName());
     }
 
     public static ToStringJoiner toStringJoiner(String className) {
+        Assert.hasText(className);
         return new ToStringJoiner(className);
     }
 

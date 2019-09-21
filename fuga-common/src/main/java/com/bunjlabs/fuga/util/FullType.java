@@ -35,8 +35,8 @@ public class FullType<T> {
     private static Class<?> resolveType(Type type) {
         if (type == EmptyType.TYPE) return EmptyType.class;
 
-        if (type instanceof Class<?>) {
-            return (Class<?>) type;
+        if (type instanceof Class) {
+            return (Class) type;
         } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             var rawType = parameterizedType.getRawType();
@@ -45,15 +45,29 @@ public class FullType<T> {
         } else if (type instanceof GenericArrayType) {
             var componentType = ((GenericArrayType) type).getGenericComponentType();
             return Array.newInstance(resolveType(componentType), 0).getClass();
-        } else if (type instanceof TypeVariable || type instanceof WildcardType) {
-            return Object.class;
+        } else if (type instanceof TypeVariable) {
+            var variable = (TypeVariable<?>) type;
+            return resolveType(resolveBounds(variable.getBounds()));
+        } else if (type instanceof WildcardType) {
+            Type resolved = resolveBounds(((WildcardType) type).getUpperBounds());
+            if (resolved == null) {
+                resolved = resolveBounds(((WildcardType) type).getLowerBounds());
+            }
+            return resolveType(resolved);
         } else {
             throw new IllegalArgumentException("Expected a Class, ParameterizedType, or "
                     + "GenericArrayType, but <" + type + "> is of type " + type.getClass().getName());
         }
     }
 
-    public FullType as(Class<?> type) {
+    private static Type resolveBounds(Type[] bounds) {
+        if (bounds.length == 0) {
+            return null;
+        }
+        return bounds[0];
+    }
+
+    public <V> FullType<?> as(Class<V> type) {
         if (this == EMPTY) {
             return EMPTY;
         }

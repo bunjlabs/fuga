@@ -7,6 +7,6 @@ import com.bunjlabs.fuga.inject.ProvisionException;
 public interface LoggerComposer extends Composer {
 
     @Override
-    <T> T get(Key<T> requester, Key<T> requested) throws ProvisionException;
+    <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException;
     
 }
