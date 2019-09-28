@@ -1,4 +1,4 @@
-package com.bunjlabs.fuga.annotation;
+package com.bunjlabs.fuga.common.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;

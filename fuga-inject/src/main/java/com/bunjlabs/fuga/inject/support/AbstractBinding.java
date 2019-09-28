@@ -2,21 +2,22 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binding;
 import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.Scope;
 
-public abstract class AbstractBinding<T> implements Binding<T> {
+abstract class AbstractBinding<T> implements Binding<T> {
 
     private final Key<T> key;
     private final InternalFactory<T> internalFactory;
-    private Scope scope;
+    private final Scoping scoping;
 
-    AbstractBinding(Key<T> key) {
+    AbstractBinding(Key<T> key, Scoping scoping) {
         this.key = key;
+        this.scoping = scoping;
         this.internalFactory = null;
     }
 
     AbstractBinding(Key<T> key, InternalFactory<T> internalFactory) {
         this.key = key;
+        this.scoping = null;
         this.internalFactory = internalFactory;
     }
 
@@ -25,13 +26,11 @@ public abstract class AbstractBinding<T> implements Binding<T> {
         return key;
     }
 
-    public Scope getScope() {
-        return scope;
+    public Scoping getScoping() {
+        return scoping;
     }
 
-    public void setScope(Scope scope) {
-        this.scope = scope;
-    }
+    protected abstract AbstractBinding<T> withScoping(Scoping scope);
 
     InternalFactory<T> getInternalFactory() {
         return internalFactory;

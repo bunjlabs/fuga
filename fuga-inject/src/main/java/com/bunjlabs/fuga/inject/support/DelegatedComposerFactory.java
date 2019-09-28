@@ -1,9 +1,10 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Composer;
+import com.bunjlabs.fuga.inject.Dependency;
 import com.bunjlabs.fuga.inject.Key;
 
-public class DelegatedComposerFactory<T> implements InternalFactory<T> {
+class DelegatedComposerFactory<T> implements InternalFactory<T> {
 
     private final Key<? extends Composer> composerKey;
 
@@ -13,23 +14,23 @@ public class DelegatedComposerFactory<T> implements InternalFactory<T> {
 
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        Composer composer = context.getInjector().getInstance(composerKey);
+        var composer = context.getInjector().getInstance(composerKey);
 
-        T instance = getFromComposer(composer, context.getRequester(), dependency.getKey());
+        try {
+            T instance = getFromComposer(composer, context.getRequester(), dependency.getKey());
 
-        if (instance == null) {
-            throw new InternalProvisionException();
+            if (instance == null && !dependency.isNullable()) {
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+            }
+
+            return instance;
+        } catch (RuntimeException e) {
+            throw InternalProvisionException.errorInComposer(e);
         }
-
-        return instance;
     }
 
     @SuppressWarnings("unchecked")
-    private T getFromComposer(Composer composer, Key<?> requester, Key<?> requested) throws InternalProvisionException {
-        try {
-            return (T) composer.get(requester, requested);
-        } catch (ClassCastException e) {
-            throw new InternalProvisionException(e);
-        }
+    private T getFromComposer(Composer composer, Key<?> requester, Key<?> requested) {
+        return (T) composer.get(requester, requested);
     }
 }

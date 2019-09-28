@@ -22,10 +22,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Annotation used to select injection point for IoC.
  *
- * @see com.bunjlabs.fuga.inject.IocContainer
+ * @see com.bunjlabs.fuga.inject.Injector
  */
 @Target(value = {CONSTRUCTOR})
 @Retention(value = RUNTIME)
 public @interface Inject {
+
     boolean optional() default false;
 }

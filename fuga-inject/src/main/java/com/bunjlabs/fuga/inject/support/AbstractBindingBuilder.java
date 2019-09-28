@@ -1,28 +1,30 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.binder.ScopedBindingBuilder;
 
-public abstract class AbstractBindingBuilder<T> {
+import java.util.List;
+
+abstract class AbstractBindingBuilder<T> {
 
     private final Key<T> key;
-    private final BindingProcessor bindingProcessor;
+    private final List<AbstractBinding<?>> bindingList;
+    private final int position;
     private AbstractBinding<T> binding;
 
-    AbstractBindingBuilder(Key<T> key, BindingProcessor bindingProcessor) {
+    AbstractBindingBuilder(Key<T> key, List<AbstractBinding<?>> bindingList) {
         this.key = key;
-        this.binding = new UntargettedBinding<>(key);
-        this.bindingProcessor = bindingProcessor;
+        this.binding = new UntargettedBindingImpl<>(key, Scoping.UNSCOPED);
+        this.bindingList = bindingList;
+        this.position = bindingList.size();
+        bindingList.add(this.position, this.binding);
     }
 
     protected AbstractBinding<T> getBinding() {
         return binding;
     }
 
-    AbstractBinding<T> setBinding(AbstractBinding<T> binding) {
-        bindingProcessor.process(binding);
-
-        return binding;
+    void setBinding(AbstractBinding<T> binding) {
+        bindingList.set(position, binding);
     }
 }
+

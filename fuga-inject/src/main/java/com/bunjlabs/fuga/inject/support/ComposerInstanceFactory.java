@@ -1,9 +1,10 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Composer;
+import com.bunjlabs.fuga.inject.Dependency;
 import com.bunjlabs.fuga.inject.Key;
 
-public class ComposerInstanceFactory<T> implements InternalFactory<T> {
+class ComposerInstanceFactory<T> implements InternalFactory<T> {
 
     private final Composer proxiedComposer;
 
@@ -14,28 +15,28 @@ public class ComposerInstanceFactory<T> implements InternalFactory<T> {
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
         var requester = context.getRequester();
-        var instance = getFromProxiedFactory(requester, dependency.getKey());
+        try {
+            var instance = getFromProxiedFactory(requester, dependency.getKey());
 
-        if (instance == null) {
-            throw new InternalProvisionException("Composer returned null");
+            if (instance == null && !dependency.isNullable()) {
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+            }
+
+            if (!dependency.getKey().getType().isAssignableFrom(instance.getClass())) {
+                throw new ClassCastException("Composer returned unexpected type: "
+                        + instance.getClass() +
+                        ". Expected: "
+                        + dependency.getKey().getType());
+            }
+
+            return instance;
+        } catch (RuntimeException e) {
+            throw InternalProvisionException.errorInComposer(e);
         }
-
-        if (!dependency.getKey().getType().isAssignableFrom(instance.getClass())) {
-            throw new InternalProvisionException("Composer returned unexpected type: "
-                    + instance.getClass() +
-                    ". Expected: "
-                    + dependency.getKey().getType());
-        }
-
-        return instance;
     }
 
     @SuppressWarnings("unchecked")
-    private T getFromProxiedFactory(Key<?> requester, Key<?> requested) throws InternalProvisionException {
-        try {
-            return (T) proxiedComposer.get(requester, requested);
-        } catch (ClassCastException e) {
-            throw new InternalProvisionException(e);
-        }
+    private T getFromProxiedFactory(Key<?> requester, Key<?> requested) {
+        return (T) proxiedComposer.get(requester, requested);
     }
 }

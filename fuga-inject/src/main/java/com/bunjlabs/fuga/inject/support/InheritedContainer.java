@@ -2,17 +2,22 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binding;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.Scope;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class InheritedContainer implements Container {
+
     private final Map<Key<?>, Binding<?>> explicitBindingsMutable = new LinkedHashMap<>();
     private final Map<Key<?>, Binding<?>> explicitBindings = Collections.unmodifiableMap(explicitBindingsMutable);
+    private final Map<Class<? extends Annotation>, Scope> scopes = new HashMap();
     private final Container parent;
 
-    public InheritedContainer(Container parent) {
+    InheritedContainer(Container parent) {
         this.parent = parent;
     }
 
@@ -40,7 +45,18 @@ public class InheritedContainer implements Container {
     }
 
     @Override
+    public Scope getScope(Class<? extends Annotation> annotationType) {
+        Scope scope = scopes.get(annotationType);
+        return scope != null ? scope : parent.getScope(annotationType);
+    }
+
+    @Override
     public void putBinding(Binding<?> binding) {
         explicitBindingsMutable.put(binding.getKey(), binding);
+    }
+
+    @Override
+    public void putScopeBinding(Class<? extends Annotation> annotationType, Scope scope) {
+        scopes.put(annotationType, scope);
     }
 }

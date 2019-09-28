@@ -4,7 +4,7 @@ import com.bunjlabs.fuga.inject.Key;
 
 import java.lang.reflect.InvocationTargetException;
 
-public interface ConstructorProxy<T> {
+interface ConstructorProxy<T> {
 
     T newInstance(Object[] parameters) throws InvocationTargetException;
 

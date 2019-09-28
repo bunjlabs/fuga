@@ -13,5 +13,4 @@ public interface Injector {
     <T> T getInstance(Class<T> type);
 
     <T> T getInstance(Key<T> key);
-
 }

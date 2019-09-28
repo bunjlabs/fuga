@@ -1,14 +1,17 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binder;
-import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 
-public class DefaultBinder implements Binder {
-    private final BindingProcessor bindingProcessor;
+import java.util.ArrayList;
+import java.util.List;
 
-    public DefaultBinder(BindingProcessor bindingProcessor) {
-        this.bindingProcessor = bindingProcessor;
+class DefaultBinder implements Binder {
+
+    private final List<AbstractBinding<?>> bindingList = new ArrayList<>();
+
+    DefaultBinder() {
     }
 
     @Override
@@ -18,6 +21,10 @@ public class DefaultBinder implements Binder {
 
     @Override
     public <T> BindingBuilder<T> bind(Key<T> type) {
-        return new DefaultBindingBuilder<>(type, bindingProcessor);
+        return new DefaultBindingBuilder<>(type, bindingList);
+    }
+
+    public List<AbstractBinding<?>> getBindings() {
+        return bindingList;
     }
 }

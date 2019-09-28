@@ -1,9 +1,6 @@
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.annotation.AnnotationUtils;
-import com.bunjlabs.fuga.inject.ConfigurationException;
-import com.bunjlabs.fuga.inject.Inject;
-import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.common.annotation.AnnotationUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -16,12 +13,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class InjectionPoint {
+
     private final Member member;
     private final List<Dependency<?>> dependencies;
     private final Map<Class<? extends Annotation>, Annotation> annotations;
     private final boolean optional;
 
-    InjectionPoint(Constructor<?> constructor) {
+    public InjectionPoint(Constructor<?> constructor) {
         this(constructor, Dependency.fromMember(constructor, constructor.getParameterAnnotations()),
                 Collections.emptyMap(), false);
     }
@@ -33,7 +31,7 @@ public class InjectionPoint {
         this.optional = optional;
     }
 
-    static <T> InjectionPoint forConstructor(Constructor<T> constructor) {
+    public static <T> InjectionPoint forConstructor(Constructor<T> constructor) {
         var annotationsMap = new HashMap<Class<? extends Annotation>, Annotation>();
         var annotations = AnnotationUtils.getAllAnnotations(constructor);
 
@@ -44,7 +42,7 @@ public class InjectionPoint {
                 annotationsMap, false);
     }
 
-    static <T> InjectionPoint forConstructorOf(Key<T> key) {
+    public static <T> InjectionPoint forConstructorOf(Key<T> key) {
         var type = key.getType();
         var injectableConstructors = getInjectableConstructors(type);
 
@@ -74,15 +72,15 @@ public class InjectionPoint {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    Member getMember() {
+    public Member getMember() {
         return member;
     }
 
-    boolean containsAnnotation(Class<? extends Annotation> annotationType) {
+    public boolean containsAnnotation(Class<? extends Annotation> annotationType) {
         return annotations.containsKey(annotationType);
     }
 
-    <T extends Annotation> T getAnnotation(Class<T> annotationType) {
+    public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
         return doGetAnnotation(annotationType);
     }
 
@@ -102,5 +100,4 @@ public class InjectionPoint {
     public Class<?> getDeclaringClass() {
         return member.getDeclaringClass();
     }
-
 }

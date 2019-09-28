@@ -12,5 +12,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(value = {TYPE, ANNOTATION_TYPE})
 @Retention(value = RUNTIME)
 public @interface ProvidedBy {
+
     Class<? extends Provider<?>> value();
 }

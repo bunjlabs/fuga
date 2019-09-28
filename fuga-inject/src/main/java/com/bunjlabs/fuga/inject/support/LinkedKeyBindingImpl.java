@@ -2,26 +2,37 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.BindingVisitor;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.bindings.LinkedKeyBinding;
 import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class LinkedKeyBinding<T> extends AbstractBinding<T> {
+class LinkedKeyBindingImpl<T> extends AbstractBinding<T> implements LinkedKeyBinding<T> {
 
     private final Key<? extends T> linkedKey;
 
-    LinkedKeyBinding(Key<T> key, Key<? extends T> linkedKey) {
-        super(key);
+    LinkedKeyBindingImpl(Key<T> key, Scoping scoping, Key<? extends T> linkedKey) {
+        super(key, scoping);
         this.linkedKey = linkedKey;
     }
 
-    LinkedKeyBinding(Key<T> key, Key<? extends T> linkedKey, InternalFactory<T> internalFactory) {
+    LinkedKeyBindingImpl(Key<T> key, Key<? extends T> linkedKey, InternalFactory<T> internalFactory) {
         super(key, internalFactory);
         this.linkedKey = linkedKey;
     }
 
-    Key<? extends T> getLinkedKey() {
+    @Override
+    public Key<? extends T> getLinkedKey() {
         return linkedKey;
+    }
+
+    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    protected AbstractBinding<T> withScoping(Scoping scoping) {
+        return new LinkedKeyBindingImpl<>(getKey(), scoping, linkedKey);
     }
 
     @Override
@@ -37,7 +48,7 @@ public class LinkedKeyBinding<T> extends AbstractBinding<T> {
         if (o instanceof LinkedKeyBinding) {
             LinkedKeyBinding<?> other = (LinkedKeyBinding<?>) o;
             return getKey().equals(other.getKey())
-                    && Objects.equals(linkedKey, other.linkedKey);
+                    && Objects.equals(linkedKey, other.getLinkedKey());
         } else {
             return false;
         }
@@ -46,9 +57,5 @@ public class LinkedKeyBinding<T> extends AbstractBinding<T> {
     @Override
     public int hashCode() {
         return Objects.hash(getKey(), linkedKey);
-    }
-
-    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
-        return visitor.visit(this);
     }
 }

@@ -1,11 +1,13 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.inject.Dependency;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.inject.ProvisionException;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class ConstructorFactory<T> implements InternalFactory<T> {
+class ConstructorFactory<T> implements InternalFactory<T> {
+
     private final ConstructorProxy<T> constructorProxy;
 
     ConstructorFactory(ConstructorProxy<T> constructorProxy) {
@@ -23,7 +25,11 @@ public class ConstructorFactory<T> implements InternalFactory<T> {
         context.enterRequester(constructorProxy.getType());
         constructionContext.startConstruction();
         try {
-            return construct(context, constructionContext);
+            var instance = construct(context, constructionContext);
+            if (instance == null && !dependency.isNullable()) {
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+            }
+            return instance;
         } finally {
             constructionContext.endConstruction();
             context.exitRequester();
@@ -37,7 +43,7 @@ public class ConstructorFactory<T> implements InternalFactory<T> {
         try {
             return constructorProxy.newInstance(parameters);
         } catch (InvocationTargetException e) {
-            throw new InternalProvisionException("Error injecting constructor", e);
+            throw InternalProvisionException.errorInjectingConstructor(e);
         } finally {
             constructionContext.endConstruction();
         }

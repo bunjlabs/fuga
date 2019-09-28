@@ -1,92 +1,99 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.Composer;
-import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.Provider;
-import com.bunjlabs.fuga.inject.Scope;
+import com.bunjlabs.fuga.inject.*;
 import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 import com.bunjlabs.fuga.inject.binder.ScopedBindingBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.List;
 
-public class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements BindingBuilder<T>, ScopedBindingBuilder {
+class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements BindingBuilder<T>, ScopedBindingBuilder {
 
-    DefaultBindingBuilder(Key<T> key, BindingProcessor bindingProcessor) {
-        super(key, bindingProcessor);
+    DefaultBindingBuilder(Key<T> key, List<AbstractBinding<?>> bindingList) {
+        super(key, bindingList);
     }
 
     @Override
-    public void auto() {
+    public ScopedBindingBuilder auto() {
         AbstractBinding<T> base = getBinding();
-        setBinding(new AutoBinding<>(base.getKey()));
+        setBinding(new AutoBindingImpl<>(base.getKey(), base.getScoping()));
+        return this;
     }
 
     @Override
-    public void to(Class<? extends T> target) {
+    public ScopedBindingBuilder to(Class<? extends T> target) {
         to(Key.of(target));
+        return this;
     }
 
     @Override
-    public void to(Key<? extends T> target) {
+    public ScopedBindingBuilder to(Key<? extends T> target) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new LinkedKeyBinding<>(base.getKey(), target));
+        setBinding(new LinkedKeyBindingImpl<>(base.getKey(), base.getScoping(), target));
+        return this;
     }
 
     @Override
     public void toInstance(T instance) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new InstanceBinding<>(base.getKey(), instance));
+        setBinding(new InstanceBindingImpl<>(base.getKey(), base.getScoping(), instance));
     }
 
     @Override
-    public void toConstructor(Constructor<T> constructor) {
+    public <S extends T> ScopedBindingBuilder toConstructor(Constructor<S> constructor) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ConstructorBinding<>(base.getKey(), InjectionPoint.forConstructor(constructor)));
+        setBinding(new ConstructorBindingImpl<>(base.getKey(), base.getScoping(), InjectionPoint.forConstructor(constructor)));
+        return this;
     }
 
     @Override
-    public void toProvider(Class<? extends Provider<? extends T>> provider) {
+    public ScopedBindingBuilder toProvider(Class<? extends Provider<? extends T>> provider) {
         toProvider(Key.of(provider));
+        return this;
     }
 
     @Override
-    public void toProvider(Key<? extends Provider<? extends T>> provider) {
+    public ScopedBindingBuilder toProvider(Key<? extends Provider<? extends T>> provider) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ProviderBinding<>(base.getKey(), provider));
+        setBinding(new ProviderKeyBindingImpl<>(base.getKey(), base.getScoping(), provider));
+        return this;
     }
 
     @Override
-    public void toProvider(Provider<? extends T> provider) {
+    public ScopedBindingBuilder toProvider(Provider<? extends T> provider) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ProviderInstanceBinding<>(base.getKey(), provider));
+        setBinding(new ProviderBindingImpl<>(base.getKey(), base.getScoping(), provider));
+        return this;
     }
 
     @Override
-    public void toComposer(Composer composer) {
+    public ScopedBindingBuilder toComposer(Composer composer) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ComposerInstanceBinding<>(base.getKey(), composer));
+        setBinding(new ComposerBindingImpl<>(base.getKey(), base.getScoping(), composer));
+        return this;
     }
 
     @Override
-    public void toComposer(Class<? extends Composer> composer) {
+    public ScopedBindingBuilder toComposer(Class<? extends Composer> composer) {
         toComposer(Key.of(composer));
+        return this;
     }
 
     @Override
-    public void toComposer(Key<? extends Composer> composer) {
+    public ScopedBindingBuilder toComposer(Key<? extends Composer> composer) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ComposerBinding<>(base.getKey(), composer));
-
+        setBinding(new ComposerKeyBindingImpl<>(base.getKey(), base.getScoping(), composer));
+        return this;
     }
 
     @Override
     public void in(Class<? extends Annotation> scopeAnnotation) {
-        //getBinding().setScope(scope);
+        setBinding(getBinding().withScoping(Scoping.forAnnotation(scopeAnnotation)));
     }
 
     @Override
     public void in(Scope scope) {
-        getBinding().setScope(scope);
+        setBinding(getBinding().withScoping(Scoping.forInstance(scope)));
     }
 }

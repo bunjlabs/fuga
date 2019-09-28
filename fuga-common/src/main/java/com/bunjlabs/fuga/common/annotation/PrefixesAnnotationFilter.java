@@ -1,4 +1,4 @@
-package com.bunjlabs.fuga.annotation;
+package com.bunjlabs.fuga.common.annotation;
 
 import com.bunjlabs.fuga.util.Assert;
 import com.bunjlabs.fuga.util.ObjectUtils;

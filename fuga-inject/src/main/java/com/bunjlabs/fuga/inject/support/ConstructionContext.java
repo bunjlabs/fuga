@@ -1,6 +1,6 @@
 package com.bunjlabs.fuga.inject.support;
 
-public class ConstructionContext<T> {
+class ConstructionContext<T> {
 
     private boolean constructing = false;
     private T reference;

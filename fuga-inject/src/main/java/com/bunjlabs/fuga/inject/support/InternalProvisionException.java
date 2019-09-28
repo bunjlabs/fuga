@@ -13,27 +13,55 @@
  */
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.common.errors.ErrorMessage;
+import com.bunjlabs.fuga.inject.Dependency;
 import com.bunjlabs.fuga.inject.ProvisionException;
+import com.bunjlabs.fuga.util.Assert;
 
-public class InternalProvisionException extends Exception {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
-    InternalProvisionException() {
-        super();
+class InternalProvisionException extends Exception {
+
+    private final Collection<ErrorMessage> errorMessages;
+
+    private InternalProvisionException(ErrorMessage errorMessage) {
+        this(Collections.singletonList(errorMessage));
     }
 
-    InternalProvisionException(String msg) {
-        super(msg);
+    private InternalProvisionException(Iterable<ErrorMessage> messages) {
+        var mutableErrorMessages = new ArrayList<ErrorMessage>();
+        messages.forEach(mutableErrorMessages::add);
+        this.errorMessages = Collections.unmodifiableCollection(mutableErrorMessages);
+        Assert.isFalse(this.errorMessages.isEmpty(), "Can't create provision exception with no error message");
     }
 
-    InternalProvisionException(String msg, Throwable cause) {
-        super(msg, cause);
+    private static InternalProvisionException create(String format, Object... arguments) {
+        return new InternalProvisionException(new ErrorMessage(format, arguments));
     }
 
-    public InternalProvisionException(Throwable cause) {
-        super(cause);
+    private static InternalProvisionException create(Throwable cause, String format, Object... arguments) {
+        return new InternalProvisionException(new ErrorMessage(cause, format, arguments));
+    }
+
+    static InternalProvisionException nullInjectedIntoNonNullableDependency(Object source, Dependency<?> dependency) {
+        return create("null returned by binding at %s%n but %s is not @Nullable", source, dependency);
+    }
+
+    static InternalProvisionException errorInProvider(Throwable cause) {
+        return create(cause, "Error in custom provider, %s", cause);
+    }
+
+    static InternalProvisionException errorInComposer(Throwable cause) {
+        return create(cause, "Error in custom composer, %s", cause);
+    }
+
+    static InternalProvisionException errorInjectingConstructor(Throwable cause) {
+        return create(cause, "Error injecting constructor, %s", cause);
     }
 
     ProvisionException toProvisionException() {
-        return new ProvisionException(getMessage(), getCause());
+        return new ProvisionException(errorMessages);
     }
 }

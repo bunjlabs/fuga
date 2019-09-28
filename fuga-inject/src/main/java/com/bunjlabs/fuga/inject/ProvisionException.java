@@ -13,17 +13,20 @@
  */
 package com.bunjlabs.fuga.inject;
 
-public class ProvisionException extends RuntimeException {
+import com.bunjlabs.fuga.common.errors.ErrorMessage;
+import com.bunjlabs.fuga.common.errors.FugaRuntimeException;
 
-    public ProvisionException() {
-        super();
+public class ProvisionException extends FugaRuntimeException {
+
+    public ProvisionException(String message) {
+        super(message);
     }
 
-    public ProvisionException(String msg) {
-        super(msg);
+    public ProvisionException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public ProvisionException(String msg, Throwable cause) {
-        super(msg, cause);
+    public ProvisionException(Iterable<ErrorMessage> messages) {
+        super(messages);
     }
 }

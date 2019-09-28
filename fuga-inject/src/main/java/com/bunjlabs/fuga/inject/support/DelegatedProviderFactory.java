@@ -1,9 +1,10 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.inject.Dependency;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.inject.Provider;
 
-public class DelegatedProviderFactory<T> implements InternalFactory<T> {
+class DelegatedProviderFactory<T> implements InternalFactory<T> {
 
     private final Key<? extends Provider<? extends T>> providerKey;
 
@@ -13,8 +14,18 @@ public class DelegatedProviderFactory<T> implements InternalFactory<T> {
 
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        Provider<? extends T> instance = context.getInjector().getInstance(providerKey);
+        Provider<? extends T> provider = context.getInjector().getInstance(providerKey);
 
-        return instance.get();
+        try {
+            var instance = provider.get();
+
+            if (instance == null && !dependency.isNullable()) {
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+            }
+
+            return instance;
+        } catch (RuntimeException e) {
+            throw InternalProvisionException.errorInProvider(e);
+        }
     }
 }

@@ -9,5 +9,4 @@ public interface ScopedBindingBuilder {
     void in(Class<? extends Annotation> scopeAnnotation);
 
     void in(Scope scope);
-
 }

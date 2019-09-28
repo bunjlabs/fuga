@@ -9,4 +9,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(value = {CONSTRUCTOR})
 @Retention(value = RUNTIME)
 public @interface Singleton {
+
 }

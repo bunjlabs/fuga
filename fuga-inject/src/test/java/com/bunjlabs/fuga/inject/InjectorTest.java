@@ -46,6 +46,22 @@ public class InjectorTest {
     }
 
     @Test
+    public void testConstructor() throws NoSuchMethodException {
+        final var fullConstructor = FullC.class.getConstructor(SampleA.class, SampleA.class);
+
+        var injector = createInjector(c -> {
+            c.bind(SampleA.class).toInstance(new SampleA());
+            c.bind(FullC.class).toConstructor(fullConstructor);
+            c.bind(ISampleAImpl.class).auto();
+            c.bind(ISampleA.class).to(ISampleAImpl.class);
+        });
+
+        var c1 = injector.getInstance(FullC.class);
+        var c2 = injector.getInstance(FullC.class);
+        assertNotSame(c1, c2);
+    }
+
+    @Test
     public void testCustomProvider() {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> {
@@ -95,7 +111,15 @@ public class InjectorTest {
         assertNotSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
         assertThrows(ProvisionException.class, () -> injector.getInstance(SampleB.class));
         assertThrows(ProvisionException.class, () -> injector.getInstance(SampleC.class));
+    }
 
+
+    @Test
+    public void testScopes() {
+        var injector = createInjector(c -> {
+            c.bind(SampleSingleton.class).auto().in(Singleton.class);
+        });
+        assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
     }
 
     public interface ISampleA {

@@ -5,6 +5,7 @@ import com.bunjlabs.fuga.inject.Provider;
 import com.bunjlabs.fuga.inject.Scope;
 
 public class SingletonScope implements Scope {
+
     @Override
     public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
         return new Provider<>() {
@@ -18,5 +19,10 @@ public class SingletonScope implements Scope {
                 return instance;
             }
         };
+    }
+
+    @Override
+    public String toString() {
+        return "Scopes.Singleton";
     }
 }

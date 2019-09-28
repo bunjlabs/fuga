@@ -1,20 +1,22 @@
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.Injector;
-import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.Provider;
-import com.bunjlabs.fuga.inject.ProvisionException;
+import com.bunjlabs.fuga.inject.*;
 
-public class DefaultInjector implements Injector {
+class InjectorImpl implements Injector {
+
     private final Container container;
 
-    public DefaultInjector(Container container) {
+    InjectorImpl(Container container) {
         this.container = container;
     }
 
     <T> InternalFactory<T> getInternalFactory(Key<T> key) {
         AbstractBinding<T> binding = getBinding(key);
         return binding.getInternalFactory();
+    }
+
+    Container getContainer() {
+        return container;
     }
 
     @Override

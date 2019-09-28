@@ -9,11 +9,11 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 class InjectorContext {
 
-    private final DefaultInjector injector;
+    private final InjectorImpl injector;
     private final Deque<Key<?>> requesters;
     private final Map<Object, ConstructionContext<?>> constructionContexts = new IdentityHashMap<>();
 
-    InjectorContext(DefaultInjector injector) {
+    InjectorContext(InjectorImpl injector) {
         this.injector = injector;
         this.requesters = new ConcurrentLinkedDeque<>();
     }
@@ -30,7 +30,7 @@ class InjectorContext {
         requesters.removeFirst();
     }
 
-    DefaultInjector getInjector() {
+    InjectorImpl getInjector() {
         return injector;
     }
 
@@ -46,5 +46,4 @@ class InjectorContext {
 
         return constructionContext;
     }
-
 }

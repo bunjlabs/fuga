@@ -5,7 +5,8 @@ import com.bunjlabs.fuga.inject.Key;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class ReflectConstructionProxy<T> implements ConstructorProxy<T> {
+class ReflectConstructionProxy<T> implements ConstructorProxy<T> {
+
     private final Constructor<T> constructor;
     private final Key<T> type;
     private final Key<?>[] parameterTypes;
@@ -17,7 +18,7 @@ public class ReflectConstructionProxy<T> implements ConstructorProxy<T> {
         Class<?>[] rawParameterTypes = constructor.getParameterTypes();
         this.parameterTypes = new Key[rawParameterTypes.length];
 
-        for(int i = 0; i < this.parameterTypes.length; i++) {
+        for (int i = 0; i < this.parameterTypes.length; i++) {
             this.parameterTypes[i] = Key.of(rawParameterTypes[i]);
         }
     }

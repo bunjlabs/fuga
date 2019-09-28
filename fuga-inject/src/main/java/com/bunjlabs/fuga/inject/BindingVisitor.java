@@ -1,6 +1,6 @@
 package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.inject.support.*;
+import com.bunjlabs.fuga.inject.bindings.*;
 
 public interface BindingVisitor<T, V> {
 
@@ -8,19 +8,17 @@ public interface BindingVisitor<T, V> {
 
     V visit(ConstructorBinding<? extends T> binding);
 
+    V visit(ProviderKeyBinding<? extends T> binding);
+
     V visit(ProviderBinding<? extends T> binding);
 
-    V visit(ProviderInstanceBinding<? extends T> binding);
+    V visit(ComposerKeyBinding<? extends T> binding);
 
     V visit(ComposerBinding<? extends T> binding);
-
-    V visit(ComposerInstanceBinding<? extends T> binding);
 
     V visit(LinkedKeyBinding<? extends T> binding);
 
     V visit(AutoBinding<? extends T> binding);
 
     V visit(UntargettedBinding<? extends T> binding);
-
-
 }

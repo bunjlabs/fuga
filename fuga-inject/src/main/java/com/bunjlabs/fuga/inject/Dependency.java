@@ -1,6 +1,5 @@
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.util.ObjectUtils;
 import com.bunjlabs.fuga.util.ReflectionUtils;
 
@@ -27,11 +26,11 @@ public class Dependency<T> {
         this.hashCode = computeHashCode();
     }
 
-    static <T> Dependency<T> of(Key<T> key) {
+    public static <T> Dependency<T> of(Key<T> key) {
         return new Dependency<>(key, -1, true);
     }
 
-    static List<Dependency<?>> fromMember(Member member, Annotation[][] parametersAnnotations) {
+    public static List<Dependency<?>> fromMember(Member member, Annotation[][] parametersAnnotations) {
         List<Dependency<?>> dependencies = new ArrayList<>();
 
         int index = 0;

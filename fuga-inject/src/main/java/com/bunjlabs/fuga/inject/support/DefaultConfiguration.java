@@ -6,15 +6,15 @@ import com.bunjlabs.fuga.inject.Unit;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DefaultConfiguration extends DefaultBinder implements Configuration {
+class DefaultConfiguration extends DefaultBinder implements Configuration {
 
     private List<Unit> installedUnits = new LinkedList<>();
 
-    public DefaultConfiguration(BindingProcessor bindingProcessor) {
-        super(bindingProcessor);
+    DefaultConfiguration() {
+        super();
     }
 
-    public List<Unit> getInstalledUnits() {
+    List<Unit> getInstalledUnits() {
         return installedUnits;
     }
 

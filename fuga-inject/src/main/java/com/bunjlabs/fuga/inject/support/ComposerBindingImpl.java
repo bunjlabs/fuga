@@ -3,25 +3,37 @@ package com.bunjlabs.fuga.inject.support;
 import com.bunjlabs.fuga.inject.BindingVisitor;
 import com.bunjlabs.fuga.inject.Composer;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.bindings.ComposerBinding;
 import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class ComposerInstanceBinding<T> extends AbstractBinding<T> {
+class ComposerBindingImpl<T> extends AbstractBinding<T> implements ComposerBinding<T> {
+
     private final Composer composer;
 
-    ComposerInstanceBinding(Key<T> key, Composer composer) {
-        super(key);
+    ComposerBindingImpl(Key<T> key, Scoping scoping, Composer composer) {
+        super(key, scoping);
         this.composer = composer;
     }
 
-    ComposerInstanceBinding(Key<T> key, Composer composer, InternalFactory<T> internalFactory) {
+    ComposerBindingImpl(Key<T> key, Composer composer, InternalFactory<T> internalFactory) {
         super(key, internalFactory);
         this.composer = composer;
     }
 
-    Composer getComposer() {
+    @Override
+    public Composer getComposer() {
         return composer;
+    }
+
+    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    protected AbstractBinding<T> withScoping(Scoping scoping) {
+        return new ComposerBindingImpl<>(getKey(), scoping, composer);
     }
 
     @Override
@@ -34,10 +46,10 @@ public class ComposerInstanceBinding<T> extends AbstractBinding<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ComposerInstanceBinding) {
-            ComposerInstanceBinding<?> other = (ComposerInstanceBinding<?>) o;
+        if (o instanceof ComposerBinding) {
+            ComposerBinding<?> other = (ComposerBinding<?>) o;
             return getKey().equals(other.getKey())
-                    && Objects.equals(composer, other.composer);
+                    && Objects.equals(composer, other.getComposer());
         } else {
             return false;
         }
@@ -46,9 +58,5 @@ public class ComposerInstanceBinding<T> extends AbstractBinding<T> {
     @Override
     public int hashCode() {
         return Objects.hash(getKey(), composer);
-    }
-
-    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
-        return visitor.visit(this);
     }
 }

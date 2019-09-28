@@ -2,14 +2,24 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.BindingVisitor;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.bindings.UntargettedBinding;
 import com.bunjlabs.fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class AutoBinding<T> extends AbstractBinding<T> {
+class UntargettedBindingImpl<T> extends AbstractBinding<T> implements UntargettedBinding<T> {
 
-    AutoBinding(Key<T> key) {
-        super(key);
+    UntargettedBindingImpl(Key<T> key, Scoping scoping) {
+        super(key, scoping);
+    }
+
+    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    protected AbstractBinding<T> withScoping(Scoping scoping) {
+        return new UntargettedBindingImpl<>(getKey(), scoping);
     }
 
     @Override
@@ -21,8 +31,8 @@ public class AutoBinding<T> extends AbstractBinding<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof InstanceBinding) {
-            InstanceBinding<?> other = (InstanceBinding<?>) o;
+        if (o instanceof UntargettedBinding) {
+            UntargettedBinding<?> other = (UntargettedBinding<?>) o;
             return getKey().equals(other.getKey());
         } else {
             return false;
@@ -34,7 +44,4 @@ public class AutoBinding<T> extends AbstractBinding<T> {
         return Objects.hash(getKey());
     }
 
-    public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
-        return visitor.visit(this);
-    }
 }
