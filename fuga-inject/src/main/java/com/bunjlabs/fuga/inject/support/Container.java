@@ -2,7 +2,6 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binding;
 import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.Scope;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -32,7 +31,7 @@ interface Container {
         }
 
         @Override
-        public Scope getScope(Class<? extends Annotation> annotationType) {
+        public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
             return null;
         }
 
@@ -42,7 +41,7 @@ interface Container {
         }
 
         @Override
-        public void putScopeBinding(Class<? extends Annotation> annotationType, Scope scope) {
+        public void putScopeBinding(ScopeBinding scopeBinding) {
             throw new UnsupportedOperationException();
         }
     };
@@ -55,9 +54,9 @@ interface Container {
 
     Map<Key<?>, Binding<?>> getExplicitBindingsLocal();
 
-    Scope getScope(Class<? extends Annotation> annotationType);
+    ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType);
 
     void putBinding(Binding<?> binding);
 
-    void putScopeBinding(Class<? extends Annotation> annotationType, Scope scope);
+    void putScopeBinding(ScopeBinding scopeBinding);
 }

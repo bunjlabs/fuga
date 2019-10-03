@@ -30,6 +30,10 @@ public class Dependency<T> {
         return new Dependency<>(key, -1, true);
     }
 
+    public static <T> Dependency<T> of(Class<T> clazz) {
+        return new Dependency<>(Key.of(clazz), -1, true);
+    }
+
     public static List<Dependency<?>> fromMember(Member member, Annotation[][] parametersAnnotations) {
         List<Dependency<?>> dependencies = new ArrayList<>();
 

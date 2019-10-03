@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InjectorTest {
+class InjectorTest {
 
     private static Injector createInjector(Unit... unit) {
         return new InjectorBuilder().withUnits(unit).build();
     }
 
     @Test
-    public void testProviderMethods() {
+    void testProviderMethods() {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> c.bind(SampleSingleton.class).toInstance(singleton));
 
@@ -20,7 +20,7 @@ public class InjectorTest {
     }
 
     @Test
-    public void testAutoInjectedInstances() {
+    void testAutoInjectedInstances() {
         var injector = createInjector(c -> {
             c.bind(SampleA.class).toInstance(new SampleA());
             c.bind(FullC.class).auto();
@@ -35,18 +35,18 @@ public class InjectorTest {
     }
 
     @Test
-    public void testNotProvided() {
+    void testNotProvided() {
         assertThrows(ProvisionException.class, () -> createInjector().getInstance(SampleSingleton.class));
     }
 
     @Test
-    public void testCircular() {
+    void testCircular() {
         var injector = createInjector(c -> c.bind(Loop.class).auto());
         assertThrows(ProvisionException.class, () -> injector.getInstance(Loop.class));
     }
 
     @Test
-    public void testConstructor() throws NoSuchMethodException {
+    void testConstructor() throws NoSuchMethodException {
         final var fullConstructor = FullC.class.getConstructor(SampleA.class, SampleA.class);
 
         var injector = createInjector(c -> {
@@ -62,7 +62,7 @@ public class InjectorTest {
     }
 
     @Test
-    public void testCustomProvider() {
+    void testCustomProvider() {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> {
             c.bind(SampleSingleton.class).toProvider(() -> singleton);
@@ -71,11 +71,11 @@ public class InjectorTest {
         });
         assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
         assertNotSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
-        assertThrows(ProvisionException.class, () -> injector.getInstance(SampleB.class));
+        assertNull(injector.getInstance(SampleB.class));
     }
 
     @Test
-    public void testCustomComposer() {
+    void testCustomComposer() {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> {
             c.bind(SampleSingleton.class).toComposer(new Composer() {
@@ -115,30 +115,36 @@ public class InjectorTest {
 
 
     @Test
-    public void testScopes() {
-        var injector = createInjector(c -> {
-            c.bind(SampleSingleton.class).auto().in(Singleton.class);
-        });
+    void testScopes() {
+        var injector = createInjector(c ->
+                c.bind(SampleSingleton.class).auto().in(Singleton.class)
+        );
         assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
     }
 
     public interface ISampleA {
+
         FullC getCB();
     }
 
     public static class SampleSingleton {
+
     }
 
     public static class SampleA {
+
     }
 
     public static class SampleB {
+
     }
 
     public static class SampleC {
+
     }
 
     public static class FullC {
+
         SampleA a;
         SampleA b;
 
@@ -151,6 +157,7 @@ public class InjectorTest {
 
 
     public static class ISampleAImpl implements ISampleA {
+
         FullC ca;
 
         @Inject
@@ -165,6 +172,7 @@ public class InjectorTest {
     }
 
     public static class Loop {
+
         @Inject
         public Loop(Loop l) {
         }

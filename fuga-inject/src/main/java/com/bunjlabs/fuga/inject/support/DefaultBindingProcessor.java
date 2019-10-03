@@ -12,12 +12,23 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
         super(container);
     }
 
-    private static <T> InternalFactory<T> scope(Scoping scoping, InternalFactory<T> internalFactory) {
-        if (scoping == null) {
+    private <T> InternalFactory<T> scope(Key<T> key, Scoping scoping, InternalFactory<T> internalFactory) {
+        if (scoping == null || scoping == Scoping.UNSCOPED) {
             return internalFactory;
-        } else {
-            return new ScopedFactory<>(internalFactory, scoping.getScopeInstance());
         }
+
+        Scope scope;
+        if (scoping.getScopeInstance() != null) {
+            scope = scoping.getScopeInstance();
+        } else {
+            var scopeBinding = getScopeBinding(scoping.getScopeAnnotation());
+            scope = scopeBinding.getScope();
+        }
+
+        var providerAdapter = new ProviderToInternalFactoryAdapter<>(internalFactory);
+        scheduleInitilization(providerAdapter);
+        var scopedProvider = scope.scope(key, providerAdapter);
+        return new ProviderInstanceFactory<>(scopedProvider);
     }
 
     @Override
@@ -27,8 +38,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(InstanceBinding<? extends T> binding) {
                 var instance = binding.getInstance();
-                var internalFactory = scope(scoping,
-                        new ProviderInstanceFactory<>(() -> instance));
+                var internalFactory = scope(key, scoping, new ProviderInstanceFactory<>(() -> instance));
                 putBinding(new InstanceBindingImpl<>(key, instance, internalFactory));
                 return true;
             }
@@ -38,8 +48,8 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 var injectionPoint = binding.getInjectionPoint();
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
-                var internalFactory = scope(scoping,
-                        new ConstructorFactory<>(new ReflectConstructionProxy<>(constructor)));
+                var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));
+                var internalFactory = scope(key, scoping, new ConstructorFactory<>(constructorInjector));
                 putBinding(new ConstructorBindingImpl<>(key, injectionPoint, internalFactory));
                 return true;
             }
@@ -47,8 +57,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ProviderKeyBinding<? extends T> binding) {
                 var providerKey = binding.getProviderKey();
-                var internalFactory = scope(scoping,
-                        new DelegatedProviderFactory<>(providerKey));
+                var internalFactory = scope(key, scoping, new DelegatedProviderFactory<>(providerKey));
                 putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
                 return true;
             }
@@ -56,8 +65,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ProviderBinding<? extends T> binding) {
                 var provider = binding.getProvider();
-                var internalFactory = scope(scoping,
-                        new ProviderInstanceFactory<T>(provider::get));
+                var internalFactory = scope(key, scoping, new ProviderInstanceFactory<>(provider::get));
                 putBinding(new ProviderBindingImpl<>(key, provider, internalFactory));
                 return true;
             }
@@ -65,8 +73,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ComposerKeyBinding<? extends T> binding) {
                 var composerKey = binding.getComposerKey();
-                var internalFactory = scope(scoping,
-                        new DelegatedComposerFactory<T>(composerKey));
+                var internalFactory = scope(key, scoping, new DelegatedComposerFactory<>(composerKey));
                 putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
                 return true;
             }
@@ -74,8 +81,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ComposerBinding<? extends T> binding) {
                 var composer = binding.getComposer();
-                var internalFactory = scope(scoping,
-                        new ComposerInstanceFactory<T>(composer));
+                var internalFactory = scope(key, scoping, new ComposerInstanceFactory<>(composer));
                 putBinding(new ComposerBindingImpl<>(key, composer, internalFactory));
                 return true;
             }
@@ -83,8 +89,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(LinkedKeyBinding<? extends T> binding) {
                 var linkKey = binding.getLinkedKey();
-                var internalFactory = scope(scoping,
-                        new DelegatedKeyFactory<T>(linkKey));
+                var internalFactory = scope(key, scoping, new DelegatedKeyFactory<>(linkKey));
                 putBinding(new LinkedKeyBindingImpl<>(key, linkKey, internalFactory));
                 return true;
             }
@@ -95,8 +100,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 if (providedBy != null) {
                     @SuppressWarnings("unchecked")
                     var providerKey = (Key<? extends Provider<? extends T>>) Key.of(providedBy.value());
-                    var internalFactory = scope(scoping,
-                            new DelegatedProviderFactory<>(providerKey));
+                    var internalFactory = scope(key, scoping, new DelegatedProviderFactory<>(providerKey));
                     putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
                     return true;
                 }
@@ -104,8 +108,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 var composedBy = AnnotationUtils.findAnnotation(key.getType(), ComposedBy.class);
                 if (composedBy != null) {
                     var composerKey = Key.of(composedBy.value());
-                    var internalFactory = scope(scoping,
-                            new DelegatedComposerFactory<T>(composerKey));
+                    var internalFactory = scope(key, scoping, new DelegatedComposerFactory<>(composerKey));
                     putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
                     return true;
                 }
@@ -113,8 +116,8 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 var injectionPoint = InjectionPoint.forConstructorOf(key);
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
-                var internalFactory = scope(scoping,
-                        new ConstructorFactory<>(new ReflectConstructionProxy<>(constructor)));
+                var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));
+                var internalFactory = scope(key, scoping, new ConstructorFactory<>(constructorInjector));
                 putBinding(new ConstructorBindingImpl<>(key, injectionPoint, internalFactory));
                 return true;
             }

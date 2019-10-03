@@ -1,6 +1,8 @@
 package com.bunjlabs.fuga.common.annotation;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,9 +12,12 @@ import java.util.stream.Stream;
 
 public abstract class AnnotationUtils {
 
+    public static boolean hasAnnotation(AnnotatedElement source, Class<? extends Annotation> annotationType) {
+        return findAnnotation(source, annotationType) != null;
+    }
+
     public static <A extends Annotation> A findAnnotation(AnnotatedElement source, Class<A> annotationType) {
         return findAnnotation(source, annotationType, AnnotationFilter.ALL);
-
     }
 
     public static <A extends Annotation> A findAnnotation(AnnotatedElement source, Class<A> annotationType, AnnotationFilter annotationFilter) {
@@ -57,6 +62,11 @@ public abstract class AnnotationUtils {
         }
 
         return Arrays.stream(annotations).filter(annotationFilter::matches).collect(Collectors.toUnmodifiableSet());
+    }
+
+    public static boolean isRetainedAtRuntime(Class<? extends Annotation> annotationType) {
+        Retention retention = annotationType.getAnnotation(Retention.class);
+        return retention != null && retention.value() == RetentionPolicy.RUNTIME;
     }
 
     @SuppressWarnings("unchecked")

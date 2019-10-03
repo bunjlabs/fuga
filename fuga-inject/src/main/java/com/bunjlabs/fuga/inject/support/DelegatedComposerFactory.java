@@ -17,10 +17,11 @@ class DelegatedComposerFactory<T> implements InternalFactory<T> {
         var composer = context.getInjector().getInstance(composerKey);
 
         try {
-            T instance = getFromComposer(composer, context.getRequester(), dependency.getKey());
+            T instance = getFromComposer(composer, context.getDependency().getKey(), dependency.getKey());
 
             if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
+                        context.getDependency().getKey().getType(), dependency);
             }
 
             return instance;

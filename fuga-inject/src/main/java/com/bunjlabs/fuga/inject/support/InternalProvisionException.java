@@ -61,6 +61,10 @@ class InternalProvisionException extends Exception {
         return create(cause, "Error injecting constructor, %s", cause);
     }
 
+    static InternalProvisionException circularDependencies(Class<?> expectedType) {
+        return create("Found a circular dependency involving %s.", expectedType);
+    }
+
     ProvisionException toProvisionException() {
         return new ProvisionException(errorMessages);
     }

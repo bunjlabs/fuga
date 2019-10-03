@@ -14,12 +14,12 @@ class ComposerInstanceFactory<T> implements InternalFactory<T> {
 
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var requester = context.getRequester();
+        var requester = context.getRequester().getKey();
         try {
             var instance = getFromProxiedFactory(requester, dependency.getKey());
 
             if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(requester.getType(), dependency);
             }
 
             if (!dependency.getKey().getType().isAssignableFrom(instance.getClass())) {

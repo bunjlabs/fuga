@@ -2,16 +2,24 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binder;
 import com.bunjlabs.fuga.inject.Key;
+import com.bunjlabs.fuga.inject.Scope;
 import com.bunjlabs.fuga.inject.binder.BindingBuilder;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
 class DefaultBinder implements Binder {
 
-    private final List<AbstractBinding<?>> bindingList = new ArrayList<>();
+    private final List<AbstractBinding<?>> bindings = new ArrayList<>();
+    private final List<ScopeBinding> scopeBindings = new ArrayList<>();
 
     DefaultBinder() {
+    }
+
+    @Override
+    public void bindScope(Class<? extends Annotation> annotationType, Scope scope) {
+        scopeBindings.add(new ScopeBinding(annotationType, scope));
     }
 
     @Override
@@ -21,10 +29,14 @@ class DefaultBinder implements Binder {
 
     @Override
     public <T> BindingBuilder<T> bind(Key<T> type) {
-        return new DefaultBindingBuilder<>(type, bindingList);
+        return new DefaultBindingBuilder<>(type, bindings);
     }
 
     public List<AbstractBinding<?>> getBindings() {
-        return bindingList;
+        return bindings;
+    }
+
+    public List<ScopeBinding> getScopeBindings() {
+        return scopeBindings;
     }
 }

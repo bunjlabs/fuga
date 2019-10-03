@@ -2,21 +2,52 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.*;
 
+import java.util.Arrays;
+
 class InjectorImpl implements Injector {
 
+    private final Injector parent;
     private final Container container;
+    private InjectorContext context;
 
-    InjectorImpl(Container container) {
+    InjectorImpl(Injector parent, Container container) {
+        this.parent = parent;
         this.container = container;
     }
 
     <T> InternalFactory<T> getInternalFactory(Key<T> key) {
-        AbstractBinding<T> binding = getBinding(key);
-        return binding.getInternalFactory();
+        return getBinding(key).getInternalFactory();
+    }
+
+    <T> DependencyInjector<T> getDependencyInjector(Dependency<T> dependency) {
+        return new DependencyInjector<>(dependency, getInternalFactory(dependency.getKey()));
     }
 
     Container getContainer() {
         return container;
+    }
+
+    InjectorContext getContext() {
+        if (context == null) {
+            context = new InjectorContext(this);
+        }
+
+        return context;
+    }
+
+    @Override
+    public Injector getParent() {
+        return parent;
+    }
+
+    @Override
+    public Injector createChildInjector(Unit... units) {
+        return createChildInjector(Arrays.asList(units));
+    }
+
+    @Override
+    public Injector createChildInjector(Iterable<Unit> units) {
+        return new InternalInjectorBuilder().withParent(this).withUnits(units).build();
     }
 
     @Override
@@ -26,7 +57,7 @@ class InjectorImpl implements Injector {
 
     @Override
     public <T> AbstractBinding<T> getBinding(Key<T> key) {
-        AbstractBinding<T> binding = container.getExplicitBinding(key);
+        var binding = container.getExplicitBinding(key);
 
         if (binding != null) {
             return binding;
@@ -42,18 +73,19 @@ class InjectorImpl implements Injector {
 
     @Override
     public <T> Provider<T> getProvider(Key<T> key) {
-        AbstractBinding<T> binding = getBinding(key);
-        InternalFactory<T> internalFactory = binding.getInternalFactory();
+        var binding = getBinding(key);
+        var internalFactory = binding.getInternalFactory();
 
         return () -> {
+            var dependency = Dependency.of(binding.getKey());
             var context = new InjectorContext(this);
-            context.enterRequester(Key.of(Injector.class));
+            context.pushDependency(dependency);
             try {
                 return internalFactory.get(context, Dependency.of(binding.getKey()));
             } catch (InternalProvisionException e) {
                 throw e.toProvisionException();
             } finally {
-                context.exitRequester();
+                context.popDependency();
             }
         };
     }

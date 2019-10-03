@@ -2,7 +2,6 @@ package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Binding;
 import com.bunjlabs.fuga.inject.Key;
-import com.bunjlabs.fuga.inject.Scope;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -14,7 +13,7 @@ public class InheritedContainer implements Container {
 
     private final Map<Key<?>, Binding<?>> explicitBindingsMutable = new LinkedHashMap<>();
     private final Map<Key<?>, Binding<?>> explicitBindings = Collections.unmodifiableMap(explicitBindingsMutable);
-    private final Map<Class<? extends Annotation>, Scope> scopes = new HashMap();
+    private final Map<Class<? extends Annotation>, ScopeBinding> scopes = new HashMap<>();
     private final Container parent;
 
     InheritedContainer(Container parent) {
@@ -45,9 +44,9 @@ public class InheritedContainer implements Container {
     }
 
     @Override
-    public Scope getScope(Class<? extends Annotation> annotationType) {
-        Scope scope = scopes.get(annotationType);
-        return scope != null ? scope : parent.getScope(annotationType);
+    public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
+        ScopeBinding scopeBinding = scopes.get(annotationType);
+        return scopeBinding != null ? scopeBinding : parent.getScopeBinding(annotationType);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class InheritedContainer implements Container {
     }
 
     @Override
-    public void putScopeBinding(Class<? extends Annotation> annotationType, Scope scope) {
-        scopes.put(annotationType, scope);
+    public void putScopeBinding(ScopeBinding scopeBinding) {
+        scopes.put(scopeBinding.getAnnotationType(), scopeBinding);
     }
 }

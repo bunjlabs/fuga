@@ -20,7 +20,8 @@ class DelegatedProviderFactory<T> implements InternalFactory<T> {
             var instance = provider.get();
 
             if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getRequester(), dependency);
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
+                        context.getDependency().getKey().getType(), dependency);
             }
 
             return instance;
