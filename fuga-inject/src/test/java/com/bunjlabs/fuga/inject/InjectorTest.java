@@ -127,10 +127,20 @@ class InjectorTest {
 
     @Test
     void testScopes() {
-        var injector = createInjector(c ->
-                c.bind(SampleSingleton.class).auto().in(Singleton.class)
-        );
-        assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
+        var composer = new Composer() {
+            @Override
+            public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+                return (T) new SampleC();
+            }
+        };
+        var injector = createInjector(c -> {
+            c.bind(SampleA.class).auto().in(Singleton.class);
+            c.bind(SampleB.class).toProvider(SampleB::new).in(Singleton.class);
+            c.bind(SampleC.class).toComposer(composer).in(Singleton.class);
+        });
+        assertSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
+        assertSame(injector.getInstance(SampleB.class), injector.getInstance(SampleB.class));
+        assertSame(injector.getInstance(SampleC.class), injector.getInstance(SampleC.class));
     }
 
 

@@ -78,14 +78,14 @@ class InjectorImpl implements Injector {
 
         return () -> {
             var dependency = Dependency.of(binding.getKey());
-            var context = new InjectorContext(this);
-            context.pushDependency(dependency);
+            var localContext = getContext();
+            localContext.pushDependency(dependency);
             try {
-                return internalFactory.get(context, Dependency.of(binding.getKey()));
+                return internalFactory.get(localContext, Dependency.of(binding.getKey()));
             } catch (InternalProvisionException e) {
                 throw e.toProvisionException();
             } finally {
-                context.popDependency();
+                localContext.popDependency();
             }
         };
     }
