@@ -38,7 +38,7 @@ public class ProviderBindingImpl<T> extends AbstractBinding<T> implements Provid
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(ProviderBinding.class)
                 .add("key", getKey())
                 .add("provider", provider)
                 .toString();

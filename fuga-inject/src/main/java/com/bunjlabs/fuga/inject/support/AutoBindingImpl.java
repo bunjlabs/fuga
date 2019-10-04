@@ -24,7 +24,7 @@ class AutoBindingImpl<T> extends AbstractBinding<T> implements AutoBinding<T> {
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(AutoBinding.class)
                 .add("key", getKey())
                 .toString();
     }

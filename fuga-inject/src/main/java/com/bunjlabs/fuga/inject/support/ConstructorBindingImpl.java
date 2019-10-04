@@ -38,7 +38,7 @@ class ConstructorBindingImpl<T> extends AbstractBinding<T> implements Constructo
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(ConstructorBinding.class)
                 .add("key", getKey())
                 .add("injectionPoint", injectionPoint)
                 .toString();

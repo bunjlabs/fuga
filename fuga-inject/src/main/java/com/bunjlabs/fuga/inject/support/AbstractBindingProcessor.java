@@ -1,5 +1,6 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.common.errors.ErrorMessages;
 import com.bunjlabs.fuga.inject.Binding;
 
 import java.lang.annotation.Annotation;
@@ -9,10 +10,12 @@ import java.util.List;
 abstract class AbstractBindingProcessor implements BindingProcessor {
 
     private final Container container;
+    private final ErrorMessages errorMessages;
     private final List<Initializable> uninitialized = new LinkedList<>();
 
-    AbstractBindingProcessor(Container container) {
+    AbstractBindingProcessor(Container container, ErrorMessages errorMessages) {
         this.container = container;
+        this.errorMessages = errorMessages;
     }
 
     ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
@@ -29,5 +32,9 @@ abstract class AbstractBindingProcessor implements BindingProcessor {
 
     List<Initializable> getUninitialized() {
         return uninitialized;
+    }
+
+    ErrorMessages getErrorMessages() {
+        return errorMessages;
     }
 }

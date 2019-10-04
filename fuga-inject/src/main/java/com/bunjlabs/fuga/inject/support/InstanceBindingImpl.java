@@ -37,7 +37,7 @@ class InstanceBindingImpl<T> extends AbstractBinding<T> implements InstanceBindi
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(InstanceBinding.class)
                 .add("key", getKey())
                 .add("instance", instance)
                 .toString();

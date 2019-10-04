@@ -1,5 +1,6 @@
 package com.bunjlabs.fuga.inject.support;
 
+import com.bunjlabs.fuga.common.errors.ErrorMessages;
 import com.bunjlabs.fuga.inject.*;
 
 import java.util.LinkedList;
@@ -21,13 +22,15 @@ public class InternalInjectorBuilder {
     }
 
     public Injector build() {
+        var errorMessages = new ErrorMessages();
+
         if (parent == null) {
-            parent = createRootInjector();
+            parent = createRootInjector(errorMessages);
         }
 
         var container = new InheritedContainer(parent.getContainer());
-        var bindingProcessor = new DefaultBindingProcessor(container);
-        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container);
+        var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
+        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
 
         for (var unit : units) {
             setupUnit(unit, bindingProcessor, scopeBindingProcessor);
@@ -35,6 +38,10 @@ public class InternalInjectorBuilder {
 
         var injector = new InjectorImpl(parent, container);
         bindingProcessor.getUninitialized().forEach(i -> i.initialize(injector));
+
+        if (errorMessages.hasErrors()) {
+            throw new ConfigurationException(errorMessages.formatMessages());
+        }
 
         return injector;
     }
@@ -61,10 +68,10 @@ public class InternalInjectorBuilder {
         }
     }
 
-    private InjectorImpl createRootInjector() {
+    private InjectorImpl createRootInjector(ErrorMessages errorMessages) {
         var container = new InheritedContainer(Container.EMPTY);
-        var bindingProcessor = new DefaultBindingProcessor(container);
-        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container);
+        var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
+        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
 
         setupUnit(new RootUnit(), bindingProcessor, scopeBindingProcessor);
 

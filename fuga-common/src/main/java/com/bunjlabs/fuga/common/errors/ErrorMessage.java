@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class ErrorMessage {
+
     private final List<Object> sources;
     private final String message;
     private final Throwable cause;

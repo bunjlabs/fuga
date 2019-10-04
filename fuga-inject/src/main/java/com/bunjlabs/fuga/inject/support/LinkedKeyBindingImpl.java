@@ -37,7 +37,7 @@ class LinkedKeyBindingImpl<T> extends AbstractBinding<T> implements LinkedKeyBin
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(LinkedKeyBinding.class)
                 .add("key", getKey())
                 .add("linkedKey", linkedKey)
                 .toString();

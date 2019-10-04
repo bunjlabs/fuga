@@ -1,7 +1,5 @@
 package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.util.ObjectUtils;
-
 import java.util.Objects;
 
 public class Key<T> {
@@ -44,9 +42,7 @@ public class Key<T> {
     public String toString() {
         String s = toString;
         if (s == null) {
-            s = ObjectUtils.toStringJoiner(this)
-                    .add("type", type)
-                    .toString();
+            s = Key.class.getSimpleName() + "[" + type + "]";
             toString = s;
         }
         return s;

@@ -1,6 +1,7 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.common.annotation.AnnotationUtils;
+import com.bunjlabs.fuga.common.errors.ErrorMessages;
 import com.bunjlabs.fuga.inject.*;
 import com.bunjlabs.fuga.inject.bindings.*;
 
@@ -8,8 +9,8 @@ import java.lang.reflect.Constructor;
 
 class DefaultBindingProcessor extends AbstractBindingProcessor {
 
-    DefaultBindingProcessor(Container container) {
-        super(container);
+    DefaultBindingProcessor(Container container, ErrorMessages errorMessages) {
+        super(container, errorMessages);
     }
 
     private <T> InternalFactory<T> scope(Key<T> key, Scoping scoping, InternalFactory<T> internalFactory) {
@@ -23,6 +24,11 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
         } else {
             var scopeBinding = getScopeBinding(scoping.getScopeAnnotation());
             scope = scopeBinding.getScope();
+        }
+
+        if (scope == null) {
+            Errors.noScopeBinding(getErrorMessages(), scoping);
+            return internalFactory;
         }
 
         var providerAdapter = new ProviderToInternalFactoryAdapter<>(internalFactory);
@@ -57,6 +63,10 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ProviderKeyBinding<? extends T> binding) {
                 var providerKey = binding.getProviderKey();
+                if (providerKey.equals(binding.getKey())) {
+                    Errors.recursiveProviderType(getErrorMessages());
+                    return false;
+                }
                 var internalFactory = scope(key, scoping, new DelegatedProviderFactory<>(providerKey));
                 putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
                 return true;
@@ -73,6 +83,10 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             @Override
             public Boolean visit(ComposerKeyBinding<? extends T> binding) {
                 var composerKey = binding.getComposerKey();
+                if (composerKey.equals(binding.getKey())) {
+                    Errors.recursiveComposerType(getErrorMessages());
+                    return false;
+                }
                 var internalFactory = scope(key, scoping, new DelegatedComposerFactory<>(composerKey));
                 putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
                 return true;
@@ -88,6 +102,9 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
 
             @Override
             public Boolean visit(LinkedKeyBinding<? extends T> binding) {
+                if (binding.getKey().equals(binding.getLinkedKey())) {
+                    Errors.recursiveBinding(getErrorMessages(), binding);
+                }
                 var linkKey = binding.getLinkedKey();
                 var internalFactory = scope(key, scoping, new DelegatedKeyFactory<>(linkKey));
                 putBinding(new LinkedKeyBindingImpl<>(key, linkKey, internalFactory));
@@ -100,6 +117,10 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 if (providedBy != null) {
                     @SuppressWarnings("unchecked")
                     var providerKey = (Key<? extends Provider<? extends T>>) Key.of(providedBy.value());
+                    if (providerKey.equals(binding.getKey())) {
+                        Errors.recursiveProviderType(getErrorMessages());
+                        return false;
+                    }
                     var internalFactory = scope(key, scoping, new DelegatedProviderFactory<>(providerKey));
                     putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
                     return true;
@@ -108,6 +129,10 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                 var composedBy = AnnotationUtils.findAnnotation(key.getType(), ComposedBy.class);
                 if (composedBy != null) {
                     var composerKey = Key.of(composedBy.value());
+                    if (composerKey.equals(binding.getKey())) {
+                        Errors.recursiveComposerType(getErrorMessages());
+                        return false;
+                    }
                     var internalFactory = scope(key, scoping, new DelegatedComposerFactory<>(composerKey));
                     putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
                     return true;

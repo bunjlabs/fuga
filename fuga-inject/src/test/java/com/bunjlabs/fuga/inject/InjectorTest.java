@@ -36,13 +36,24 @@ class InjectorTest {
 
     @Test
     void testNotProvided() {
-        assertThrows(ProvisionException.class, () -> createInjector().getInstance(SampleSingleton.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector().getInstance(SampleSingleton.class));
     }
 
     @Test
-    void testCircular() {
-        var injector = createInjector(c -> c.bind(Loop.class).auto());
-        assertThrows(ProvisionException.class, () -> injector.getInstance(Loop.class));
+    void testRecursive() {
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> c.bind(Loop.class).auto()).getInstance(Loop.class));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(SampleA.class).to(SampleA.class)));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(RecursiveProvider.class).auto()));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(RecursiveProvider.class).toProvider(RecursiveProvider.class)));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(RecursiveComposer.class).auto()));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(RecursiveComposer.class).toComposer(RecursiveComposer.class)));
     }
 
     @Test
@@ -122,6 +133,14 @@ class InjectorTest {
         assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
     }
 
+
+    @Test
+    void testErrors() {
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(SampleA.class).to(SampleA.class)));
+    }
+
+
     public interface ISampleA {
 
         FullC getCB();
@@ -175,6 +194,24 @@ class InjectorTest {
 
         @Inject
         public Loop(Loop l) {
+        }
+    }
+
+    @ProvidedBy(RecursiveProvider.class)
+    public static class RecursiveProvider implements Provider<RecursiveProvider> {
+
+        @Override
+        public RecursiveProvider get() {
+            return null;
+        }
+    }
+
+    @ComposedBy(RecursiveComposer.class)
+    public static class RecursiveComposer implements Composer {
+
+        @Override
+        public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+            return null;
         }
     }
 

@@ -24,7 +24,7 @@ class UntargettedBindingImpl<T> extends AbstractBinding<T> implements Untargette
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(UntargettedBinding.class)
                 .add("key", getKey())
                 .toString();
     }

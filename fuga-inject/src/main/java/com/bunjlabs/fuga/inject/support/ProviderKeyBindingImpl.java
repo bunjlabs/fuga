@@ -38,7 +38,7 @@ class ProviderKeyBindingImpl<T> extends AbstractBinding<T> implements ProviderKe
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(ProviderKeyBinding.class)
                 .add("key", getKey())
                 .add("providerKey", providerKey)
                 .toString();

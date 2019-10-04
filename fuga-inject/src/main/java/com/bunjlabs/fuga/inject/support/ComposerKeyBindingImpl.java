@@ -39,7 +39,7 @@ class ComposerKeyBindingImpl<T> extends AbstractBinding<T> implements ComposerKe
 
     @Override
     public String toString() {
-        return ObjectUtils.toStringJoiner(this)
+        return ObjectUtils.toStringJoiner(ComposerKeyBinding.class)
                 .add("key", getKey())
                 .add("composerKey", composerKey)
                 .toString();
