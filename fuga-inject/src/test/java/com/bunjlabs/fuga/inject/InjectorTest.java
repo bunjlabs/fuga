@@ -126,21 +126,30 @@ class InjectorTest {
 
 
     @Test
-    void testScopes() {
+    void testScopes() throws NoSuchMethodException {
+        final var constructor = SampleB.class.getConstructor();
         var composer = new Composer() {
             @Override
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                return (T) new SampleC();
+                return (T) new SampleD();
             }
         };
         var injector = createInjector(c -> {
             c.bind(SampleA.class).auto().in(Singleton.class);
-            c.bind(SampleB.class).toProvider(SampleB::new).in(Singleton.class);
-            c.bind(SampleC.class).toComposer(composer).in(Singleton.class);
+            c.bind(SampleB.class).toConstructor(constructor).in(Singleton.class);
+            c.bind(SampleC.class).toProvider(SampleC::new).in(Singleton.class);
+            c.bind(SampleD.class).toComposer(composer).in(Singleton.class);
+            c.bind(SampleE.class).auto().in(Singleton.class);
+            c.bind(SampleExtSingleton.class).auto();
+            c.bind(SampleSingleton.class).to(SampleExtSingleton.class).in(Singleton.class);
         });
         assertSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
         assertSame(injector.getInstance(SampleB.class), injector.getInstance(SampleB.class));
         assertSame(injector.getInstance(SampleC.class), injector.getInstance(SampleC.class));
+        assertSame(injector.getInstance(SampleD.class), injector.getInstance(SampleD.class));
+        assertSame(injector.getInstance(SampleE.class), injector.getInstance(SampleE.class));
+        assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
+        assertNotSame(injector.getInstance(SampleExtSingleton.class), injector.getInstance(SampleExtSingleton.class));
     }
 
 
@@ -160,6 +169,10 @@ class InjectorTest {
 
     }
 
+    public static class SampleExtSingleton extends SampleSingleton {
+
+    }
+
     public static class SampleA {
 
     }
@@ -169,6 +182,14 @@ class InjectorTest {
     }
 
     public static class SampleC {
+
+    }
+
+    public static class SampleD {
+
+    }
+
+    public static class SampleE {
 
     }
 
