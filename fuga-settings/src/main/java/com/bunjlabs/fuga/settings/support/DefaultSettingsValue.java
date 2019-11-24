@@ -77,6 +77,8 @@ public class DefaultSettingsValue implements SettingsValue {
             } else if (type == short.class || type == Short.class) {
                 return num.byteValue();
             }
+        } else if (value instanceof Boolean) {
+            return Boolean.TRUE.equals(value);
         }
 
         return type.cast(value);

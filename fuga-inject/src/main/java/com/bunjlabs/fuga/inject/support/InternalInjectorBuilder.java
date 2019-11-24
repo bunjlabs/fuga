@@ -32,6 +32,10 @@ public class InternalInjectorBuilder {
         var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
         var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
 
+        var injectorUnit = new InjectorUnit();
+        bindingProcessor.scheduleInitilization(injectorUnit.adapter);
+        setupUnit(injectorUnit, bindingProcessor, scopeBindingProcessor);
+
         for (var unit : units) {
             setupUnit(unit, bindingProcessor, scopeBindingProcessor);
         }
@@ -46,7 +50,7 @@ public class InternalInjectorBuilder {
         return injector;
     }
 
-    private void setupUnit(Unit unit, BindingProcessor bindingProcessor, ScopeBindingProcessor scopeBindingProcessor) {
+    private void setupUnit(Unit unit, AbstractBindingProcessor bindingProcessor, ScopeBindingProcessor scopeBindingProcessor) {
         var configuration = new DefaultConfiguration();
 
         try {
@@ -83,6 +87,16 @@ public class InternalInjectorBuilder {
         @Override
         public void setup(Configuration c) {
             c.bindScope(Singleton.class, new SingletonScope());
+        }
+    }
+
+    private static class InjectorUnit implements Unit {
+
+        private final ProviderToInternalFactoryAdapter<Injector> adapter = new ProviderToInternalFactoryAdapter<>(new InjectorFactory());
+
+        @Override
+        public void setup(Configuration c) {
+            c.bind(Injector.class).toProvider(adapter);
         }
     }
 }

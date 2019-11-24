@@ -30,7 +30,7 @@ abstract class AbstractBinding<T> implements Binding<T> {
         return scoping;
     }
 
-    protected abstract AbstractBinding<T> withScoping(Scoping scope);
+    protected abstract AbstractBinding<T> withScoping(Scoping scoping);
 
     InternalFactory<T> getInternalFactory() {
         return internalFactory;
