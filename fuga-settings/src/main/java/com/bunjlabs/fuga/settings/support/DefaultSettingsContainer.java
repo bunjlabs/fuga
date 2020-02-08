@@ -30,25 +30,25 @@ import java.util.List;
 public class DefaultSettingsContainer implements SettingsContainer {
 
     private final MutableSettingsNode rootNode;
-    private final List<MutableSettingsNode> persistentTrees;
+    private final List<MutableSettingsNode> persistedTrees;
 
     public DefaultSettingsContainer() {
         this.rootNode = new DefaultSettingsNode();
-        this.persistentTrees = new LinkedList<>();
+        this.persistedTrees = new LinkedList<>();
     }
 
 
     public DefaultSettingsContainer(MutableSettingsNode settingsTree) {
         Assert.notNull(settingsTree);
         this.rootNode = settingsTree;
-        this.persistentTrees = new LinkedList<>();
+        this.persistedTrees = new LinkedList<>();
     }
 
     @Override
     public void checkAvailability() throws SettingsException {
         var errorTree = new DefaultSettingsNode();
 
-        persistentTrees.forEach(node -> checkAvailability(errorTree, node));
+        persistedTrees.forEach(node -> checkAvailability(errorTree, node));
     }
 
     private void checkAvailability(MutableSettingsNode errorNode, SettingsNode node) {
@@ -77,17 +77,17 @@ public class DefaultSettingsContainer implements SettingsContainer {
         var settings = settingsSource.getSettings(environment);
 
         rootNode.setAll(settings);
-        updatePersistenTrees();
+        updatePersistedTrees();
     }
 
     @Override
     public void persist(MutableSettingsNode settingTree) {
         Assert.notNull(settingTree);
         settingTree.merge(rootNode);
-        persistentTrees.add(settingTree);
+        persistedTrees.add(settingTree);
     }
 
-    private void updatePersistenTrees() {
-        persistentTrees.forEach(tree -> tree.merge(rootNode));
+    private void updatePersistedTrees() {
+        persistedTrees.forEach(tree -> tree.merge(rootNode));
     }
 }
