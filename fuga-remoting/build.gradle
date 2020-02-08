@@ -1,4 +1,0 @@
-dependencies {
-    compile project(":fuga-common")
-    compile project(":fuga-inject")
-}
