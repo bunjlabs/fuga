@@ -79,7 +79,7 @@ class InjectorImpl implements Injector {
             return binding;
         }
 
-        throw new ProvisionException("No binding found for " + key);
+        throw new ProvisionException("No binding available for " + key);
     }
 
     @Override
@@ -97,7 +97,7 @@ class InjectorImpl implements Injector {
             var localContext = getContext();
             localContext.pushDependency(dependency);
             try {
-                return internalFactory.get(localContext, Dependency.of(binding.getKey()));
+                return internalFactory.get(localContext, dependency);
             } catch (InternalProvisionException e) {
                 throw e.toProvisionException();
             } finally {
