@@ -53,6 +53,10 @@ public class DefaultSettingsComposer implements SettingsComposer {
         var settingsScopeAnnotation = requestedClass.getAnnotation(Settings.class);
         var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requestedClass.getSimpleName();
 
+        if(scopeName.isEmpty()) {
+            scopeName = requestedClass.getSimpleName();
+        }
+
         T proxy = generateProxy(settingsTree.node(scopeName), requestedClass);
 
         container.persist(settingsTree);

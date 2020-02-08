@@ -28,5 +28,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(value = RUNTIME)
 @ComposedBy(SettingsComposer.class)
 public @interface Settings {
-    String value();
+    String value() default "";
 }
