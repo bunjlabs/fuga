@@ -10,12 +10,19 @@ sourceCompatibility = '11'
 targetCompatibility = '11'
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    maven {
+        url('https://maven.pkg.github.com/bunjlabs/fuga')
+    }
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
@@ -33,10 +40,26 @@ publishing {
     publications {
         gpr(MavenPublication) {
             from(components.java)
+            pom {
+                name = "Demo"
+                url = "https://github.com/bunjlabs/fuga"
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+            }
         }
     }
 }
 
 dependencies {
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.1.0'
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }
