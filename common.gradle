@@ -19,13 +19,21 @@ tasks.test {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bunjlabs/fuga")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: ""
+            }
         }
     }
-    repositories {
-        mavenLocal()
+
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
     }
 }
 
