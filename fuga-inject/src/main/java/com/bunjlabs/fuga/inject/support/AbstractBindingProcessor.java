@@ -17,7 +17,6 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.common.errors.ErrorMessages;
-import com.bunjlabs.fuga.inject.Binding;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedList;
@@ -38,11 +37,11 @@ abstract class AbstractBindingProcessor implements BindingProcessor {
         return container.getScopeBinding(annotationType);
     }
 
-    <T> void putBinding(Binding<T> binding) {
+    <T> void putBinding(AbstractBinding<T> binding) {
         container.putBinding(binding);
     }
 
-    void scheduleInitilization(Initializable initializable) {
+    void scheduleInitialization(Initializable initializable) {
         uninitialized.add(initializable);
     }
 

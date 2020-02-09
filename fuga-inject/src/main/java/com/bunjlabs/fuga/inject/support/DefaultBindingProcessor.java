@@ -48,7 +48,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
         }
 
         var providerAdapter = new ProviderToInternalFactoryAdapter<>(internalFactory);
-        scheduleInitilization(providerAdapter);
+        scheduleInitialization(providerAdapter);
         var scopedProvider = scope.scope(key, providerAdapter);
         return new ProviderInstanceFactory<>(scopedProvider);
     }
@@ -129,7 +129,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
 
             @Override
             public Boolean visit(AutoBinding<? extends T> binding) {
-                var providedBy = AnnotationUtils.findAnnotation(key.getType(), ProvidedBy.class);
+                var providedBy = AnnotationUtils.findAnnotation(key.getRawType(), ProvidedBy.class);
                 if (providedBy != null) {
                     @SuppressWarnings("unchecked")
                     var providerKey = (Key<? extends Provider<? extends T>>) Key.of(providedBy.value());
@@ -142,7 +142,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                     return true;
                 }
 
-                var composedBy = AnnotationUtils.findAnnotation(key.getType(), ComposedBy.class);
+                var composedBy = AnnotationUtils.findAnnotation(key.getRawType(), ComposedBy.class);
                 if (composedBy != null) {
                     var composerKey = Key.of(composedBy.value());
                     if (composerKey.equals(binding.getKey())) {

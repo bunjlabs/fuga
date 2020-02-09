@@ -59,11 +59,11 @@ public class InjectionPoint {
     }
 
     public static <T> InjectionPoint forConstructorOf(Key<T> key) {
-        var type = key.getType();
+        var type = key.getRawType();
         var injectableConstructors = getInjectableConstructors(type);
 
         if (injectableConstructors.size() > 1) {
-            throw new ConfigurationException("Too many injectable constructors in " + key.getType());
+            throw new ConfigurationException("Too many injectable constructors in " + key.getRawType());
         }
 
 
@@ -75,7 +75,7 @@ public class InjectionPoint {
         try {
             return forConstructor(type.getDeclaredConstructor());
         } catch (NoSuchMethodException e) {
-            throw new ConfigurationException("No marked or default constructor in " + key.getType());
+            throw new ConfigurationException("No marked or default constructor in " + key.getRawType());
         }
     }
 

@@ -25,11 +25,11 @@ import org.slf4j.LoggerFactory;
 public class DefaultLoggerComposer implements LoggerComposer {
     @Override
     public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-        if (!Logger.class.equals(requested.getType())) {
+        if (!Logger.class.equals(requested.getRawType())) {
             throw new ProvisionException("This composer can create org.slf4j.Logger only");
         }
 
-        return doGet(requester.getType(), requested.getType());
+        return doGet(requester.getRawType(), requested.getRawType());
     }
 
     @SuppressWarnings("unchecked")

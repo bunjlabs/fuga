@@ -32,7 +32,7 @@ public class ComposerTest {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                assertSame(SampleC.class, requested.getType());
+                assertSame(SampleC.class, requested.getRawType());
                 return (T) new SampleC();
             }
         })).getInstance(SampleC.class);
@@ -44,7 +44,7 @@ public class ComposerTest {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                assertSame(Injector.class, requester.getType());
+                assertSame(Injector.class, requester.getRawType());
                 return (T) new SampleC();
             }
         })).getInstance(SampleC.class);
@@ -56,7 +56,7 @@ public class ComposerTest {
                 @Override
                 @SuppressWarnings("unchecked")
                 public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                    assertSame(SampleB.class, requester.getType());
+                    assertSame(SampleB.class, requester.getRawType());
                     return (T) new SampleC();
                 }
             });

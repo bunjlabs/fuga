@@ -16,16 +16,18 @@
 
 package com.bunjlabs.fuga.inject;
 
+import com.bunjlabs.fuga.util.FullType;
+
 import java.util.Objects;
 
 public class Key<T> {
 
-    private final Class<T> type;
+    private final FullType<T> type;
     private final int hashCode;
     private String toString;
 
     private Key(Class<T> type) {
-        this.type = type;
+        this.type = FullType.of(type);
         this.hashCode = computeHashCode();
     }
 
@@ -33,7 +35,11 @@ public class Key<T> {
         return new Key<>(type);
     }
 
-    public Class<T> getType() {
+    public Class<T> getRawType() {
+        return type.getRawType();
+    }
+
+    public FullType<T> getType() {
         return type;
     }
 

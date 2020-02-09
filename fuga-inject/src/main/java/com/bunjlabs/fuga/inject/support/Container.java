@@ -16,12 +16,11 @@
 
 package com.bunjlabs.fuga.inject.support;
 
-import com.bunjlabs.fuga.inject.Binding;
 import com.bunjlabs.fuga.inject.Key;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 
 interface Container {
 
@@ -42,8 +41,8 @@ interface Container {
         }
 
         @Override
-        public Map<Key<?>, Binding<?>> getExplicitBindingsLocal() {
-            return Collections.emptyMap();
+        public <T> List<AbstractBinding<T>> getAllExplicitBindings(Key<T> key) {
+            return Collections.emptyList();
         }
 
         @Override
@@ -52,7 +51,7 @@ interface Container {
         }
 
         @Override
-        public void putBinding(Binding<?> binding) {
+        public void putBinding(AbstractBinding<?> binding) {
             throw new UnsupportedOperationException();
         }
 
@@ -68,11 +67,11 @@ interface Container {
 
     <T> AbstractBinding<T> getExplicitBinding(Key<T> key);
 
-    Map<Key<?>, Binding<?>> getExplicitBindingsLocal();
+    <T> List<AbstractBinding<T>> getAllExplicitBindings(Key<T> key);
 
     ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType);
 
-    void putBinding(Binding<?> binding);
+    void putBinding(AbstractBinding<?> binding);
 
     void putScopeBinding(ScopeBinding scopeBinding);
 }

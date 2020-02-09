@@ -49,7 +49,7 @@ public class InternalInjectorBuilder {
         var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
 
         var injectorUnit = new InjectorUnit();
-        bindingProcessor.scheduleInitilization(injectorUnit.adapter);
+        bindingProcessor.scheduleInitialization(injectorUnit.adapter);
         setupUnit(injectorUnit, bindingProcessor, scopeBindingProcessor);
 
         for (var unit : units) {

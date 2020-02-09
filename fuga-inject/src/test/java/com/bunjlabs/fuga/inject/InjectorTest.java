@@ -123,7 +123,7 @@ class InjectorTest {
                 @Override
                 @SuppressWarnings("unchecked")
                 public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                    return (T) new String();
+                    return (T) "";
                 }
             });
             c.bind(SampleC.class).toComposer(new Composer() {
@@ -146,6 +146,7 @@ class InjectorTest {
         final var constructor = SampleB.class.getConstructor();
         var composer = new Composer() {
             @Override
+            @SuppressWarnings("unchecked")
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
                 return (T) new SampleD();
             }
@@ -168,6 +169,19 @@ class InjectorTest {
         assertNotSame(injector.getInstance(SampleExtSingleton.class), injector.getInstance(SampleExtSingleton.class));
     }
 
+    @Test
+    void testSameKey() {
+        var instanceA = new ISampleBImplA();
+        var instanceB = new ISampleBImplB();
+        var instanceC = new ISampleBImplC();
+        var injector = createInjector(c -> {
+            c.bind(ISampleB.class).toInstance(instanceA);
+            c.bind(ISampleB.class).toInstance(instanceB);
+            c.bind(ISampleB.class).toInstance(instanceC);
+        });
+
+        assertSame(injector.getInstance(ISampleB.class), instanceC);
+    }
 
     @Test
     void testErrors() {
@@ -177,36 +191,31 @@ class InjectorTest {
 
 
     public interface ISampleA {
-
         FullC getCB();
     }
 
-    public static class SampleSingleton {
+    public interface ISampleB {
+    }
 
+    public static class SampleSingleton {
     }
 
     public static class SampleExtSingleton extends SampleSingleton {
-
     }
 
     public static class SampleA {
-
     }
 
     public static class SampleB {
-
     }
 
     public static class SampleC {
-
     }
 
     public static class SampleD {
-
     }
 
     public static class SampleE {
-
     }
 
     public static class FullC {
@@ -235,6 +244,13 @@ class InjectorTest {
         public FullC getCB() {
             return ca;
         }
+    }
+
+    public static class ISampleBImplA implements ISampleB {
+    }
+    public static class ISampleBImplB implements ISampleB {
+    }
+    public static class ISampleBImplC implements ISampleB {
     }
 
     public static class Loop {

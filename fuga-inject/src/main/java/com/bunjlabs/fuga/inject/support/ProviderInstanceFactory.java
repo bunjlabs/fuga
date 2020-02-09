@@ -35,7 +35,7 @@ class ProviderInstanceFactory<T> implements InternalFactory<T> {
 
             if (instance == null && !dependency.isNullable()) {
                 throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
-                        context.getDependency().getKey().getType(), dependency);
+                        context.getDependency().getKey().getRawType(), dependency);
             }
 
             return instance;

@@ -34,7 +34,7 @@ class ConstructorInjector<T> {
         ConstructionContext<T> constructionContext = context.getConstructionContext(this);
 
         if (constructionContext.isConstructing()) {
-            throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getType());
+            throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getRawType());
         }
 
         return construct(context, constructionContext);

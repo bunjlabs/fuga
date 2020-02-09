@@ -35,14 +35,14 @@ class ComposerInstanceFactory<T> implements InternalFactory<T> {
             var instance = getFromProxiedFactory(requester, dependency.getKey());
 
             if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(requester.getType(), dependency);
+                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(requester.getRawType(), dependency);
             }
 
-            if (!dependency.getKey().getType().isAssignableFrom(instance.getClass())) {
+            if (!dependency.getKey().getRawType().isAssignableFrom(instance.getClass())) {
                 throw new ClassCastException("Composer returned unexpected type: "
                         + instance.getClass() +
                         ". Expected: "
-                        + dependency.getKey().getType());
+                        + dependency.getKey().getRawType());
             }
 
             return instance;

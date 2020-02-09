@@ -39,9 +39,9 @@ public class DefaultSettingsComposer implements SettingsComposer {
     @Override
     public <T> T get(Key<?> requester, Key<T> requested) throws SettingsException {
         Assert.notNull(requested);
-        Assert.isTrue(requested.getType().isInterface(), "requested type argument must be an interface");
+        Assert.isTrue(requested.getRawType().isInterface(), "requested type argument must be an interface");
 
-        var requestedClass = requested.getType();
+        var requestedClass = requested.getRawType();
         @SuppressWarnings("unchecked")
         T cached = (T) settingsCache.get(requestedClass);
 
