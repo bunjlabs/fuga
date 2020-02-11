@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.inject.Dependency;
-import com.bunjlabs.fuga.inject.Key;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-class DelegatedKeyFactory<T> implements InternalFactory<T> {
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    private final Key<? extends T> targetKey;
-
-    DelegatedKeyFactory(Key<? extends T> targetKey) {
-        this.targetKey = targetKey;
-    }
-
-    @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var delegatedFactory = context.getInjector().getInternalFactory(targetKey);
-        return delegatedFactory.get(context, dependency);
-    }
+@Target(value = {PARAMETER})
+@Retention(value = RUNTIME)
+public @interface InjectAll {
 }

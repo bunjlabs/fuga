@@ -53,7 +53,7 @@ public class InheritedContainer implements Container {
     @Override
     public <T> List<AbstractBinding<T>> getAllExplicitBindings(Key<T> key) {
         var localBindings = doGetAllBindings(key);
-        return Stream.of(localBindings, parent.getAllExplicitBindings(key))
+        return Stream.of(parent.getAllExplicitBindings(key), localBindings)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toUnmodifiableList());
     }

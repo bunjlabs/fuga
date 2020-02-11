@@ -17,19 +17,24 @@
 package com.bunjlabs.fuga.inject.support;
 
 import com.bunjlabs.fuga.inject.Dependency;
-import com.bunjlabs.fuga.inject.Key;
 
-class DelegatedKeyFactory<T> implements InternalFactory<T> {
+class SingleDependencyInjector<T> implements DependencyInjector<T> {
 
-    private final Key<? extends T> targetKey;
+    private final Dependency<T> dependency;
+    private final InternalFactory<T> internalFactory;
 
-    DelegatedKeyFactory(Key<? extends T> targetKey) {
-        this.targetKey = targetKey;
+    public SingleDependencyInjector(Dependency<T> dependency, InternalFactory<T> internalFactory) {
+        this.dependency = dependency;
+        this.internalFactory = internalFactory;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var delegatedFactory = context.getInjector().getInternalFactory(targetKey);
-        return delegatedFactory.get(context, dependency);
+    public T inject(InjectorContext context) throws InternalProvisionException {
+        context.pushDependency(dependency);
+        try {
+            return internalFactory.get(context, dependency);
+        } finally {
+            context.popDependency();
+        }
     }
 }

@@ -18,6 +18,7 @@ package com.bunjlabs.fuga.util;
 
 import java.io.Serializable;
 import java.lang.reflect.*;
+import java.util.List;
 
 public class FullType<T> {
     public static final FullType<EmptyType> EMPTY = new FullType<>(EmptyType.TYPE);
@@ -44,8 +45,24 @@ public class FullType<T> {
         return new FullType<>(type);
     }
 
+    private static List<FullType<?>> of(Type... types) {
+        var result = new FullType<?>[types.length];
+        for (int t = 0; t < types.length; t++) {
+            result[t] = of(types[t]);
+        }
+        return List.of(result);
+    }
+
     public static <T> FullType<T> of(Class<T> type) {
         return new FullType<>(type);
+    }
+
+    public static List<FullType<?>> of(Class<?>... types) {
+        var result = new FullType<?>[types.length];
+        for (int t = 0; t < types.length; t++) {
+            result[t] = of(types[t]);
+        }
+        return List.of(result);
     }
 
     private static Class<?> resolveType(Type type) {
@@ -75,6 +92,7 @@ public class FullType<T> {
                     + "GenericArrayType, but <" + type + "> is of type " + type.getClass().getName());
         }
     }
+
 
     private static Type resolveBounds(Type[] bounds) {
         if (bounds.length == 0) {
@@ -178,6 +196,24 @@ public class FullType<T> {
         }
 
         return generics;
+    }
+
+    public List<FullType<?>> getParameterTypes(Member methodOrConstructor) {
+        Type[] genericParameterTypes;
+
+        if (methodOrConstructor instanceof Method) {
+            var method = (Method) methodOrConstructor;
+            Assert.isTrue(method.getDeclaringClass().isAssignableFrom(rawType), String.format("%s is not defined by a supertype of %s", method, type));
+            genericParameterTypes = method.getGenericParameterTypes();
+        } else if (methodOrConstructor instanceof Constructor) {
+            var constructor = (Constructor<?>) methodOrConstructor;
+            Assert.isTrue(constructor.getDeclaringClass().isAssignableFrom(rawType), String.format("%s is not construct a supertype of %s", constructor, type));
+            genericParameterTypes = constructor.getGenericParameterTypes();
+        } else {
+            throw new IllegalArgumentException("Not a method or a constructor: " + methodOrConstructor);
+        }
+
+        return of(genericParameterTypes);
     }
 
     @Override

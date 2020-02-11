@@ -16,6 +16,8 @@
 
 package com.bunjlabs.fuga.inject;
 
+import java.util.Set;
+
 public interface Injector {
 
     Injector getParent();
@@ -28,11 +30,23 @@ public interface Injector {
 
     <T> Binding<T> getBinding(Key<T> key);
 
+    <T> Set<Binding<T>> getAllBindings(Class<T> type);
+
+    <T> Set<Binding<T>> getAllBindings(Key<T> key);
+
     <T> Provider<T> getProvider(Class<T> type);
 
     <T> Provider<T> getProvider(Key<T> key);
 
+    <T> Set<Provider<T>> getAllProviders(Class<T> type);
+
+    <T> Set<Provider<T>> getAllProviders(Key<T> key);
+
     <T> T getInstance(Class<T> type);
 
     <T> T getInstance(Key<T> key);
+
+    <T> Set<T> getAllInstances(Class<T> type);
+
+    <T> Set<T> getAllInstances(Key<T> key);
 }

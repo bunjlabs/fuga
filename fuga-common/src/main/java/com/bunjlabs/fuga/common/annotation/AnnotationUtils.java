@@ -32,6 +32,10 @@ public abstract class AnnotationUtils {
         return findAnnotation(source, annotationType) != null;
     }
 
+    public static boolean hasAnnotation(Annotation[] annotations, Class<? extends Annotation> annotationType) {
+        return findAnnotation(annotations, annotationType) != null;
+    }
+
     public static <A extends Annotation> A findAnnotation(AnnotatedElement source, Class<A> annotationType) {
         return findAnnotation(source, annotationType, AnnotationFilter.ALL);
     }
@@ -85,11 +89,12 @@ public abstract class AnnotationUtils {
         return retention != null && retention.value() == RetentionPolicy.RUNTIME;
     }
 
-    @SuppressWarnings("unchecked")
-    private static <A extends Annotation> A findAnnotation(Annotation[] annotations, Class<A> annotationType) {
+    public static <A extends Annotation> A findAnnotation(Annotation[] annotations, Class<A> annotationType) {
         for (Annotation annotation : annotations) {
             if (annotation != null && annotationType == annotation.annotationType()) {
-                return (A) annotation;
+                @SuppressWarnings("unchecked")
+                var result = (A) annotation;
+                return result;
             }
         }
         return null;

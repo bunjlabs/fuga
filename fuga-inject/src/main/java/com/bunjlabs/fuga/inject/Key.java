@@ -18,6 +18,7 @@ package com.bunjlabs.fuga.inject;
 
 import com.bunjlabs.fuga.util.FullType;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 public class Key<T> {
@@ -26,12 +27,20 @@ public class Key<T> {
     private final int hashCode;
     private String toString;
 
-    private Key(Class<T> type) {
-        this.type = FullType.of(type);
+    private Key(FullType<T> type) {
+        this.type = type;
         this.hashCode = computeHashCode();
     }
 
+    public static Key<?> of(Type type) {
+        return new Key<>(FullType.of(type));
+    }
+
     public static <T> Key<T> of(Class<T> type) {
+        return new Key<>(FullType.of(type));
+    }
+
+    public static <T> Key<T> of(FullType<T> type) {
         return new Key<>(type);
     }
 

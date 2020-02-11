@@ -154,7 +154,7 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                     return true;
                 }
 
-                var injectionPoint = InjectionPoint.forConstructorOf(key);
+                var injectionPoint = InjectionPoint.forConstructorOf(key.getType());
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
                 var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));

@@ -16,11 +16,14 @@
 
 package com.bunjlabs.fuga.inject;
 
+import com.bunjlabs.fuga.common.annotation.AnnotationUtils;
+import com.bunjlabs.fuga.util.FullType;
 import com.bunjlabs.fuga.util.ObjectUtils;
 import com.bunjlabs.fuga.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,32 +35,51 @@ public class Dependency<T> {
     private final Key<T> key;
     private final int parameterIndex;
     private final boolean nullable;
+    private final boolean requestedAll;
+    private final Key<?> realKey;
     private final int hashCode;
     private String toString;
 
-    private Dependency(Key<T> key, int parameterIndex, boolean nullable) {
+    private Dependency(Key<T> key, int parameterIndex, boolean nullable, boolean requestedAll) {
+        this(key, parameterIndex, nullable, requestedAll, key);
+    }
+
+    private Dependency(Key<T> key, int parameterIndex, boolean nullable, boolean requestedAll, Key<?> realKey) {
         this.key = notNull(key);
         this.parameterIndex = parameterIndex;
         this.nullable = nullable;
+        this.requestedAll = requestedAll;
+        this.realKey = realKey;
         this.hashCode = computeHashCode();
     }
 
     public static <T> Dependency<T> of(Key<T> key) {
-        return new Dependency<>(key, -1, true);
+        return new Dependency<>(key, -1, true, false);
     }
 
     public static <T> Dependency<T> of(Class<T> clazz) {
-        return new Dependency<>(Key.of(clazz), -1, true);
+        return new Dependency<>(Key.of(clazz), -1, true, false);
     }
 
-    public static List<Dependency<?>> fromMember(Member member, Annotation[][] parametersAnnotations) {
-        List<Dependency<?>> dependencies = new ArrayList<>();
+    public static List<Dependency<?>> fromMember(Member member, FullType<?> declaredType, Annotation[][] parametersAnnotations) {
+        var dependencies = new ArrayList<Dependency<?>>();
 
         int index = 0;
-        for (Class<?> parameterType : ReflectionUtils.getParameterTypes(member)) {
-            Annotation[] parameterAnnotations = parametersAnnotations[index];
-            Key<?> parameterKey = Key.of(parameterType);
-            dependencies.add(new Dependency<>(parameterKey, index, ReflectionUtils.allowsNull(parameterAnnotations)));
+        for (FullType<?> parameterType : declaredType.getParameterTypes(member)) {
+            var parameterAnnotations = parametersAnnotations[index];
+
+            var parameterKey = Key.of(parameterType);
+            var nullable = ReflectionUtils.allowsNull(parameterAnnotations);
+            var requestedAll = AnnotationUtils.hasAnnotation(parameterAnnotations, InjectAll.class);
+
+            if (requestedAll) {
+                var realType = ((ParameterizedType) parameterType.getType()).getActualTypeArguments();
+                var realKey = Key.of(realType[0]);
+                dependencies.add(new Dependency<>(parameterKey, index, nullable, true, realKey));
+            } else {
+                dependencies.add(new Dependency<>(parameterKey, index, nullable, false));
+            }
+
             index++;
         }
 
@@ -78,6 +100,14 @@ public class Dependency<T> {
 
     public boolean isNullable() {
         return nullable;
+    }
+
+    public boolean isRequestedAll() {
+        return requestedAll;
+    }
+
+    public Key<?> getRealKey() {
+        return realKey;
     }
 
     @Override

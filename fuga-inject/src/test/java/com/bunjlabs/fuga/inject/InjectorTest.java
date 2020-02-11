@@ -18,6 +18,9 @@ package com.bunjlabs.fuga.inject;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InjectorTest {
@@ -184,6 +187,44 @@ class InjectorTest {
     }
 
     @Test
+    void testMultibinding() {
+        var instances = Arrays.asList(
+                new ISampleBImplA(),
+                new ISampleBImplB(),
+                new ISampleBImplC()
+        );
+        var injector = createInjector(c -> {
+            c.bind(ISampleB.class).toInstance(instances.get(0));
+            c.bind(ISampleB.class).toInstance(instances.get(1));
+            c.bind(ISampleB.class).toInstance(instances.get(2));
+        });
+
+        var injectedInstances = injector.getAllInstances(ISampleB.class);
+
+        assertTrue(injectedInstances.containsAll(instances));
+    }
+
+    @Test
+    void testInjectorAll() {
+        var instances = Arrays.asList(
+                new ISampleBImplA(),
+                new ISampleBImplB(),
+                new ISampleBImplC()
+        );
+        var injector = createInjector(c -> {
+            c.bind(ISampleB.class).toInstance(instances.get(0));
+            c.bind(ISampleB.class).toInstance(instances.get(1));
+            c.bind(ISampleB.class).toInstance(instances.get(2));
+
+            c.bind(InjectAllSample.class).auto();
+        });
+
+        var injectAllSample = injector.getInstance(InjectAllSample.class);
+
+        assertTrue(injectAllSample.set.containsAll(instances));
+    }
+
+    @Test
     void testErrors() {
         assertThrows(ConfigurationException.class,
                 () -> createInjector(c -> c.bind(SampleA.class).to(SampleA.class)));
@@ -260,6 +301,15 @@ class InjectorTest {
         }
     }
 
+
+    public static class InjectAllSample {
+        Set<ISampleB> set;
+
+        @Inject
+        public InjectAllSample(@InjectAll Set<ISampleB> set) {
+            this.set = set;
+        }
+    }
     @ProvidedBy(RecursiveProvider.class)
     public static class RecursiveProvider implements Provider<RecursiveProvider> {
 
