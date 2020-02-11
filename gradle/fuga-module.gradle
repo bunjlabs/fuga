@@ -1,0 +1,33 @@
+apply from: "$rootDir/gradle/publications.gradle"
+
+jar {
+    manifest.attributes["Implementation-Title"] = project.name
+    manifest.attributes["Implementation-Version"] = project.version
+    manifest.attributes["Created-By"] = "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+javadoc {
+    options.header = project.name
+    options.author = true
+    options.encoding = "UTF-8"
+    options.memberLevel = JavadocMemberLevel.PROTECTED
+    options.use = true
+    options.addStringOption('Xdoclint:none', '-quiet')
+
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

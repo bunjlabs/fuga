@@ -1,4 +1,4 @@
-rootProject.name = 'Fuga-Framework'
+rootProject.name = 'fuga'
 
 include 'fuga-common'
 include 'fuga-inject'

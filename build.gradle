@@ -1,5 +1,36 @@
-apply plugin: 'base'
+plugins {
+    id "com.jfrog.bintray" version "1.7"
+}
 
-subprojects {
-    apply from: rootProject.file('common.gradle')
+configure(subprojects) { project ->
+    group = 'com.bunjlabs.fuga'
+
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+
+    apply from: "${rootDir}/gradle/fuga-module.gradle"
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencies {
+        testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.0')
+        testImplementation('org.junit.jupiter:junit-jupiter-params:5.6.0')
+
+        testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.0')
+        testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.0')
+    }
+}
+
+configure(rootProject) {
+    description = "Fuga Framework"
 }

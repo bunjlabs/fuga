@@ -1,6 +1,6 @@
 dependencies {
-    compile project(":fuga-common")
-    compile project(":fuga-inject")
+    api project(":fuga-common")
+    api project(":fuga-inject")
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.9'
