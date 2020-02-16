@@ -37,10 +37,9 @@ public class DefaultApplicationEventManager implements ApplicationEventManager {
             throw new IllegalArgumentException();
         }
 
-
         @SuppressWarnings("unchecked")
-        FullType<? extends ApplicationEvent> eventType = genericType;
+        var eventType = (FullType<? extends ApplicationEvent>) genericType;
 
-        eventDispatcher.addEventListener(genericType.getRawType(), listener);
+        eventDispatcher.addEventListener(eventType.getRawType(), listener);
     }
 }

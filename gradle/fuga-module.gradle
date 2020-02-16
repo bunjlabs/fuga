@@ -1,3 +1,4 @@
+apply plugin: "maven-publish"
 apply from: "$rootDir/gradle/publications.gradle"
 
 jar {

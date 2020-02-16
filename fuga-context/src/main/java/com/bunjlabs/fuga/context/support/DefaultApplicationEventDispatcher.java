@@ -28,15 +28,16 @@ public class DefaultApplicationEventDispatcher implements ApplicationEventDispat
     private final Map<ListenerKey, ListenersCache> listeners = new HashMap<>();
 
     @Override
+    @SuppressWarnings("unchecked")
     public void dispatch(ApplicationEvent event) {
         var listenerKey = new ListenerKey(event.getClass());
         var listenerCache = getListenersCache(listenerKey);
 
-        listenerCache.applicationListeners.forEach(l -> invokeListener(l, event));
+        listenerCache.applicationListeners.forEach(l -> invokeListener((ApplicationListener<ApplicationEvent>) l, event));
     }
 
     @Override
-    public void addEventListener(Class<? extends ApplicationEvent> eventType, ApplicationListener listener) {
+    public void addEventListener(Class<? extends ApplicationEvent> eventType, ApplicationListener<?> listener) {
         var listenerKey = new ListenerKey(eventType);
         var listenerCache = getListenersCache(listenerKey);
 
@@ -92,6 +93,6 @@ public class DefaultApplicationEventDispatcher implements ApplicationEventDispat
     }
 
     private static class ListenersCache {
-        private final Set<ApplicationListener> applicationListeners = new LinkedHashSet<>();
+        private final Set<ApplicationListener<? extends ApplicationEvent>> applicationListeners = new LinkedHashSet<>();
     }
 }

@@ -22,7 +22,7 @@ import java.util.List;
 
 public class FullType<T> {
     public static final FullType<EmptyType> EMPTY = new FullType<>(EmptyType.TYPE);
-    public static final FullType[] EMPTY_ARRAY = new FullType[0];
+    public static final FullType<?>[] EMPTY_ARRAY = new FullType[0];
 
     private final Type type;
     private final Class<T> rawType;
@@ -69,7 +69,7 @@ public class FullType<T> {
         if (type == EmptyType.TYPE) return EmptyType.class;
 
         if (type instanceof Class) {
-            return (Class) type;
+            return (Class<?>) type;
         } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             var rawType = parameterizedType.getRawType();
@@ -101,7 +101,7 @@ public class FullType<T> {
         return bounds[0];
     }
 
-    public <V> FullType as(Class<V> type) {
+    public <V> FullType<?> as(Class<V> type) {
         if (this == EMPTY) {
             return EMPTY;
         }
@@ -110,7 +110,7 @@ public class FullType<T> {
         }
 
         for (FullType<?> interfaceType : getInterfaces()) {
-            FullType interfaceAsType = interfaceType.as(type);
+            var interfaceAsType = interfaceType.as(type);
             if (interfaceAsType != EMPTY) {
                 return interfaceAsType;
             }
@@ -126,7 +126,7 @@ public class FullType<T> {
         return rawType;
     }
 
-    public FullType getSuperType() {
+    public FullType<?> getSuperType() {
         if (rawType == null || rawType.getGenericSuperclass() == null) {
             return EMPTY;
         }
@@ -136,7 +136,7 @@ public class FullType<T> {
         return superType;
     }
 
-    public FullType[] getInterfaces() {
+    public FullType<?>[] getInterfaces() {
         if (rawType == null) {
             return EMPTY_ARRAY;
         }
@@ -155,11 +155,11 @@ public class FullType<T> {
     }
 
     public FullType<?> getGeneric(int... indexes) {
-        FullType[] generics = getGenerics();
+        var generics = getGenerics();
         if (indexes == null || indexes.length == 0) {
             return (generics.length == 0 ? EMPTY : generics[0]);
         }
-        FullType generic = this;
+        FullType<?> generic = this;
         for (int index : indexes) {
             generics = generic.getGenerics();
             if (index < 0 || index >= generics.length) {
@@ -170,7 +170,7 @@ public class FullType<T> {
         return generic;
     }
 
-    public FullType[] getGenerics() {
+    public FullType<?>[] getGenerics() {
         if (this == EMPTY) {
             return EMPTY_ARRAY;
         }
@@ -219,7 +219,7 @@ public class FullType<T> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        return o instanceof FullType<?> && type.equals(((FullType) o).type);
+        return o instanceof FullType<?> && type.equals(((FullType<?>) o).type);
     }
 
     @Override
@@ -231,7 +231,7 @@ public class FullType<T> {
     public String toString() {
         String s = toString;
         if (s == null) {
-            s = type instanceof Class ? ((Class) type).getName() : type.toString();
+            s = type instanceof Class ? ((Class<?>) type).getName() : type.toString();
             toString = s;
         }
         return s;

@@ -20,5 +20,5 @@ public interface ApplicationEventDispatcher {
 
     void dispatch(ApplicationEvent event);
 
-    void addEventListener(Class<? extends ApplicationEvent> eventType, ApplicationListener listener);
+    void addEventListener(Class<? extends ApplicationEvent> eventType, ApplicationListener<?> listener);
 }

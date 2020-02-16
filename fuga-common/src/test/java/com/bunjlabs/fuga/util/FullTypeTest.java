@@ -18,13 +18,16 @@ package com.bunjlabs.fuga.util;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FullTypeTest {
 
     @Test
     public void testNull() {
-        assertThrows(IllegalArgumentException.class, () -> FullType.of(null));
+        assertThrows(IllegalArgumentException.class, () -> FullType.of((Type) null));
+        assertThrows(IllegalArgumentException.class, () -> FullType.of((Class<?>) null));
     }
 
     @Test

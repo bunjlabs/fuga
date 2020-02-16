@@ -1,28 +1,17 @@
-apply plugin: "maven-publish"
+apply plugin: "com.jfrog.bintray"
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("http://192.168.0.4/maven/bunjlabs/fuga")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR") ?: ""
-                password = System.getenv("GITHUB_TOKEN") ?: ""
-            }
-        }
-    }
+bintray {
+    user = bintrayBunjlabsUser
+    key = bintrayBunjlabsKey
 
-    publications {
-        mavenJava(MavenPublication) {
-            pom {
-                url = "https://github.com/bunjlabs/fuga"
-                licenses {
-                    license {
-                        name = "The Apache License, Version 2.0"
-                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    }
-                }
-            }
-        }
+    publications = ['mavenJava']
+
+    pkg {
+        repo = 'fuga'
+        name = project.name
+        userOrg = 'bunjlabs'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/bunjlabs/fuga.git'
+        publicDownloadNumbers = true
     }
 }
