@@ -1,8 +1,8 @@
 apply plugin: "com.jfrog.bintray"
 
 bintray {
-    user = bintrayBunjlabsUser ?: ""
-    key = bintrayBunjlabsKey ?: ""
+    user = properties.containsKey('bintrayBunjlabsUser') ? bintrayBunjlabsUser : System.getenv('BINTRAY_USER')
+    key = properties.containsKey('bintrayBunjlabsKey') ? bintrayBunjlabsKey : System.getenv('BINTRAY_KEY')
 
     publications = ['mavenJava']
 
