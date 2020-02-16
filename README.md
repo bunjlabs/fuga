@@ -1,4 +1,4 @@
-# Fuga Framework ![master](https://github.com/bunjlabs/fuga/workflows/master/badge.svg)
+# Fuga Framework [![master](https://github.com/bunjlabs/fuga/workflows/master/badge.svg)](https://github.com/bunjlabs/fuga/actions/runs/40065560)
 
 Java framework for fast and scalable applications.
 
