@@ -20,6 +20,7 @@ import com.bunjlabs.fuga.inject.Binder;
 import com.bunjlabs.fuga.inject.Key;
 import com.bunjlabs.fuga.inject.Scope;
 import com.bunjlabs.fuga.inject.binder.BindingBuilder;
+import com.bunjlabs.fuga.util.Assert;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ class DefaultBinder implements Binder {
 
     @Override
     public void bindScope(Class<? extends Annotation> annotationType, Scope scope) {
+        Assert.notNull(annotationType);
+        Assert.notNull(scope);
         scopeBindings.add(new ScopeBinding(annotationType, scope));
     }
 

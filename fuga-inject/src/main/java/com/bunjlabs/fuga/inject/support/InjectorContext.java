@@ -60,8 +60,7 @@ class InjectorContext {
 
     <T> ConstructionContext<T> getConstructionContext(Object key) {
         @SuppressWarnings("unchecked")
-        ConstructionContext<T> constructionContext =
-                (ConstructionContext<T>) constructionContexts.get(key);
+        var constructionContext = (ConstructionContext<T>) constructionContexts.get(key);
 
         if (constructionContext == null) {
             constructionContext = new ConstructionContext<>();

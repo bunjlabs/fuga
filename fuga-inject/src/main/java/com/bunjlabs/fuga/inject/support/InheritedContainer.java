@@ -35,16 +35,6 @@ public class InheritedContainer implements Container {
     }
 
     @Override
-    public Container parent() {
-        return parent;
-    }
-
-    @Override
-    public boolean hasParent() {
-        return true;
-    }
-
-    @Override
     public <T> AbstractBinding<T> getExplicitBinding(Key<T> key) {
         var binding = doGetBinding(key);
         return binding != null ? binding : parent.getExplicitBinding(key);
@@ -111,6 +101,4 @@ public class InheritedContainer implements Container {
 
         bindings.add(binding);
     }
-
-
 }

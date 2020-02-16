@@ -45,10 +45,6 @@ class InjectorImpl implements Injector {
 
     <T> DependencyInjector<T> getDependencyInjector(Dependency<T> dependency) {
         if (dependency.isRequestedAll()) {
-            if (!dependency.getKey().getRawType().isAssignableFrom(Set.class)) {
-                throw new ProvisionException("Not a collection" + dependency);
-            }
-
             // T is actually a Collection
             var realKey = dependency.getRealKey();
             var realDependency = Dependency.of(realKey);

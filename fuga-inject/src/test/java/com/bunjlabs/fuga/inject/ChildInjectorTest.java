@@ -51,7 +51,9 @@ public class ChildInjectorTest {
         var second = first.createChildInjector();
         var third = second.createChildInjector();
         var root = first.getParent();
+
         assertNotNull(first.getParent());
+        assertNotSame(first, first.getParent());
         assertSame(first, second.getParent());
         assertSame(second, third.getParent());
         assertNull(root.getParent());

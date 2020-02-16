@@ -39,17 +39,22 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
             scope = scoping.getScopeInstance();
         } else {
             var scopeBinding = getScopeBinding(scoping.getScopeAnnotation());
-            scope = scopeBinding.getScope();
-        }
+            if (scopeBinding == null) {
+                Errors.noScopeBinding(getErrorMessages(), scoping.getScopeAnnotation());
+                return internalFactory;
+            }
 
-        if (scope == null) {
-            Errors.noScopeBinding(getErrorMessages(), scoping);
-            return internalFactory;
+            scope = scopeBinding.getScope();
         }
 
         var providerAdapter = new ProviderToInternalFactoryAdapter<>(internalFactory);
         scheduleInitialization(providerAdapter);
         var scopedProvider = scope.scope(key, providerAdapter);
+        if (scopedProvider == null) {
+            Errors.noScopedProvider(getErrorMessages(), scoping);
+            return internalFactory;
+        }
+
         return new ProviderInstanceFactory<>(scopedProvider);
     }
 
@@ -154,13 +159,20 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                     return true;
                 }
 
-                var injectionPoint = InjectionPoint.forConstructorOf(key.getType());
+                var injectionPoint = InjectionPoint.forConstructorOf(key.getFullType());
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
                 var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));
                 var internalFactory = scope(key, scoping, new ConstructorFactory<>(constructorInjector));
                 putBinding(new ConstructorBindingImpl<>(key, injectionPoint, internalFactory));
                 return true;
+            }
+
+            @Override
+            public Boolean visit(UntargettedBinding<? extends T> binding) {
+                Errors.untargettedBinding(getErrorMessages(), binding);
+
+                return false;
             }
         });
     }

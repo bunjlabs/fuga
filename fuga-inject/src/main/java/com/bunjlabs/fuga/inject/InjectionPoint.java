@@ -16,17 +16,11 @@
 
 package com.bunjlabs.fuga.inject;
 
-import com.bunjlabs.fuga.common.annotation.AnnotationUtils;
 import com.bunjlabs.fuga.util.FullType;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,7 +59,7 @@ public class InjectionPoint {
 
         // If no marked constructor is found, look for a default one instead
         try {
-            return forConstructor(type.getRawType().getDeclaredConstructor(), type);
+            return forConstructor(type.getRawType().getConstructor(), type);
         } catch (NoSuchMethodException e) {
             throw new ConfigurationException("No marked or default constructor in " + type);
         }
@@ -84,23 +78,11 @@ public class InjectionPoint {
         return member;
     }
 
-    public boolean containsAnnotation(Class<? extends Annotation> annotationType) {
-        return AnnotationUtils.hasAnnotation((AnnotatedElement) member, annotationType);
-    }
-
-    public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-        return AnnotationUtils.findAnnotation((AnnotatedElement) member, annotationType);
-    }
-
     public List<Dependency<?>> getDependencies() {
         return dependencies;
     }
 
     public boolean isOptional() {
         return optional;
-    }
-
-    public Class<?> getDeclaringClass() {
-        return member.getDeclaringClass();
     }
 }

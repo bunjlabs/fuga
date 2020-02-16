@@ -27,11 +27,6 @@ public class Key<T> {
     private final int hashCode;
     private String toString;
 
-    private Key(FullType<T> type) {
-        this.type = type;
-        this.hashCode = computeHashCode();
-    }
-
     public static Key<?> of(Type type) {
         return new Key<>(FullType.of(type));
     }
@@ -44,11 +39,16 @@ public class Key<T> {
         return new Key<>(type);
     }
 
+    private Key(FullType<T> type) {
+        this.type = type;
+        this.hashCode = computeHashCode();
+    }
+
     public Class<T> getRawType() {
         return type.getRawType();
     }
 
-    public FullType<T> getType() {
+    public FullType<T> getFullType() {
         return type;
     }
 

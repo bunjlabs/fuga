@@ -16,10 +16,14 @@
 
 package com.bunjlabs.fuga.inject;
 
+import com.bunjlabs.fuga.inject.bindings.InstanceBinding;
+import com.bunjlabs.fuga.lang.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,8 +38,9 @@ class InjectorTest {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> c.bind(SampleSingleton.class).toInstance(singleton));
 
-        assertSame(singleton, injector.getInstance(Key.of(SampleSingleton.class)));
         assertSame(singleton, injector.getInstance(SampleSingleton.class));
+        assertSame(singleton, injector.getProvider(SampleSingleton.class).get());
+        assertTrue(injector.getBinding(SampleSingleton.class) instanceof InstanceBinding);
     }
 
     @Test
@@ -54,6 +59,11 @@ class InjectorTest {
     }
 
     @Test
+    void testInstall() {
+        assertNotNull(createInjector(a -> a.install(b -> b.install(c -> c.bind(SampleA.class).auto()))).getInstance(SampleA.class));
+    }
+
+    @Test
     void testNotProvided() {
         assertThrows(ProvisionException.class,
                 () -> createInjector().getInstance(SampleSingleton.class));
@@ -61,10 +71,15 @@ class InjectorTest {
 
     @Test
     void testRecursive() {
-        assertThrows(ProvisionException.class,
-                () -> createInjector(c -> c.bind(Loop.class).auto()).getInstance(Loop.class));
         assertThrows(ConfigurationException.class,
                 () -> createInjector(c -> c.bind(SampleA.class).to(SampleA.class)));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> c.bind(Loop.class).auto()).getInstance(Loop.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> {
+                    c.bind(Loop1.class).auto();
+                    c.bind(Loop2.class).auto();
+                }).getInstance(Loop1.class));
         assertThrows(ConfigurationException.class,
                 () -> createInjector(c -> c.bind(RecursiveProvider.class).auto()));
         assertThrows(ConfigurationException.class,
@@ -73,6 +88,28 @@ class InjectorTest {
                 () -> createInjector(c -> c.bind(RecursiveComposer.class).auto()));
         assertThrows(ConfigurationException.class,
                 () -> createInjector(c -> c.bind(RecursiveComposer.class).toComposer(RecursiveComposer.class)));
+    }
+
+
+    @Test
+    void testInjectorBinding() {
+        assertNotNull(createInjector().getInstance(Injector.class));
+
+        var i1 = createInjector();
+        var i2 = i1.createChildInjector();
+        var i3 = i2.createChildInjector();
+
+        var i1b = i1.getInstance(Injector.class);
+        var i2b = i2.getInstance(Injector.class);
+        var i3b = i3.getInstance(Injector.class);
+
+        assertSame(i1, i1b);
+        assertSame(i2, i2b);
+        assertSame(i3, i3b);
+
+        assertNotSame(i1, i2b);
+        assertNotSame(i1, i3b);
+        assertNotSame(i2, i3b);
     }
 
     @Test
@@ -96,12 +133,37 @@ class InjectorTest {
         var singleton = new SampleSingleton();
         var injector = createInjector(c -> {
             c.bind(SampleSingleton.class).toProvider(() -> singleton);
-            c.bind(SampleA.class).toProvider(SampleA::new);
-            c.bind(SampleB.class).toProvider(() -> null);
+            c.bind(SampleAProvider.class).auto();
+            c.bind(SampleA.class).toProvider(SampleAProvider.class);
+            c.bind(SampleB.class).toProvider(SampleB::new);
+            c.bind(SampleC.class).toProvider(() -> null);
         });
         assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
         assertNotSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
-        assertNull(injector.getInstance(SampleB.class));
+        assertNotSame(injector.getInstance(SampleB.class), injector.getInstance(SampleB.class));
+        assertNull(injector.getInstance(SampleC.class));
+    }
+
+    @Test
+    void testProviderComposerInternalException() {
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c ->
+                        c.bind(SampleA.class).toProvider(new SampleAExceptionProvider()))
+                        .getInstance(SampleA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> {
+                    c.bind(SampleAExceptionProvider.class).auto();
+                    c.bind(SampleA.class).toProvider(SampleAExceptionProvider.class);
+                }).getInstance(SampleA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c ->
+                        c.bind(SampleA.class).toComposer(new SampleAExceptionComposer()))
+                        .getInstance(SampleA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> {
+                    c.bind(SampleAExceptionComposer.class).auto();
+                    c.bind(SampleA.class).toComposer(SampleAExceptionComposer.class);
+                }).getInstance(SampleA.class));
     }
 
     @Test
@@ -115,21 +177,25 @@ class InjectorTest {
                     return (T) singleton;
                 }
             });
-            c.bind(SampleA.class).toComposer(new Composer() {
+
+            c.bind(SampleAComposer.class).auto();
+            c.bind(SampleA.class).toComposer(SampleAComposer.class);
+
+            c.bind(SampleB.class).toComposer(new Composer() {
                 @Override
                 @SuppressWarnings("unchecked")
                 public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-                    return (T) new SampleA();
+                    return (T) new SampleB();
                 }
             });
-            c.bind(SampleB.class).toComposer(new Composer() {
+            c.bind(SampleC.class).toComposer(new Composer() {
                 @Override
                 @SuppressWarnings("unchecked")
                 public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
                     return (T) "";
                 }
             });
-            c.bind(SampleC.class).toComposer(new Composer() {
+            c.bind(SampleD.class).toComposer(new Composer() {
                 @Override
                 @SuppressWarnings("unchecked")
                 public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
@@ -139,13 +205,28 @@ class InjectorTest {
         });
         assertSame(injector.getInstance(SampleSingleton.class), injector.getInstance(SampleSingleton.class));
         assertNotSame(injector.getInstance(SampleA.class), injector.getInstance(SampleA.class));
-        assertThrows(ProvisionException.class, () -> injector.getInstance(SampleB.class));
+        assertNotSame(injector.getInstance(SampleB.class), injector.getInstance(SampleB.class));
         assertThrows(ProvisionException.class, () -> injector.getInstance(SampleC.class));
+        assertNull(injector.getInstance(SampleD.class));
     }
 
 
     @Test
-    void testScopes() throws NoSuchMethodException {
+    void testProvidedAndComposedBy() {
+        var injector = createInjector(c -> {
+            c.bind(ProvidedBySampleProvider.class).auto();
+            c.bind(ComposedBySampleComposer.class).auto();
+
+            c.bind(ProvidedBySample.class).auto();
+            c.bind(ComposedBySample.class).auto();
+        });
+
+        assertNotSame(injector.getInstance(ProvidedBySample.class), injector.getInstance(ProvidedBySample.class));
+        assertNotSame(injector.getInstance(ComposedBySample.class), injector.getInstance(ComposedBySample.class));
+    }
+
+    @Test
+    void testSingletonScope() throws NoSuchMethodException {
         final var constructor = SampleB.class.getConstructor();
         var composer = new Composer() {
             @Override
@@ -187,7 +268,7 @@ class InjectorTest {
     }
 
     @Test
-    void testMultibinding() {
+    void testMultibindingProviderMethods() {
         var instances = Arrays.asList(
                 new ISampleBImplA(),
                 new ISampleBImplB(),
@@ -199,18 +280,18 @@ class InjectorTest {
             c.bind(ISampleB.class).toInstance(instances.get(2));
         });
 
-        var injectedInstances = injector.getAllInstances(ISampleB.class);
-
-        assertTrue(injectedInstances.containsAll(instances));
+        assertTrue(injector.getAllInstances(ISampleB.class).containsAll(instances));
+        assertTrue(injector.getAllProviders(ISampleB.class).stream()
+                .map(Provider::get)
+                .collect(Collectors.toSet())
+                .containsAll(instances));
+        assertTrue(injector.getAllBindings(ISampleB.class).stream()
+                .allMatch(b -> b instanceof InstanceBinding));
     }
 
     @Test
-    void testInjectorAll() {
-        var instances = Arrays.asList(
-                new ISampleBImplA(),
-                new ISampleBImplB(),
-                new ISampleBImplC()
-        );
+    void testInjectAll() {
+        var instances = Arrays.asList(new ISampleBImplA(), new ISampleBImplB(), new ISampleBImplC());
         var injector = createInjector(c -> {
             c.bind(ISampleB.class).toInstance(instances.get(0));
             c.bind(ISampleB.class).toInstance(instances.get(1));
@@ -225,9 +306,76 @@ class InjectorTest {
     }
 
     @Test
-    void testErrors() {
+    void testInjectorAllToNonSet() {
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bind(SampleA.class).to(SampleA.class)));
+                () -> createInjector(c -> c.bind(InjectAllSampleErr.class).auto()));
+    }
+
+    @Test
+    void testNotInjectable() {
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(NoDefaultConstructor.class).auto()));
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(TooManyInjectable.class).auto()));
+    }
+
+    @Test
+    void testNonNullableDependency() {
+        Unit u = c -> c.bind(NonNullableA.class).auto();
+
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> c.bind(SampleA.class).toInstance(null))
+                        .createChildInjector(u).getInstance(NonNullableA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> c.bind(SampleA.class).toProvider(() -> null))
+                        .createChildInjector(u).getInstance(NonNullableA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> {
+                    c.bind(SampleANullProvider.class).auto();
+                    c.bind(SampleA.class).toProvider(SampleANullProvider.class);
+                }).createChildInjector(u).getInstance(NonNullableA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> c.bind(SampleA.class).toComposer(new Composer() {
+                    @Override
+                    public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+                        return null;
+                    }
+                })).createChildInjector(u).getInstance(NonNullableA.class));
+        assertThrows(ProvisionException.class,
+                () -> createInjector(c -> {
+                    c.bind(SampleANullComposer.class).auto();
+                    c.bind(SampleA.class).toComposer(SampleANullComposer.class);
+                }).createChildInjector(u).getInstance(NonNullableA.class));
+    }
+
+    @Test
+    void testNullableDependency() {
+        Unit u = c -> c.bind(NullableA.class).auto();
+
+        assertNotNull(createInjector(c -> c.bind(SampleA.class).toInstance(null))
+                .createChildInjector(u).getInstance(NullableA.class));
+        assertNotNull(createInjector(c -> c.bind(SampleA.class).toProvider(() -> null))
+                .createChildInjector(u).getInstance(NullableA.class));
+        assertNotNull(createInjector(c -> {
+            c.bind(SampleANullProvider.class).auto();
+            c.bind(SampleA.class).toProvider(SampleANullProvider.class);
+        }).createChildInjector(u).getInstance(NullableA.class));
+        assertNotNull(createInjector(c -> c.bind(SampleA.class).toComposer(new Composer() {
+            @Override
+            public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+                return null;
+            }
+        })).createChildInjector(u).getInstance(NullableA.class));
+        assertNotNull(createInjector(c -> {
+            c.bind(SampleANullComposer.class).auto();
+            c.bind(SampleA.class).toComposer(SampleANullComposer.class);
+        }).createChildInjector(u).getInstance(NullableA.class));
+    }
+
+    @Test
+    void testUntargetted() {
+        assertThrows(ConfigurationException.class,
+                () -> createInjector(c -> c.bind(SampleA.class)));
     }
 
 
@@ -259,6 +407,80 @@ class InjectorTest {
     public static class SampleE {
     }
 
+    public static class SampleAProvider implements Provider<SampleA> {
+
+        @Override
+        public SampleA get() {
+            return new SampleA();
+        }
+    }
+
+    public static class SampleANullProvider implements Provider<SampleA> {
+
+        @Override
+        public SampleA get() {
+            return null;
+        }
+    }
+
+    public static class SampleAExceptionProvider implements Provider<SampleA> {
+
+        @Override
+        public SampleA get() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static class SampleAComposer implements Composer {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+            return (T) new SampleA();
+        }
+    }
+
+    public static class SampleANullComposer implements Composer {
+
+        @Override
+        public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+            return null;
+        }
+    }
+
+    public static class SampleAExceptionComposer implements Composer {
+
+        @Override
+        public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @ProvidedBy(ProvidedBySampleProvider.class)
+    public static class ProvidedBySample {
+    }
+
+    public static class ProvidedBySampleProvider implements Provider<ProvidedBySample> {
+
+        @Override
+        public ProvidedBySample get() {
+            return new ProvidedBySample();
+        }
+    }
+
+    @ComposedBy(ComposedBySampleComposer.class)
+    public static class ComposedBySample {
+    }
+
+    public static class ComposedBySampleComposer implements Composer {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
+            return (T) new ComposedBySample();
+        }
+    }
+
     public static class FullC {
 
         SampleA a;
@@ -271,6 +493,19 @@ class InjectorTest {
         }
     }
 
+    public static class NullableA {
+
+        @Inject
+        public NullableA(@Nullable SampleA a) {
+        }
+    }
+
+    public static class NonNullableA {
+
+        @Inject
+        public NonNullableA(SampleA a) {
+        }
+    }
 
     public static class ISampleAImpl implements ISampleA {
 
@@ -289,18 +524,30 @@ class InjectorTest {
 
     public static class ISampleBImplA implements ISampleB {
     }
+
     public static class ISampleBImplB implements ISampleB {
     }
+
     public static class ISampleBImplC implements ISampleB {
     }
 
     public static class Loop {
-
         @Inject
         public Loop(Loop l) {
         }
     }
 
+    public static class Loop1 {
+        @Inject
+        public Loop1(Loop2 l) {
+        }
+    }
+
+    public static class Loop2 {
+        @Inject
+        public Loop2(Loop1 l) {
+        }
+    }
 
     public static class InjectAllSample {
         Set<ISampleB> set;
@@ -310,6 +557,16 @@ class InjectorTest {
             this.set = set;
         }
     }
+
+    public static class InjectAllSampleErr {
+        List<ISampleB> set;
+
+        @Inject
+        public InjectAllSampleErr(@InjectAll List<ISampleB> set) {
+            this.set = set;
+        }
+    }
+
     @ProvidedBy(RecursiveProvider.class)
     public static class RecursiveProvider implements Provider<RecursiveProvider> {
 
@@ -325,6 +582,22 @@ class InjectorTest {
         @Override
         public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
             return null;
+        }
+    }
+
+
+    public static class NoDefaultConstructor {
+        private NoDefaultConstructor() {
+        }
+    }
+
+    public static class TooManyInjectable {
+        @Inject
+        private TooManyInjectable(int a) {
+        }
+
+        @Inject
+        private TooManyInjectable(int a, int b) {
         }
     }
 

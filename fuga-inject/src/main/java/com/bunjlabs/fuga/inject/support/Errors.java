@@ -35,12 +35,16 @@ abstract class Errors {
         errorMessages.addMessage("Binding %s points to itself.", binding);
     }
 
-    static void noScopeBinding(ErrorMessages errorMessages, Scoping scoping) {
-        errorMessages.addMessage("No %s scope binding found.", scoping);
+    static void noScopeBinding(ErrorMessages errorMessages, Class<? extends Annotation> annotation) {
+        errorMessages.addMessage("No %s scope binding found.", annotation);
     }
 
-    static void recursiveProviderType(ErrorMessages errorMessages, Scoping scoping) {
-        errorMessages.addMessage("@ProvidedBy points to the same class it annotates.", scoping);
+    static void nullScope(ErrorMessages errorMessages, Scoping scoping) {
+        errorMessages.addMessage("Scope %s is not found or it is null.", scoping);
+    }
+
+    static void noScopedProvider(ErrorMessages errorMessages, Scoping scoping) {
+        errorMessages.addMessage("Scoped provider for scope %s is null.", scoping);
     }
 
     static void recursiveProviderType(ErrorMessages errorMessages) {
@@ -49,5 +53,9 @@ abstract class Errors {
 
     static void recursiveComposerType(ErrorMessages errorMessages) {
         errorMessages.addMessage("@ComposedBy points to the same class it annotates.");
+    }
+
+    static void untargettedBinding(ErrorMessages errorMessages, Binding<?> binding) {
+        errorMessages.addMessage("Untargetted binding {} detected.", binding);
     }
 }

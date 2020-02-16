@@ -45,8 +45,8 @@ public abstract class ReflectionUtils {
     }
 
     public static boolean allowsNull(Annotation[] annotations) {
-        for (Annotation a : annotations) {
-            Class<? extends Annotation> type = a.annotationType();
+        for (var a : annotations) {
+            var type = a.annotationType();
             if ("Nullable".equals(type.getSimpleName())) {
                 return true;
             }

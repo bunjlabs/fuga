@@ -37,7 +37,22 @@ class ConstructorInjector<T> {
             throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getRawType());
         }
 
-        return construct(context, constructionContext);
+        var t = constructionContext.getReference();
+        if (t != null) {
+            throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getRawType());
+        }
+
+        t = construct(context, constructionContext);
+
+        try {
+            constructionContext.setReference(t);
+
+            // TODO: inject to members
+
+            return t;
+        } finally {
+            constructionContext.removeReference();
+        }
     }
 
     private T construct(InjectorContext context, ConstructionContext<T> constructionContext) throws InternalProvisionException {
@@ -48,7 +63,7 @@ class ConstructorInjector<T> {
         } catch (InvocationTargetException e) {
             throw InternalProvisionException.errorInjectingConstructor(e);
         } finally {
-            constructionContext.endConstruction();
+            constructionContext.finishConstruction();
         }
     }
 

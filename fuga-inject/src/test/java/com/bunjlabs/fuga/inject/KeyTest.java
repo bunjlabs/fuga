@@ -14,34 +14,30 @@
  * limitations under the License.
  */
 
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.inject;
 
-class ConstructionContext<T> {
+import com.bunjlabs.fuga.util.FullType;
+import org.junit.jupiter.api.Test;
 
-    private boolean constructing = false;
-    private T reference;
+import java.lang.reflect.Type;
 
-    boolean isConstructing() {
-        return constructing;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+class KeyTest {
+
+    @Test
+    void testKeyEquality() {
+        var a = Key.of(Foo.class);
+        var b = Key.of((Type) Foo.class);
+        var c = Key.of(FullType.of(Foo.class));
+
+        assertEquals(a, b);
+        assertEquals(b, c);
+        assertEquals(a, c);
     }
 
-    void startConstruction() {
-        this.constructing = true;
-    }
 
-    void finishConstruction() {
-        this.constructing = false;
-    }
-
-    T getReference() {
-        return reference;
-    }
-
-    void setReference(T reference) {
-        this.reference = reference;
-    }
-
-    void removeReference() {
-        this.reference = null;
+    interface Foo {
     }
 }

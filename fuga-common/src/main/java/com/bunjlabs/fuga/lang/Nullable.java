@@ -14,34 +14,17 @@
  * limitations under the License.
  */
 
-package com.bunjlabs.fuga.inject.support;
+package com.bunjlabs.fuga.lang;
 
-class ConstructionContext<T> {
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    private boolean constructing = false;
-    private T reference;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    boolean isConstructing() {
-        return constructing;
-    }
-
-    void startConstruction() {
-        this.constructing = true;
-    }
-
-    void finishConstruction() {
-        this.constructing = false;
-    }
-
-    T getReference() {
-        return reference;
-    }
-
-    void setReference(T reference) {
-        this.reference = reference;
-    }
-
-    void removeReference() {
-        this.reference = null;
-    }
+@Target(value = {METHOD, PARAMETER, FIELD})
+@Retention(value = RUNTIME)
+@Documented
+public @interface Nullable {
 }

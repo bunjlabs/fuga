@@ -27,26 +27,25 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.bunjlabs.fuga.util.Assert.notNull;
 
 public class Dependency<T> {
 
     private final Key<T> key;
-    private final int parameterIndex;
     private final boolean nullable;
     private final boolean requestedAll;
     private final Key<?> realKey;
     private final int hashCode;
     private String toString;
 
-    private Dependency(Key<T> key, int parameterIndex, boolean nullable, boolean requestedAll) {
-        this(key, parameterIndex, nullable, requestedAll, key);
+    private Dependency(Key<T> key, boolean nullable, boolean requestedAll) {
+        this(key, nullable, requestedAll, key);
     }
 
-    private Dependency(Key<T> key, int parameterIndex, boolean nullable, boolean requestedAll, Key<?> realKey) {
+    private Dependency(Key<T> key, boolean nullable, boolean requestedAll, Key<?> realKey) {
         this.key = notNull(key);
-        this.parameterIndex = parameterIndex;
         this.nullable = nullable;
         this.requestedAll = requestedAll;
         this.realKey = realKey;
@@ -54,11 +53,11 @@ public class Dependency<T> {
     }
 
     public static <T> Dependency<T> of(Key<T> key) {
-        return new Dependency<>(key, -1, true, false);
+        return new Dependency<>(key, true, false);
     }
 
     public static <T> Dependency<T> of(Class<T> clazz) {
-        return new Dependency<>(Key.of(clazz), -1, true, false);
+        return new Dependency<>(Key.of(clazz), true, false);
     }
 
     public static List<Dependency<?>> fromMember(Member member, FullType<?> declaredType, Annotation[][] parametersAnnotations) {
@@ -73,11 +72,15 @@ public class Dependency<T> {
             var requestedAll = AnnotationUtils.hasAnnotation(parameterAnnotations, InjectAll.class);
 
             if (requestedAll) {
+                if (!parameterKey.getRawType().isAssignableFrom(Set.class)) {
+                    throw new ConfigurationException("Not a Set" + parameterKey);
+                }
+
                 var realType = ((ParameterizedType) parameterType.getType()).getActualTypeArguments();
                 var realKey = Key.of(realType[0]);
-                dependencies.add(new Dependency<>(parameterKey, index, nullable, true, realKey));
+                dependencies.add(new Dependency<>(parameterKey, nullable, true, realKey));
             } else {
-                dependencies.add(new Dependency<>(parameterKey, index, nullable, false));
+                dependencies.add(new Dependency<>(parameterKey, nullable, false));
             }
 
             index++;
@@ -87,15 +90,11 @@ public class Dependency<T> {
     }
 
     private int computeHashCode() {
-        return Objects.hash(key, parameterIndex, nullable);
+        return Objects.hash(key, nullable);
     }
 
     public Key<T> getKey() {
         return key;
-    }
-
-    public int getParameterIndex() {
-        return parameterIndex;
     }
 
     public boolean isNullable() {
@@ -116,7 +115,7 @@ public class Dependency<T> {
         if (o == null || getClass() != o.getClass()) return false;
         Dependency<?> dep = (Dependency<?>) o;
         return key.equals(dep.key)
-                && parameterIndex == dep.parameterIndex
+                && requestedAll == dep.requestedAll
                 && nullable == dep.nullable;
     }
 
@@ -131,7 +130,7 @@ public class Dependency<T> {
         if (s == null) {
             s = ObjectUtils.toStringJoiner(this)
                     .add("key", key)
-                    .add("parameterIndex", parameterIndex)
+                    .add("requestedAll", requestedAll)
                     .add("nullable", nullable)
                     .toString();
             toString = s;

@@ -26,16 +26,6 @@ interface Container {
 
     Container EMPTY = new Container() {
         @Override
-        public Container parent() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean hasParent() {
-            return false;
-        }
-
-        @Override
         public <T> AbstractBinding<T> getExplicitBinding(Key<T> key) {
             return null;
         }
@@ -60,10 +50,6 @@ interface Container {
             throw new UnsupportedOperationException();
         }
     };
-
-    Container parent();
-
-    boolean hasParent();
 
     <T> AbstractBinding<T> getExplicitBinding(Key<T> key);
 

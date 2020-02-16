@@ -38,7 +38,7 @@ class ComposerInstanceFactory<T> implements InternalFactory<T> {
                 throw InternalProvisionException.nullInjectedIntoNonNullableDependency(requester.getRawType(), dependency);
             }
 
-            if (!dependency.getKey().getRawType().isAssignableFrom(instance.getClass())) {
+            if (instance != null && !dependency.getKey().getRawType().isAssignableFrom(instance.getClass())) {
                 throw new ClassCastException("Composer returned unexpected type: "
                         + instance.getClass() +
                         ". Expected: "
