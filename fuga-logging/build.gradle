@@ -1,5 +1,6 @@
 dependencies {
     api project(":fuga-common")
     api project(":fuga-inject")
-    api 'org.slf4j:slf4j-api:1.7.28'
+
+    api 'org.slf4j:slf4j-api:1.7.32'
 }

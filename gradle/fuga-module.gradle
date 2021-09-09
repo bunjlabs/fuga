@@ -1,4 +1,5 @@
 apply plugin: "maven-publish"
+apply plugin: "signing"
 apply from: "$rootDir/gradle/publications.gradle"
 
 jar {
@@ -29,6 +30,30 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            pom {
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'show.vars'
+                        name = 'Artem Shurygin'
+                        email = 'artem.shurygin@bunjlabs.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/bunjlabs/fuga.git'
+                    developerConnection = 'scm:git:ssh://github.com/bunjlabs/fuga.git'
+                    url = 'http://github.com/bunjlabs/fuga/'
+                }
+            }
         }
     }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

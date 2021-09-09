@@ -1,13 +1,3 @@
-plugins {
-    id "com.jfrog.bintray" version "1.8.4"
-}
-
-task getHomeDir {
-    doLast {
-        println gradle.gradleHomeDir
-    }
-}
-
 configure(subprojects) { project ->
     group = 'com.bunjlabs.fuga'
 
@@ -17,11 +7,10 @@ configure(subprojects) { project ->
     sourceCompatibility = '11'
     targetCompatibility = '11'
 
-    apply from: "${rootDir}/gradle/fuga-module.gradle"
+    apply from: "${rootDir}/gradle/publications.gradle"
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     test {
@@ -29,11 +18,11 @@ configure(subprojects) { project ->
     }
 
     dependencies {
-        testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.0')
-        testImplementation('org.junit.jupiter:junit-jupiter-params:5.6.0')
+        testImplementation('org.junit.jupiter:junit-jupiter-api:5.7.2')
+        testImplementation('org.junit.jupiter:junit-jupiter-params:5.7.2')
 
-        testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.0')
-        testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.0')
+        testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.7.2')
+        testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.7.2')
     }
 }
 
