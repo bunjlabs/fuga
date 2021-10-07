@@ -25,18 +25,17 @@ class ScopeBinding {
     private final Class<? extends Annotation> annotationType;
     private final Scope scope;
 
-    public ScopeBinding(Class<? extends Annotation> annotationType, Scope scope) {
+    ScopeBinding(Class<? extends Annotation> annotationType, Scope scope) {
         this.annotationType = annotationType;
         this.scope = scope;
     }
 
-    public Class<? extends Annotation> getAnnotationType() {
+    Class<? extends Annotation> getAnnotationType() {
         return annotationType;
     }
 
-    public Scope getScope() {
+    Scope getScope() {
         return scope;
     }
-
 
 }

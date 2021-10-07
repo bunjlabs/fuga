@@ -1,0 +1,4 @@
+dependencies {
+    api project(":fuga-common")
+    api project(":fuga-inject")
+}

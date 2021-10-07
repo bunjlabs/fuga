@@ -17,6 +17,7 @@
 package fuga.inject.support;
 
 import fuga.common.errors.ErrorMessages;
+import fuga.common.Key;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedList;
@@ -35,6 +36,14 @@ abstract class AbstractBindingProcessor implements BindingProcessor {
 
     ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
         return container.getScopeBinding(annotationType);
+    }
+
+    <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key) {
+        return container.getKeyedWatchings(key);
+    }
+
+    List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key) {
+        return container.getMatchedWatchings(key);
     }
 
     <T> void putBinding(AbstractBinding<T> binding) {

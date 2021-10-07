@@ -16,19 +16,16 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ComposerTest {
 
-    private static Injector createInjector(Unit... unit) {
-        return new InjectorBuilder().withUnits(unit).build();
-    }
-
     @Test
     public void testComposerRequested() {
-        createInjector(c -> c.bind(SampleC.class).toComposer(new Composer() {
+        Injector.create(c -> c.bind(SampleC.class).toComposer(new Composer() {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
@@ -40,7 +37,7 @@ public class ComposerTest {
 
     @Test
     public void testComposerRequester() {
-        createInjector(c -> c.bind(SampleC.class).toComposer(new Composer() {
+        Injector.create(c -> c.bind(SampleC.class).toComposer(new Composer() {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
@@ -49,7 +46,7 @@ public class ComposerTest {
             }
         })).getInstance(SampleC.class);
 
-        Injector injector = createInjector(c -> {
+        Injector injector = Injector.create(c -> {
             c.bind(SampleA.class);
             c.bind(SampleB.class);
             c.bind(SampleC.class).toComposer(new Composer() {

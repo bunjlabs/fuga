@@ -17,14 +17,14 @@
 package fuga.inject.support;
 
 import fuga.inject.BindingVisitor;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.Provider;
 import fuga.inject.bindings.ProviderBinding;
 import fuga.util.ObjectUtils;
 
 import java.util.Objects;
 
-public class ProviderBindingImpl<T> extends AbstractBinding<T> implements ProviderBinding<T> {
+class ProviderBindingImpl<T> extends AbstractBinding<T> implements ProviderBinding<T> {
 
     private final Provider<? extends T> provider;
 

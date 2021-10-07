@@ -16,9 +16,10 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.inject.*;
-import fuga.inject.binder.BindingBuilder;
-import fuga.inject.binder.ScopedBindingBuilder;
+import fuga.inject.builder.BindingBuilder;
+import fuga.inject.builder.ScopedBindingBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;

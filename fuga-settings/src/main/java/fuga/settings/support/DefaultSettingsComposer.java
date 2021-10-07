@@ -16,7 +16,8 @@
 
 package fuga.settings.support;
 
-import fuga.inject.Key;
+import fuga.inject.Inject;
+import fuga.common.Key;
 import fuga.settings.*;
 import fuga.util.Assert;
 
@@ -31,6 +32,7 @@ public class DefaultSettingsComposer implements SettingsComposer {
     private final SettingsContainer container;
     private final Map<Class<?>, Object> settingsCache;
 
+    @Inject
     public DefaultSettingsComposer(SettingsContainer container) {
         this.container = container;
         this.settingsCache = new HashMap<>();

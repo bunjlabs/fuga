@@ -17,7 +17,7 @@
 package fuga.inject.support;
 
 import fuga.inject.Dependency;
-import fuga.inject.Key;
+import fuga.common.Key;
 
 class DelegatedKeyFactory<T> implements InternalFactory<T> {
 

@@ -16,7 +16,7 @@
 
 package fuga.logging.support;
 
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.ProvisionException;
 import fuga.logging.LoggerComposer;
 import org.slf4j.LoggerFactory;

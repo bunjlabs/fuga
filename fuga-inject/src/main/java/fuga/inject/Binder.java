@@ -16,13 +16,24 @@
 
 package fuga.inject;
 
-import fuga.inject.binder.BindingBuilder;
+import fuga.common.Key;
+import fuga.inject.builder.BindingBuilder;
+import fuga.inject.builder.KeyedWatchingBuilder;
+import fuga.inject.builder.MatchedWatchingBuilder;
+import fuga.lang.FullType;
+import fuga.util.Matcher;
 
 import java.lang.annotation.Annotation;
 
 public interface Binder {
 
     void bindScope(Class<? extends Annotation> annotationType, Scope scope);
+
+    <T> KeyedWatchingBuilder<T> watch(Class<T> type);
+
+    <T> KeyedWatchingBuilder<T> watch(Key<T> type);
+
+    MatchedWatchingBuilder watch(Matcher<FullType<?>> matcher);
 
     <T> BindingBuilder<T> bind(Class<T> type);
 

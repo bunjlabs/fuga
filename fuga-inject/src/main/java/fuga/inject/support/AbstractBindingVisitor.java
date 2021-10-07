@@ -17,7 +17,7 @@
 package fuga.inject.support;
 
 import fuga.inject.BindingVisitor;
-import fuga.inject.Key;
+import fuga.common.Key;
 
 abstract class AbstractBindingVisitor<T, V> implements BindingVisitor<T, V> {
 

@@ -19,16 +19,15 @@ package fuga.inject.support;
 import fuga.common.errors.ErrorMessages;
 import fuga.inject.*;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collections;
 
 public class InternalInjectorBuilder {
 
-    private final List<Unit> units = new LinkedList<>();
+    private Iterable<Unit> units = Collections.emptyList();
     private InjectorImpl parent = null;
 
     public InternalInjectorBuilder withUnits(Iterable<Unit> units) {
-        units.forEach(this.units::add);
+        this.units = units;
         return this;
     }
 
@@ -47,14 +46,16 @@ public class InternalInjectorBuilder {
         var container = new InheritedContainer(parent.getContainer());
         var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
         var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
+        var listenerBindingProcessor = new DefaultWatchingProcessor(container, errorMessages);
+
+        var context = new SetupContext(bindingProcessor, scopeBindingProcessor, listenerBindingProcessor);
 
         var injectorUnit = new InjectorUnit();
         bindingProcessor.scheduleInitialization(injectorUnit.adapter);
-        setupUnit(injectorUnit, bindingProcessor, scopeBindingProcessor);
 
-        for (var unit : units) {
-            setupUnit(unit, bindingProcessor, scopeBindingProcessor);
-        }
+        setupUnit(injectorUnit, context);
+
+        units.forEach(u -> setupUnit(u, context));
 
         var injector = new InjectorImpl(parent, container);
         bindingProcessor.getUninitialized().forEach(i -> i.initialize(injector));
@@ -66,7 +67,7 @@ public class InternalInjectorBuilder {
         return injector;
     }
 
-    private void setupUnit(Unit unit, AbstractBindingProcessor bindingProcessor, ScopeBindingProcessor scopeBindingProcessor) {
+    private void setupUnit(Unit unit, SetupContext context) {
         var configuration = new DefaultConfiguration();
 
         try {
@@ -75,25 +76,22 @@ public class InternalInjectorBuilder {
             throw new ConfigurationException("Unable to setup unit " + unit, e);
         }
 
-        for (var innerUnit : configuration.getInstalledUnits()) {
-            setupUnit(innerUnit, bindingProcessor, scopeBindingProcessor);
-        }
+        configuration.getInstalledUnits().forEach(u -> setupUnit(u, context));
 
-        for (AbstractBinding<?> binding : configuration.getBindings()) {
-            bindingProcessor.process(binding);
-        }
-
-        for (ScopeBinding scopeBinding : configuration.getScopeBindings()) {
-            scopeBindingProcessor.process(scopeBinding);
-        }
+        configuration.getScopeBindings().removeIf(context.scopeBindingProcessor::process);
+        configuration.getKeyedWatchings().removeIf(context.watchingsProcessor::process);
+        configuration.getMatchedWatchings().removeIf(context.watchingsProcessor::process);
+        configuration.getBindings().removeIf(context.bindingProcessor::process);
     }
 
     private InjectorImpl createRootInjector(ErrorMessages errorMessages) {
         var container = new InheritedContainer(Container.EMPTY);
         var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
         var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
+        var listenerBindingProcessor = new DefaultWatchingProcessor(container, errorMessages);
 
-        setupUnit(new RootUnit(), bindingProcessor, scopeBindingProcessor);
+        var context = new SetupContext(bindingProcessor, scopeBindingProcessor, listenerBindingProcessor);
+        setupUnit(new RootUnit(), context);
 
         return new InjectorImpl(null, container);
     }
@@ -113,6 +111,18 @@ public class InternalInjectorBuilder {
         @Override
         public void setup(Configuration c) {
             c.bind(Injector.class).toProvider(adapter);
+        }
+    }
+
+    private static class SetupContext {
+        final BindingProcessor bindingProcessor;
+        final ScopeBindingProcessor scopeBindingProcessor;
+        final DefaultWatchingProcessor watchingsProcessor;
+
+        public SetupContext(BindingProcessor bindingProcessor, ScopeBindingProcessor scopeBindingProcessor, DefaultWatchingProcessor watchingsProcessor) {
+            this.bindingProcessor = bindingProcessor;
+            this.scopeBindingProcessor = scopeBindingProcessor;
+            this.watchingsProcessor = watchingsProcessor;
         }
     }
 }

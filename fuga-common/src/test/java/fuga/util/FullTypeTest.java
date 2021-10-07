@@ -16,6 +16,7 @@
 
 package fuga.util;
 
+import fuga.lang.FullType;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;

@@ -16,6 +16,8 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
+
 public interface Binding<T> {
 
     Key<T> getKey();

@@ -16,30 +16,30 @@
 
 package fuga.context.support;
 
-import fuga.context.ApplicationEventDispatcher;
-import fuga.context.ApplicationEventPublisher;
 import fuga.context.ConfigurableApplicationContext;
-import fuga.context.events.ContextClosedEvent;
-import fuga.context.events.ContextStartedEvent;
-import fuga.context.events.ContextStoppedEvent;
+import fuga.context.events.ApplicationClosedEvent;
+import fuga.context.events.ApplicationStartedEvent;
+import fuga.context.events.ApplicationStoppedEvent;
+import fuga.event.EventBus;
 import fuga.util.ObjectUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
 
 abstract class AbstractApplicationContext implements ConfigurableApplicationContext {
 
     private final Object shutdownMonitor = new Object();
     private final AtomicBoolean active = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private final EventBus eventBus;
+
     private String id = ObjectUtils.getIdentityHexString(this);
-    private String applicationName = id;
+    private final String applicationName = id;
+
     private long startupTime = 0;
-    private ApplicationEventDispatcher applicationEventDispatcher;
-    private ApplicationEventPublisher applicationEventPublisher;
     private Thread shutdownHook;
 
-    AbstractApplicationContext() {
+    AbstractApplicationContext(EventBus eventBus) {
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -66,23 +66,9 @@ abstract class AbstractApplicationContext implements ConfigurableApplicationCont
     public void init() {
         this.startupTime = System.currentTimeMillis();
 
-        initApplicationEventDispatcher();
-
         registerShutdownHook();
 
         this.active.set(true);
-    }
-
-    private void initApplicationEventDispatcher() {
-        var injector = getInjector();
-        this.applicationEventDispatcher = injector.getInstance(ApplicationEventDispatcher.class);
-    }
-
-    private ApplicationEventDispatcher getApplicationEventDispatcher() {
-        if (applicationEventDispatcher == null) {
-            throw new IllegalStateException("ApplicationEventDispatcher not initialized");
-        }
-        return applicationEventDispatcher;
     }
 
     private void registerShutdownHook() {
@@ -98,22 +84,18 @@ abstract class AbstractApplicationContext implements ConfigurableApplicationCont
 
     private void doClose() {
         if (this.active.get()) {
-            try {
-                getApplicationEventDispatcher().dispatch(new ContextClosedEvent(this));
-            } catch (Throwable ex) {
-                ex.printStackTrace();
-            }
+            eventBus.fire(new ApplicationClosedEvent(this));
         }
     }
 
     @Override
     public void start() {
-        getApplicationEventDispatcher().dispatch(new ContextStartedEvent(this));
+        eventBus.fire(new ApplicationStartedEvent(this));
     }
 
     @Override
     public void stop() {
-        getApplicationEventDispatcher().dispatch(new ContextStoppedEvent(this));
+        eventBus.fire(new ApplicationStoppedEvent(this));
     }
 
     @Override

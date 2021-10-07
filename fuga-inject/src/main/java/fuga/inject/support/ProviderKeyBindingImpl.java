@@ -17,7 +17,7 @@
 package fuga.inject.support;
 
 import fuga.inject.BindingVisitor;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.Provider;
 import fuga.inject.bindings.ProviderKeyBinding;
 import fuga.util.ObjectUtils;
@@ -43,6 +43,7 @@ class ProviderKeyBindingImpl<T> extends AbstractBinding<T> implements ProviderKe
         return providerKey;
     }
 
+    @Override
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
     }

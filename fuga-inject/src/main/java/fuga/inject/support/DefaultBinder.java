@@ -17,10 +17,14 @@
 package fuga.inject.support;
 
 import fuga.inject.Binder;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.Scope;
-import fuga.inject.binder.BindingBuilder;
+import fuga.inject.builder.BindingBuilder;
+import fuga.inject.builder.KeyedWatchingBuilder;
+import fuga.inject.builder.MatchedWatchingBuilder;
+import fuga.lang.FullType;
 import fuga.util.Assert;
+import fuga.util.Matcher;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -30,6 +34,8 @@ class DefaultBinder implements Binder {
 
     private final List<AbstractBinding<?>> bindings = new ArrayList<>();
     private final List<ScopeBinding> scopeBindings = new ArrayList<>();
+    private final List<AbstractKeyedWatching<?>> keyedWatchings = new ArrayList<>();
+    private final List<AbstractMatchedWatching> matchedWatchings = new ArrayList<>();
 
     DefaultBinder() {
     }
@@ -42,6 +48,21 @@ class DefaultBinder implements Binder {
     }
 
     @Override
+    public <T> KeyedWatchingBuilder<T> watch(Class<T> type) {
+        return watch(Key.of(type));
+    }
+
+    @Override
+    public <T> KeyedWatchingBuilder<T> watch(Key<T> type) {
+        return new DefaultKeyedWatchingBuilder<>(type, keyedWatchings);
+    }
+
+    @Override
+    public MatchedWatchingBuilder watch(Matcher<FullType<?>> matcher) {
+        return new DefaultMatchedWatchingBuilder(matcher, matchedWatchings);
+    }
+
+    @Override
     public <T> BindingBuilder<T> bind(Class<T> type) {
         return bind(Key.of(type));
     }
@@ -51,11 +72,19 @@ class DefaultBinder implements Binder {
         return new DefaultBindingBuilder<>(type, bindings);
     }
 
-    public List<AbstractBinding<?>> getBindings() {
+    List<AbstractBinding<?>> getBindings() {
         return bindings;
     }
 
-    public List<ScopeBinding> getScopeBindings() {
+    List<ScopeBinding> getScopeBindings() {
         return scopeBindings;
+    }
+
+    List<AbstractKeyedWatching<?>> getKeyedWatchings() {
+        return keyedWatchings;
+    }
+
+    List<AbstractMatchedWatching> getMatchedWatchings() {
+        return matchedWatchings;
     }
 }

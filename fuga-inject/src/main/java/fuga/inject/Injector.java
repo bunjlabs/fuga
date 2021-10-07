@@ -16,9 +16,19 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
+
 import java.util.Set;
 
 public interface Injector {
+
+    static Injector create(Unit... units) {
+        return new InjectorBuilder().withUnits(units).build();
+    }
+
+    static Injector create(Iterable<Unit> units) {
+        return new InjectorBuilder().withUnits(units).build();
+    }
 
     Injector getParent();
 

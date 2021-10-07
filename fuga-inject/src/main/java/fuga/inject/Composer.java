@@ -16,6 +16,8 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
+
 public interface Composer {
 
     <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException;

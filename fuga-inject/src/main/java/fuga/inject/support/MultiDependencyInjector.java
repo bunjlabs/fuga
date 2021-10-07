@@ -21,11 +21,11 @@ import fuga.inject.Dependency;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class MultiDependencyInjector<T> implements DependencyInjector<T> {
+class MultiDependencyInjector<T> implements DependencyInjector<T> {
     private final Dependency<?> dependency;
     private final Collection<InternalFactory<?>> internalFactories;
 
-    public MultiDependencyInjector(Dependency<?> dependency, Collection<InternalFactory<?>> internalFactories) {
+    MultiDependencyInjector(Dependency<?> dependency, Collection<InternalFactory<?>> internalFactories) {
         this.dependency = dependency;
         this.internalFactories = internalFactories;
     }

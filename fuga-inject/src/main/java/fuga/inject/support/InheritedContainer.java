@@ -16,18 +16,20 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Key;
+import fuga.common.Key;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class InheritedContainer implements Container {
+class InheritedContainer implements Container {
 
     private final Map<Key<?>, List<AbstractBinding<?>>> explicitBindingsMutable = new LinkedHashMap<>();
     private final Map<Key<?>, List<AbstractBinding<?>>> explicitBindings = Collections.unmodifiableMap(explicitBindingsMutable);
-    private final Map<Class<? extends Annotation>, ScopeBinding> scopes = new LinkedHashMap<>();
+    private final Map<Class<? extends Annotation>, ScopeBinding> scopeBindings = new LinkedHashMap<>();
+    private final List<AbstractKeyedWatching<?>> keyedWatchings = new LinkedList<>();
+    private final List<AbstractMatchedWatching> matchedWatchings = new LinkedList<>();
     private final Container parent;
 
     InheritedContainer(Container parent) {
@@ -50,8 +52,30 @@ public class InheritedContainer implements Container {
 
     @Override
     public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
-        ScopeBinding scopeBinding = scopes.get(annotationType);
+        var scopeBinding = scopeBindings.get(annotationType);
         return scopeBinding != null ? scopeBinding : parent.getScopeBinding(annotationType);
+    }
+
+    @Override
+    public List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key) {
+        return Stream.concat(parent.getMatchedWatchings(key).stream(),
+                        matchedWatchings.stream().filter(b -> b.getMatcher().match(key.getFullType())))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key) {
+        var list = new LinkedList<AbstractKeyedWatching<T>>();
+
+        Stream.concat(parent.getKeyedWatchings(key).stream(),
+                        keyedWatchings.stream().filter(b -> b.getKey().equals(key)))
+                .forEach(w -> {
+                    @SuppressWarnings("unchecked")
+                    var casted = (AbstractKeyedWatching<T>) w;
+                    list.add(casted);
+                });
+
+        return list;
     }
 
     @Override
@@ -61,7 +85,17 @@ public class InheritedContainer implements Container {
 
     @Override
     public void putScopeBinding(ScopeBinding scopeBinding) {
-        scopes.put(scopeBinding.getAnnotationType(), scopeBinding);
+        scopeBindings.put(scopeBinding.getAnnotationType(), scopeBinding);
+    }
+
+    @Override
+    public <T> void putKeyedWatching(AbstractKeyedWatching<T> watching) {
+        keyedWatchings.add(watching);
+    }
+
+    @Override
+    public void putMatchedWatching(AbstractMatchedWatching watching) {
+        matchedWatchings.add(watching);
     }
 
     @SuppressWarnings("unchecked")

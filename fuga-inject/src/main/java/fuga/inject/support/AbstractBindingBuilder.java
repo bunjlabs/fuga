@@ -16,7 +16,7 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Key;
+import fuga.common.Key;
 
 import java.util.List;
 

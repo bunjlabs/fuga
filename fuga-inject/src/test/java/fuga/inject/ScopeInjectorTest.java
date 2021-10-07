@@ -16,6 +16,7 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Retention;
@@ -24,23 +25,20 @@ import java.lang.annotation.RetentionPolicy;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScopeInjectorTest {
-    private static Injector createInjector(Unit... unit) {
-        return new InjectorBuilder().withUnits(unit).build();
-    }
-
+    
     @Test
     void testCustomScopes() {
-        assertNotNull(createInjector(c ->
+        assertNotNull(Injector.create(c ->
                 c.bindScope(CustomScopeAnnotation.class, new DummyScope()))
                 .createChildInjector(c -> c.bind(Sample.class).in(CustomScopeAnnotation.class))
                 .getInstance(Sample.class));
 
-        assertNull(createInjector(c ->
+        assertNull(Injector.create(c ->
                 c.bindScope(CustomScopeAnnotation.class, new NullProviderScope()))
                 .createChildInjector(c -> c.bind(Sample.class).in(CustomScopeAnnotation.class))
                 .getInstance(Sample.class));
 
-        assertNull(createInjector(c -> c.bind(Sample.class).in(new Scope() {
+        assertNull(Injector.create(c -> c.bind(Sample.class).in(new Scope() {
             @Override
             public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
                 return () -> null;
@@ -51,18 +49,18 @@ class ScopeInjectorTest {
     @Test
     void testIncorrectDefinedCustomScopes() {
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bindScope(Err1CustomScopeAnnotation.class, new DummyScope())));
+                () -> Injector.create(c -> c.bindScope(Err1CustomScopeAnnotation.class, new DummyScope())));
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bindScope(Err2CustomScopeAnnotation.class, new DummyScope())));
+                () -> Injector.create(c -> c.bindScope(Err2CustomScopeAnnotation.class, new DummyScope())));
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bind(Sample.class).in(CustomScopeAnnotation.class)));
+                () -> Injector.create(c -> c.bind(Sample.class).in(CustomScopeAnnotation.class)));
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bindScope(CustomScopeAnnotation.class, new NullScope()))
+                () -> Injector.create(c -> c.bindScope(CustomScopeAnnotation.class, new NullScope()))
                         .createChildInjector(c -> c.bind(Sample.class).in(CustomScopeAnnotation.class)));
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bindScope(CustomScopeAnnotation.class, null)));
+                () -> Injector.create(c -> c.bindScope(CustomScopeAnnotation.class, null)));
         assertThrows(ConfigurationException.class,
-                () -> createInjector(c -> c.bind(Sample.class).in((Scope) null)));
+                () -> Injector.create(c -> c.bind(Sample.class).in((Scope) null)));
     }
 
     public static class Sample {

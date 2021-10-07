@@ -18,7 +18,7 @@ package fuga.inject.support;
 
 import fuga.inject.BindingVisitor;
 import fuga.inject.InjectionPoint;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.bindings.ConstructorBinding;
 import fuga.util.ObjectUtils;
 

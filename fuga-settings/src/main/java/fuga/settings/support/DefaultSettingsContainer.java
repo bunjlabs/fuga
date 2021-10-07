@@ -37,7 +37,6 @@ public class DefaultSettingsContainer implements SettingsContainer {
         this.persistedTrees = new LinkedList<>();
     }
 
-
     public DefaultSettingsContainer(MutableSettingsNode settingsTree) {
         this.rootNode = Assert.notNull(settingsTree);
         this.persistedTrees = new LinkedList<>();

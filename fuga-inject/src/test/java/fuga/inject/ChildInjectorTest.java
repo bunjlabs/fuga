@@ -22,15 +22,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ChildInjectorTest {
 
-    private static Injector createInjector(Unit... unit) {
-        return new InjectorBuilder().withUnits(unit).build();
-    }
-
     @Test
     public void testBindingsInherited() {
         var a = new A();
         var b = new B();
-        var child = createInjector(c -> c.bind(A.class).toInstance(a))
+        var child = Injector.create(c -> c.bind(A.class).toInstance(a))
                 .createChildInjector(c -> c.bind(B.class).toInstance(b));
         assertSame(a, child.getInstance(A.class));
         assertSame(b, child.getInstance(B.class));
@@ -40,14 +36,14 @@ public class ChildInjectorTest {
     public void testParentBindingCollision() {
         var a1 = new A();
         var a2 = new A();
-        var child = createInjector(c -> c.bind(A.class).toInstance(a1))
+        var child = Injector.create(c -> c.bind(A.class).toInstance(a1))
                 .createChildInjector(c -> c.bind(A.class).toInstance(a2));
         assertSame(a2, child.getInstance(A.class));
     }
 
     @Test
     public void testGetParent() {
-        var first = createInjector();
+        var first = Injector.create();
         var second = first.createChildInjector();
         var third = second.createChildInjector();
         var root = first.getParent();

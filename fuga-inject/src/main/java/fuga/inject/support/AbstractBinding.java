@@ -17,7 +17,9 @@
 package fuga.inject.support;
 
 import fuga.inject.Binding;
-import fuga.inject.Key;
+import fuga.common.Key;
+import fuga.inject.Dependency;
+import fuga.inject.Provider;
 
 abstract class AbstractBinding<T> implements Binding<T> {
 
@@ -51,4 +53,5 @@ abstract class AbstractBinding<T> implements Binding<T> {
     InternalFactory<T> getInternalFactory() {
         return internalFactory;
     }
+
 }

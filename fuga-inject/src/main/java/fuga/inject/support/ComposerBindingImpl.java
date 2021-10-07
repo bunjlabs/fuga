@@ -18,7 +18,7 @@ package fuga.inject.support;
 
 import fuga.inject.BindingVisitor;
 import fuga.inject.Composer;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.bindings.ComposerBinding;
 import fuga.util.ObjectUtils;
 
@@ -48,7 +48,7 @@ class ComposerBindingImpl<T> extends AbstractBinding<T> implements ComposerBindi
     }
 
     @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
+    protected ComposerBindingImpl<T> withScoping(Scoping scoping) {
         return new ComposerBindingImpl<>(getKey(), scoping, composer);
     }
 

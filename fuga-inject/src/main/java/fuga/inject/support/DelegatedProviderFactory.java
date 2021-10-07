@@ -17,7 +17,7 @@
 package fuga.inject.support;
 
 import fuga.inject.Dependency;
-import fuga.inject.Key;
+import fuga.common.Key;
 import fuga.inject.Provider;
 
 class DelegatedProviderFactory<T> implements InternalFactory<T> {
@@ -30,7 +30,7 @@ class DelegatedProviderFactory<T> implements InternalFactory<T> {
 
     @Override
     public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        Provider<? extends T> provider = context.getInjector().getInstance(providerKey);
+        var provider = context.getInjector().getInstance(providerKey);
 
         try {
             var instance = provider.get();

@@ -23,7 +23,7 @@ class SingleDependencyInjector<T> implements DependencyInjector<T> {
     private final Dependency<T> dependency;
     private final InternalFactory<T> internalFactory;
 
-    public SingleDependencyInjector(Dependency<T> dependency, InternalFactory<T> internalFactory) {
+    SingleDependencyInjector(Dependency<T> dependency, InternalFactory<T> internalFactory) {
         this.dependency = dependency;
         this.internalFactory = internalFactory;
     }

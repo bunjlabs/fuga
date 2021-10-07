@@ -21,13 +21,14 @@ import fuga.util.ReflectionUtils;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 class DefaultSettingsHandler implements SettingsHandler {
     private final Map<Method, Supplier<?>> suppliers;
 
     DefaultSettingsHandler() {
-        this.suppliers = new HashMap<>();
+        this.suppliers = new ConcurrentHashMap<>();
     }
 
     @Override

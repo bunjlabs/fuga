@@ -16,7 +16,7 @@
 
 package fuga.inject;
 
-import fuga.util.FullType;
+import fuga.lang.FullType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;

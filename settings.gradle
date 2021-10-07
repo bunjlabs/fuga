@@ -5,4 +5,6 @@ include 'fuga-inject'
 include 'fuga-context'
 include 'fuga-settings'
 include 'fuga-logging'
+include 'fuga-event'
+include 'fuga-app'
 

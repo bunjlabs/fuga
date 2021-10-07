@@ -17,14 +17,17 @@
 package fuga.context.support;
 
 import fuga.environment.Environment;
+import fuga.event.EventBus;
+import fuga.inject.Inject;
 import fuga.inject.Injector;
 
 public class StaticApplicationContext extends AbstractApplicationContext {
     private final Environment environment;
     private Injector injector;
 
-    public StaticApplicationContext(Environment environment) {
-        super();
+    @Inject
+    public StaticApplicationContext(Environment environment, EventBus eventBus) {
+        super(eventBus);
         this.environment = environment;
     }
 

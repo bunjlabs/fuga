@@ -64,11 +64,11 @@ abstract class Scoping {
         };
     }
 
-    public Scope getScopeInstance() {
+    Scope getScopeInstance() {
         return null;
     }
 
-    public Class<? extends Annotation> getScopeAnnotation() {
+    Class<? extends Annotation> getScopeAnnotation() {
         return null;
     }
 }

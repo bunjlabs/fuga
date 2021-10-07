@@ -16,8 +16,9 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
 import fuga.common.annotation.AnnotationUtils;
-import fuga.util.FullType;
+import fuga.lang.FullType;
 import fuga.util.ObjectUtils;
 import fuga.util.ReflectionUtils;
 

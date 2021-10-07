@@ -17,7 +17,7 @@
 package fuga.inject.bindings;
 
 import fuga.inject.Binding;
-import fuga.inject.Key;
+import fuga.common.Key;
 
 public interface LinkedKeyBinding<T> extends Binding<T> {
 

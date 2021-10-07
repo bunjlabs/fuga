@@ -17,7 +17,9 @@ jar {
 }
 
 signing {
-    sign publishing.publications
+    if (!version.endsWith("SNAPSHOT")) {
+        sign publishing.publications
+    }
 }
 
 

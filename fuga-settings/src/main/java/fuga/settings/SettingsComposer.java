@@ -17,7 +17,7 @@
 package fuga.settings;
 
 import fuga.inject.Composer;
-import fuga.inject.Key;
+import fuga.common.Key;
 
 public interface SettingsComposer extends Composer {
 

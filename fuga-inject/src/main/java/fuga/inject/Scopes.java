@@ -16,7 +16,7 @@
 
 package fuga.inject;
 
-import fuga.inject.support.SingletonScope;
+import fuga.common.Key;
 
 public abstract class Scopes {
 

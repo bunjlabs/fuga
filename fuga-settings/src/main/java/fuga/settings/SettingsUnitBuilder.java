@@ -17,6 +17,7 @@
 package fuga.settings;
 
 import fuga.environment.Environment;
+import fuga.inject.Singleton;
 import fuga.inject.Unit;
 import fuga.inject.UnitBuilder;
 import fuga.settings.source.SettingsSource;
@@ -56,15 +57,17 @@ public class SettingsUnitBuilder implements UnitBuilder {
     @Override
     public Unit build() {
         return c -> {
-            var container = settingsTree != null
-                    ? new DefaultSettingsContainer(settingsTree)
-                    : new DefaultSettingsContainer();
-            var composer = new DefaultSettingsComposer(container);
+            if (settingsTree != null) {
+                c.bind(SettingsContainer.class).toProvider(() -> new DefaultSettingsContainer(settingsTree));
+            } else {
+                c.bind(SettingsContainer.class).toProvider(DefaultSettingsContainer::new);
+            }
 
-            settingsSourcesSet.forEach(source -> container.load(source, environment));
+            c.watch(SettingsContainer.class).with((key, container) ->
+                    settingsSourcesSet.forEach(source -> container.load(source, environment)));
 
-            c.bind(SettingsContainer.class).toInstance(container);
-            c.bind(SettingsComposer.class).toInstance(composer);
+            c.bind(DefaultSettingsComposer.class).in(Singleton.class);
+            c.bind(SettingsComposer.class).to(DefaultSettingsComposer.class);
         };
     }
 }

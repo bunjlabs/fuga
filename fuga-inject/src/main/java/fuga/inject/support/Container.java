@@ -16,40 +16,14 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Key;
+import fuga.common.Key;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.List;
 
 interface Container {
 
-    Container EMPTY = new Container() {
-        @Override
-        public <T> AbstractBinding<T> getExplicitBinding(Key<T> key) {
-            return null;
-        }
-
-        @Override
-        public <T> List<AbstractBinding<T>> getAllExplicitBindings(Key<T> key) {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
-            return null;
-        }
-
-        @Override
-        public void putBinding(AbstractBinding<?> binding) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void putScopeBinding(ScopeBinding scopeBinding) {
-            throw new UnsupportedOperationException();
-        }
-    };
+    Container EMPTY = new EmptyContainer();
 
     <T> AbstractBinding<T> getExplicitBinding(Key<T> key);
 
@@ -57,7 +31,15 @@ interface Container {
 
     ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType);
 
+    List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key);
+
+    <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key);
+
     void putBinding(AbstractBinding<?> binding);
 
     void putScopeBinding(ScopeBinding scopeBinding);
+
+    <T> void putKeyedWatching(AbstractKeyedWatching<T> watching);
+
+    void putMatchedWatching(AbstractMatchedWatching watching);
 }
