@@ -16,6 +16,7 @@
 
 package fuga.inject.builder;
 
+import fuga.common.Key;
 import fuga.inject.Scope;
 
 import java.lang.annotation.Annotation;
@@ -24,5 +25,11 @@ public interface ScopedBindingBuilder {
 
     void in(Class<? extends Annotation> scopeAnnotation);
 
-    void in(Scope scope);
+    default void inScope(Class<? extends Scope> scopeType) {
+        inScope(Key.of(scopeType));
+    }
+
+    void inScope(Key<? extends Scope> scopeKey);
+
+    void inScope(Scope scope);
 }

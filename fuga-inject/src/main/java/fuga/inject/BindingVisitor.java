@@ -34,5 +34,5 @@ public interface BindingVisitor<T, V> {
 
     V visit(LinkedKeyBinding<? extends T> binding);
 
-    V visit(UntargettedBinding<? extends T> binding);
+    V visit(UntargetedBinding<? extends T> binding);
 }

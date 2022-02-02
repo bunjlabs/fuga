@@ -16,6 +16,7 @@
 
 package fuga.inject.bindings;
 
+
 import fuga.inject.Binding;
 import fuga.inject.Provider;
 

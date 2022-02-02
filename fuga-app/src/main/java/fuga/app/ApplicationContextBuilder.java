@@ -17,15 +17,13 @@
 package fuga.app;
 
 
-import fuga.context.ApplicationContext;
-import fuga.context.ConfigurableApplicationContext;
-import fuga.context.support.StaticApplicationContext;
+import fuga.app.support.StaticApplicationContext;
 import fuga.environment.Environment;
-import fuga.event.EventUnitBuilder;
+import fuga.event.EventUnit;
 import fuga.inject.InjectorBuilder;
 import fuga.inject.Singleton;
 import fuga.inject.Unit;
-import fuga.logging.LoggingUnitBuilder;
+import fuga.logging.LoggingUnit;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -40,7 +38,11 @@ public class ApplicationContextBuilder {
     }
 
     public ApplicationContextBuilder withUnits(Unit... units) {
-        this.units.addAll(Arrays.asList(units));
+        return withUnits(Arrays.asList(units));
+    }
+
+    public ApplicationContextBuilder withUnits(Iterable<? extends Unit> units) {
+        units.forEach(this.units::add);
         return this;
     }
 
@@ -51,13 +53,13 @@ public class ApplicationContextBuilder {
 
     public ApplicationContext build() {
         var contextUnit = (Unit) (c) -> {
-            c.install(new EventUnitBuilder().build());
-            c.install(new LoggingUnitBuilder().build());
+            c.depends(EventUnit.class);
+            c.depends(LoggingUnit.class);
 
             c.bind(Environment.class).toInstance(environment);
             c.bind(StaticApplicationContext.class).in(Singleton.class);
             c.bind(ConfigurableApplicationContext.class).to(StaticApplicationContext.class);
-            c.bind(ApplicationContext.class).to(ConfigurableApplicationContext.class);
+            c.bind(ApplicationContext.class).to(StaticApplicationContext.class);
         };
 
         var injector = new InjectorBuilder()
@@ -67,7 +69,6 @@ public class ApplicationContextBuilder {
 
         var context = injector.getInstance(StaticApplicationContext.class);
         context.setInjector(injector);
-        context.init();
 
         return context;
     }

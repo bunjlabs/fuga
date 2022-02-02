@@ -16,9 +16,9 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.inject.BindingVisitor;
 import fuga.inject.InjectionPoint;
-import fuga.common.Key;
 import fuga.inject.bindings.ConstructorBinding;
 import fuga.util.ObjectUtils;
 
@@ -28,13 +28,8 @@ class ConstructorBindingImpl<T> extends AbstractBinding<T> implements Constructo
 
     private final InjectionPoint injectionPoint;
 
-    ConstructorBindingImpl(Key<T> key, Scoping scoping, InjectionPoint injectionPoint) {
-        super(key, scoping);
-        this.injectionPoint = injectionPoint;
-    }
-
-    ConstructorBindingImpl(Key<T> key, InjectionPoint injectionPoint, InternalFactory<T> internalFactory) {
-        super(key, internalFactory);
+    ConstructorBindingImpl(Key<T> key, InjectionPoint injectionPoint) {
+        super(key);
         this.injectionPoint = injectionPoint;
     }
 
@@ -45,11 +40,6 @@ class ConstructorBindingImpl<T> extends AbstractBinding<T> implements Constructo
 
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
-        return new ConstructorBindingImpl<>(getKey(), scoping, injectionPoint);
     }
 
     @Override

@@ -16,9 +16,7 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Dependency;
-
 interface InternalFactory<T> {
 
-    T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException;
+    T get(InjectorContext context) throws InternalProvisionException;
 }

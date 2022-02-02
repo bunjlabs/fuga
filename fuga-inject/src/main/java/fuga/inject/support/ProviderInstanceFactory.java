@@ -16,9 +16,7 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Dependency;
 import fuga.inject.Provider;
-import fuga.util.ObjectUtils;
 
 class ProviderInstanceFactory<T> implements InternalFactory<T> {
 
@@ -29,25 +27,15 @@ class ProviderInstanceFactory<T> implements InternalFactory<T> {
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
+    public T get(InjectorContext context) throws InternalProvisionException {
         try {
-            var instance = provider.get();
-
-            if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
-                        context.getDependency().getKey().getRawType(), dependency);
+            return provider.get();
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof InternalProvisionException) {
+                throw (InternalProvisionException) e.getCause();
             }
 
-            return instance;
-        } catch (RuntimeException e) {
             throw InternalProvisionException.errorInProvider(e);
         }
-    }
-
-    @Override
-    public String toString() {
-        return ObjectUtils.toStringJoiner(this)
-                .add("provider", provider)
-                .toString();
     }
 }

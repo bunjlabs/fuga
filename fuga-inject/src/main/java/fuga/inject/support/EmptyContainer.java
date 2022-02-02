@@ -2,9 +2,9 @@ package fuga.inject.support;
 
 import fuga.common.Key;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class EmptyContainer implements Container {
     @Override
@@ -18,17 +18,17 @@ public class EmptyContainer implements Container {
     }
 
     @Override
-    public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
-        return null;
-    }
-
-    @Override
-    public List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key) {
+    public <T> List<BindingAttachment<T>> getAttachments(Key<T> key) {
         return Collections.emptyList();
     }
 
     @Override
-    public <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key) {
+    public <T> List<BindingEncounter<T>> getEncounters(Key<T> key) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public <T> List<BindingWatching<T>> getWatchings(Key<T> key) {
         return Collections.emptyList();
     }
 
@@ -38,17 +38,21 @@ public class EmptyContainer implements Container {
     }
 
     @Override
-    public void putScopeBinding(ScopeBinding scopeBinding) {
+    public void putAttachment(BindingAttachment<?> attachment) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public <T> void putKeyedWatching(AbstractKeyedWatching<T> watching) {
+    public void putEncounter(BindingEncounter<?> encounter) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void putMatchedWatching(AbstractMatchedWatching listenerBinding) {
+    public void putWatching(BindingWatching<?> watching) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void forEach(Consumer<? extends AbstractBinding<?>> action) {
     }
 }

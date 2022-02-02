@@ -16,8 +16,8 @@
 
 package fuga.inject.support;
 
-import fuga.inject.BindingVisitor;
 import fuga.common.Key;
+import fuga.inject.BindingVisitor;
 import fuga.inject.Provider;
 import fuga.inject.bindings.ProviderBinding;
 import fuga.util.ObjectUtils;
@@ -28,13 +28,8 @@ class ProviderBindingImpl<T> extends AbstractBinding<T> implements ProviderBindi
 
     private final Provider<? extends T> provider;
 
-    ProviderBindingImpl(Key<T> key, Scoping scoping, Provider<? extends T> provider) {
-        super(key, scoping);
-        this.provider = provider;
-    }
-
-    ProviderBindingImpl(Key<T> key, Provider<? extends T> provider, InternalFactory<T> internalFactory) {
-        super(key, internalFactory);
+    ProviderBindingImpl(Key<T> key, Provider<? extends T> provider) {
+        super(key);
         this.provider = provider;
     }
 
@@ -45,11 +40,6 @@ class ProviderBindingImpl<T> extends AbstractBinding<T> implements ProviderBindi
 
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
-        return new ProviderBindingImpl<>(getKey(), scoping, provider);
     }
 
     @Override

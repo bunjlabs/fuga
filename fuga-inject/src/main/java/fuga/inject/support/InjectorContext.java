@@ -16,20 +16,28 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
+import fuga.inject.Binding;
 import fuga.inject.Dependency;
 import fuga.inject.Injector;
 
+import java.io.Closeable;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 class InjectorContext {
 
     private final InjectorImpl injector;
     private final List<Dependency<?>> dependencyStack;
+    private final List<AbstractBinding<?>> bindingStack;
+    private final List<Object> sourceStack;
     private final Map<Object, ConstructionContext<?>> constructionContexts = new IdentityHashMap<>();
 
     InjectorContext(InjectorImpl injector) {
         this.injector = injector;
-        this.dependencyStack = Collections.synchronizedList(new ArrayList<>());
+        this.dependencyStack = Collections.synchronizedList(new ArrayList<>(5));
+        this.bindingStack = Collections.synchronizedList(new ArrayList<>(5));
+        this.sourceStack = Collections.synchronizedList(new ArrayList<>(5));
         pushDependency(Dependency.of(Injector.class));
     }
 
@@ -47,6 +55,22 @@ class InjectorContext {
         return size > 1 ? dependencyStack.get(size - 2) : null;
     }
 
+    <T> T getAttribute(Key<T> key) {
+        for (int i = bindingStack.size() - 1; i >= 0; i--) {
+            var attribute = bindingStack.get(i).getAttribute(key);
+            if (attribute != null) {
+                return attribute;
+            }
+        }
+
+        return null;
+    }
+
+    Object getSource() {
+        var size = sourceStack.size();
+        return size > 0 ? sourceStack.get(size - 1) : null;
+    }
+
     void pushDependency(Dependency<?> dependency) {
         dependencyStack.add(dependency);
     }
@@ -56,6 +80,41 @@ class InjectorContext {
         if (size > 0) {
             dependencyStack.remove(size - 1);
         }
+    }
+
+    void pushBinding(AbstractBinding<?> binding) {
+        bindingStack.add(binding);
+    }
+
+    void popBinding() {
+        var size = bindingStack.size();
+        if (size > 0) {
+            bindingStack.remove(size - 1);
+        }
+    }
+
+
+    void pushSource(Object source) {
+        sourceStack.add(source);
+    }
+
+    void popSource() {
+        var size = sourceStack.size();
+        if (size > 0) {
+            sourceStack.remove(size - 1);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    <T> AbstractBinding<T> findBinding(Key<T> key) {
+        for (int i = bindingStack.size() - 1; i >= 0; i--) {
+            var binding = bindingStack.get(i);
+            if (binding.getKey().equals(key)) {
+                return (AbstractBinding<T>) binding;
+            }
+        }
+
+        return null;
     }
 
     <T> ConstructionContext<T> getConstructionContext(Object key) {

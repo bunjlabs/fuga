@@ -16,8 +16,8 @@
 
 package fuga.inject.builder;
 
-import fuga.inject.Composer;
 import fuga.common.Key;
+import fuga.inject.Composer;
 import fuga.inject.Provider;
 
 import java.lang.reflect.Constructor;

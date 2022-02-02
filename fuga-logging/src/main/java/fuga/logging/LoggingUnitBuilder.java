@@ -16,20 +16,12 @@
 
 package fuga.logging;
 
-import fuga.inject.Unit;
 import fuga.inject.UnitBuilder;
-import fuga.logging.support.DefaultLoggerComposer;
-import org.slf4j.Logger;
 
-public class LoggingUnitBuilder implements UnitBuilder {
+public class LoggingUnitBuilder implements UnitBuilder<LoggingUnit> {
 
     @Override
-    public Unit build() {
-        return c -> {
-            var composer = new DefaultLoggerComposer();
-
-            c.bind(LoggerComposer.class).toInstance(composer);
-            c.bind(Logger.class).toComposer(composer);
-        };
+    public LoggingUnit build() {
+        return new LoggingUnit();
     }
 }

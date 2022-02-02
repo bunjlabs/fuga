@@ -16,24 +16,82 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Dependency;
+import fuga.inject.ConfigurationException;
+import fuga.inject.InjectionPoint;
 
-class ConstructorFactory<T> implements InternalFactory<T> {
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
-    private final ConstructorInjector<T> constructorInjector;
+class ConstructorFactory<T> implements InternalFactory<T>, Initializable {
 
-    ConstructorFactory(ConstructorInjector<T> constructorInjector) {
-        this.constructorInjector = constructorInjector;
+    private final InjectionPoint injectionPoint;
+    private final ConstructionProxy<T> constructionProxy;
+    private final List<DependencyInjector<?>> dependencyInjectors = new ArrayList<>();
+
+    ConstructorFactory(InjectionPoint injectionPoint, ConstructionProxy<T> constructionProxy) {
+        this.injectionPoint = injectionPoint;
+        this.constructionProxy = constructionProxy;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var instance = constructorInjector.construct(context);
+    public void initialize(InjectorImpl injector) {
+        for (var dependency : injectionPoint.getDependencies()) {
+            var dependencyInjector = injector.getDependencyInjector(dependency);
 
-        if (instance == null && !dependency.isNullable()) {
-            throw InternalProvisionException.nullInjectedIntoNonNullableDependency(context.getDependency(), dependency);
+            if (!dependency.isNullable() && dependencyInjector == null) {
+                throw new ConfigurationException("Unsatisfied construction dependency: " + dependency);
+            }
+
+            dependencyInjectors.add(dependencyInjector);
+        }
+    }
+
+    @Override
+    public T get(InjectorContext context) throws InternalProvisionException {
+        ConstructionContext<T> constructionContext = context.getConstructionContext(this);
+
+        if (constructionContext.isConstructing()) {
+            throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getRawType());
         }
 
-        return instance;
+        var instance = constructionContext.getReference();
+        if (instance != null) {
+            throw InternalProvisionException.circularDependencies(context.getDependency().getKey().getRawType());
+        }
+
+        instance = construct(context, constructionContext);
+
+        try {
+            constructionContext.setReference(instance);
+
+            // TODO: inject to members
+
+            return instance;
+        } finally {
+            constructionContext.removeReference();
+        }
+    }
+
+    private T construct(InjectorContext context, ConstructionContext<T> constructionContext) throws InternalProvisionException {
+        constructionContext.startConstruction();
+        try {
+            var parameters = resolveDependencies(context);
+            return constructionProxy.newInstance(parameters);
+        } catch (InvocationTargetException e) {
+            throw InternalProvisionException.errorInjectingConstructor(e);
+        } finally {
+            constructionContext.finishConstruction();
+        }
+    }
+
+    private Object[] resolveDependencies(InjectorContext context) throws InternalProvisionException {
+        var parameters = new Object[dependencyInjectors.size()];
+
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = dependencyInjectors.get(i).inject(context);
+        }
+
+        return parameters;
     }
 }

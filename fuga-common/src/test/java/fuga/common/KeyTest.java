@@ -16,7 +16,7 @@
 
 package fuga.common;
 
-import fuga.lang.FullType;
+import fuga.lang.TypeLiteral;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
@@ -29,7 +29,7 @@ class KeyTest {
     void testKeyEquality() {
         var a = Key.of(Foo.class);
         var b = Key.of((Type) Foo.class);
-        var c = Key.of(FullType.of(Foo.class));
+        var c = Key.of(TypeLiteral.of(Foo.class));
 
         assertEquals(a, b);
         assertEquals(b, c);

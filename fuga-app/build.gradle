@@ -1,6 +1,5 @@
 dependencies {
     api project(":fuga-common")
-    api project(":fuga-context")
     api project(":fuga-inject")
     api project(":fuga-event")
     api project(":fuga-settings")

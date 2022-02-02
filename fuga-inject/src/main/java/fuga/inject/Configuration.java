@@ -16,7 +16,16 @@
 
 package fuga.inject;
 
+import fuga.common.Key;
+
 public interface Configuration extends Binder {
 
+    default void depends(Class<? extends Unit> unitType) {
+        depends(Key.of(unitType));
+    }
+
+    void depends(Key<? extends Unit> unitType);
+
     void install(Unit unit);
+
 }

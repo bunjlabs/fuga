@@ -16,6 +16,7 @@
 
 package fuga.inject;
 
+@FunctionalInterface
 public interface Unit {
 
     void setup(Configuration configuration);

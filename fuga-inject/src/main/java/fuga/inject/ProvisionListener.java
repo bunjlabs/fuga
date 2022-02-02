@@ -1,8 +1,7 @@
 package fuga.inject;
 
-import fuga.common.Key;
+@FunctionalInterface
+public interface ProvisionListener<T> {
 
-public interface ProvisionListener {
-
-    <T> void onProvision(Key<T> key, T instance);
+    void provision(T instance);
 }

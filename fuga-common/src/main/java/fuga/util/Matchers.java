@@ -1,6 +1,8 @@
 package fuga.util;
 
-import fuga.lang.FullType;
+import fuga.lang.TypeLiteral;
+
+import java.util.function.Predicate;
 
 public abstract class Matchers {
 
@@ -15,11 +17,23 @@ public abstract class Matchers {
         return t -> !matcher.match(t);
     }
 
-    public static Matcher<FullType<?>> exact(Class<?> type) {
-        return exact(FullType.of(type));
+    public static <T> Matcher<TypeLiteral<T>> only(Class<T> type) {
+        return only(TypeLiteral.of(type));
     }
 
-    public static Matcher<FullType<?>> exact(FullType<?> type) {
+    public static <T> Matcher<TypeLiteral<T>> only(TypeLiteral<T> type) {
         return type::equals;
+    }
+
+    public static <T> Matcher<TypeLiteral<?>> like(Class<T> type) {
+        return like(TypeLiteral.of(type));
+    }
+
+    public static <T> Matcher<TypeLiteral<?>> like(TypeLiteral<T> type) {
+        return type::equals;
+    }
+
+    public static <T> Matcher<TypeLiteral<T>> is(Predicate<TypeLiteral<T>> predicate) {
+        return predicate::test;
     }
 }

@@ -16,20 +16,31 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Dependency;
 import fuga.common.Key;
+import fuga.inject.ConfigurationException;
+import fuga.inject.Dependency;
 
-class DelegatedKeyFactory<T> implements InternalFactory<T> {
+class DelegatedKeyFactory<T> implements InternalFactory<T>, Initializable {
 
     private final Key<? extends T> targetKey;
+    private DependencyInjector<? extends T> targetInjector;
 
     DelegatedKeyFactory(Key<? extends T> targetKey) {
         this.targetKey = targetKey;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var delegatedFactory = context.getInjector().getInternalFactory(targetKey);
-        return delegatedFactory.get(context, dependency);
+    public void initialize(InjectorImpl injector) {
+        var dependency = Dependency.of(targetKey);
+
+        targetInjector = injector.getDependencyInjector(dependency);
+        if (targetInjector == null) {
+            throw new ConfigurationException("Unsatisfied target dependency: " + dependency);
+        }
+    }
+
+    @Override
+    public T get(InjectorContext context) throws InternalProvisionException {
+        return targetInjector.inject(context);
     }
 }

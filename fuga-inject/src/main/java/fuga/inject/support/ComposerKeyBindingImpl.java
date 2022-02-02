@@ -16,9 +16,9 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.inject.BindingVisitor;
 import fuga.inject.Composer;
-import fuga.common.Key;
 import fuga.inject.bindings.ComposerKeyBinding;
 import fuga.util.ObjectUtils;
 
@@ -28,13 +28,8 @@ class ComposerKeyBindingImpl<T> extends AbstractBinding<T> implements ComposerKe
 
     private final Key<? extends Composer> composerKey;
 
-    ComposerKeyBindingImpl(Key<T> key, Scoping scoping, Key<? extends Composer> composerKey) {
-        super(key, scoping);
-        this.composerKey = composerKey;
-    }
-
-    ComposerKeyBindingImpl(Key<T> key, Key<? extends Composer> composerKey, InternalFactory<T> internalFactory) {
-        super(key, internalFactory);
+    ComposerKeyBindingImpl(Key<T> key, Key<? extends Composer> composerKey) {
+        super(key);
         this.composerKey = composerKey;
     }
 
@@ -46,11 +41,6 @@ class ComposerKeyBindingImpl<T> extends AbstractBinding<T> implements ComposerKe
     @Override
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
-        return new ComposerKeyBindingImpl<>(getKey(), scoping, composerKey);
     }
 
     @Override

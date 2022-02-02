@@ -17,5 +17,7 @@
 package fuga.inject.support;
 
 public interface DependencyInjector<T> {
+
     T inject(InjectorContext context) throws InternalProvisionException;
+
 }

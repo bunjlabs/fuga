@@ -23,6 +23,7 @@ import fuga.inject.*;
 import fuga.inject.bindings.*;
 
 import java.lang.reflect.Constructor;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 class DefaultBindingProcessor extends AbstractBindingProcessor {
@@ -31,138 +32,217 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
         super(container, errorMessages);
     }
 
-    private <T> InternalFactory<T> scope(Key<T> key, Scoping scoping, InternalFactory<T> internalFactory) {
-        if (scoping == null || scoping == Scoping.UNSCOPED) {
-            return internalFactory;
+    private <T> void encounters(AbstractBinding<T> binding) {
+        var bindingEncounters = getEncounters(binding.getKey());
+
+        if (bindingEncounters.isEmpty()) {
+            return;
         }
 
-        Scope scope;
-        if (scoping.getScopeInstance() != null) {
-            scope = scoping.getScopeInstance();
-        } else {
-            var scopeBinding = getScopeBinding(scoping.getScopeAnnotation());
-            if (scopeBinding == null) {
-                Errors.noScopeBinding(getErrorMessages(), scoping.getScopeAnnotation());
-                return internalFactory;
-            }
+        bindingEncounters.stream()
+                .map(BindingEncounter::getEncounter)
+                .filter(Objects::nonNull)
+                .forEach(e -> e.configure(binding));
 
-            scope = scopeBinding.getScope();
-        }
-
-        var providerAdapter = new ProviderToInternalFactoryAdapter<>(internalFactory);
-        scheduleInitialization(providerAdapter);
-        var scopedProvider = scope.scope(key, providerAdapter);
-        if (scopedProvider == null) {
-            Errors.noScopedProvider(getErrorMessages(), scoping);
-            return internalFactory;
-        }
-
-        return new ProviderInstanceFactory<>(scopedProvider);
+        bindingEncounters.stream()
+                .map(BindingEncounter::getEncounterKey)
+                .filter(Objects::nonNull)
+                .filter(k -> !k.equals(binding.getKey()))
+                .forEach(e -> scheduleInitialization(new InitializableEncounter<>(binding, e)));
     }
 
+    private <T> InternalFactory<T> attachments(AbstractBinding<T> binding, InternalFactory<T> factory) {
+        var attachments = getAttachments(binding.getKey());
 
-    private <T> InternalFactory<T> provisionListener(Key<T> key, InternalFactory<T> internalFactory) {
-        var keyedWatchings = getKeyedWatchings(key);
-        var matchedWatchings = getMatchedWatchings(key);
-
-        var keyedInterceptors = keyedWatchings.stream()
-                .map(AbstractKeyedWatching::getInterceptor)
+        var attachKeys = attachments.stream()
+                .map(BindingAttachment::getAttachmentKey)
+                .filter(Objects::nonNull)
+                .filter(k -> !k.equals(binding.getKey()))
                 .collect(Collectors.toUnmodifiableList());
 
-        var matchedInterceptors = matchedWatchings.stream()
-                .map(AbstractMatchedWatching::getInterceptor)
-                .collect(Collectors.toUnmodifiableList());
-
-        if (keyedInterceptors.isEmpty() && matchedInterceptors.isEmpty()) {
-            return internalFactory;
-        } else {
-            return new InterceptedFactory<>(key, internalFactory, keyedInterceptors, matchedInterceptors);
+        if (attachKeys.isEmpty()) {
+            return factory;
         }
+
+        var attachmentFactory = new AttachmentFactory<>(factory, attachKeys);
+        scheduleInitialization(attachmentFactory);
+
+        return attachmentFactory;
+    }
+
+    private <T> InternalFactory<T> scoping(AbstractBinding<T> binding, InternalFactory<T> factory) {
+        var scoping = binding.getScoping();
+        if (scoping == null || scoping == Scoping.UNSCOPED) {
+            return factory;
+        }
+
+        if (scoping.getScopeInstance() != null) {
+            var scope = scoping.getScopeInstance();
+            var providerAdapter = new ProviderToInternalFactoryAdapter<>(factory);
+            scheduleInitialization(providerAdapter);
+            var scopedProvider = scope.scope(binding.getKey(), providerAdapter);
+            if (scopedProvider == null || scopedProvider == providerAdapter) {
+                return factory;
+            }
+
+            return new ProviderInstanceFactory<>(scopedProvider);
+        }
+
+        Key<? extends Scope> scopeKey;
+        if (scoping.getScopeKey() != null) {
+            scopeKey = scoping.getScopeKey();
+        } else {
+            var annotation = scoping.getScopeAnnotation();
+            var scopeAnnotation = AnnotationUtils.findAnnotation(annotation, ScopeAnnotation.class);
+            if (scopeAnnotation == null) {
+                Errors.noScopedProvider(getErrorMessages(), scoping);
+                return factory;
+            }
+
+            scopeKey = Key.of(scopeAnnotation.scope());
+        }
+
+        var scopeFactory = new ScopeKeyFactory<>(binding, scopeKey, factory);
+        scheduleInitialization(scopeFactory);
+
+        return scopeFactory;
+    }
+
+    private <T> InternalFactory<T> listeners(AbstractBinding<T> binding, InternalFactory<T> factory) {
+        var watchings = getWatchings(binding.getKey());
+
+        if (watchings.isEmpty()) {
+            return factory;
+        }
+
+        var listeners = watchings.stream()
+                .map(BindingWatching::getListener)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableList());
+
+
+        if (!listeners.isEmpty()) {
+            factory = new ListenersFactory<>(factory, listeners);
+        }
+
+        var listenerKeys = watchings.stream()
+                .map(BindingWatching::getListenerKey)
+                .filter(Objects::nonNull)
+                .filter(k -> !k.equals(binding.getKey()))
+                .collect(Collectors.toUnmodifiableList());
+
+        if (!listenerKeys.isEmpty()) {
+            var listenersFactory = new ListenerKeysFactory<>(factory, listenerKeys);
+            scheduleInitialization(listenersFactory);
+
+            factory = listenersFactory;
+        }
+
+        return factory;
+    }
+
+    private <T> InternalFactory<T> factory(AbstractBinding<T> binding, InternalFactory<T> factory) {
+        encounters(binding);
+
+        factory = attachments(binding, factory);
+        factory = scoping(binding, factory);
+        factory = listeners(binding, factory);
+
+        return factory;
     }
 
     @Override
-    public <T> boolean process(Binding<T> binding) {
-        return binding.acceptVisitor(new AbstractBindingVisitor<>((AbstractBinding<T>) binding) {
+    public <T> boolean process(AbstractBinding<T> binding) {
+        return binding.acceptVisitor(new AbstractBindingVisitor<>(binding) {
 
             @Override
-            public Boolean visit(InstanceBinding<? extends T> binding) {
-                var instance = binding.getInstance();
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new ProviderInstanceFactory<>(() -> instance)));
-                putBinding(new InstanceBindingImpl<>(key, instance, internalFactory));
+            public Boolean visit(InstanceBinding<? extends T> instanceBinding) {
+                var instance = instanceBinding.getInstance();
+                var instanceFactory = new InstanceFactory<>(instance);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, instanceFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(ConstructorBinding<? extends T> binding) {
-                var injectionPoint = binding.getInjectionPoint();
+            public Boolean visit(ConstructorBinding<? extends T> constructorBinding) {
+                var injectionPoint = constructorBinding.getInjectionPoint();
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
-                var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new ConstructorFactory<>(constructorInjector)));
-                putBinding(new ConstructorBindingImpl<>(key, injectionPoint, internalFactory));
+                var constructionProxy = new ReflectConstructionProxy<>(constructor);
+                var constructorFactory = new ConstructorFactory<>(injectionPoint, constructionProxy);
+                scheduleInitialization(constructorFactory);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, constructorFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(ProviderKeyBinding<? extends T> binding) {
-                var providerKey = binding.getProviderKey();
+            public Boolean visit(ProviderKeyBinding<? extends T> providerKeyBinding) {
+                var providerKey = providerKeyBinding.getProviderKey();
                 if (providerKey.equals(binding.getKey())) {
                     Errors.recursiveProviderType(getErrorMessages());
                     return false;
                 }
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new DelegatedProviderFactory<>(providerKey)));
-                putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
+
+                var delegatedProviderFactory = new DelegatedProviderFactory<>(providerKey);
+                scheduleInitialization(delegatedProviderFactory);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, delegatedProviderFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(ProviderBinding<? extends T> binding) {
-                var provider = binding.getProvider();
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new ProviderInstanceFactory<>(provider::get)));
-                putBinding(new ProviderBindingImpl<>(key, provider, internalFactory));
+            public Boolean visit(ProviderBinding<? extends T> providerBinding) {
+                var provider = providerBinding.getProvider();
+                var providerInstanceFactory = new ProviderInstanceFactory<T>(provider::get);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, providerInstanceFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(ComposerKeyBinding<? extends T> binding) {
-                var composerKey = binding.getComposerKey();
+            public Boolean visit(ComposerKeyBinding<? extends T> composerKeyBinding) {
+                var composerKey = composerKeyBinding.getComposerKey();
                 if (composerKey.equals(binding.getKey())) {
                     Errors.recursiveComposerType(getErrorMessages());
                     return false;
                 }
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new DelegatedComposerFactory<>(composerKey)));
-                putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
+
+                var delegatedComposerFactory = new DelegatedComposerFactory<>(key, composerKey);
+                scheduleInitialization(delegatedComposerFactory);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, delegatedComposerFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(ComposerBinding<? extends T> binding) {
-                var composer = binding.getComposer();
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new ComposerInstanceFactory<>(composer)));
-                putBinding(new ComposerBindingImpl<>(key, composer, internalFactory));
+            public Boolean visit(ComposerBinding<? extends T> composerBinding) {
+                var composer = composerBinding.getComposer();
+                var composerInstanceFactory = new ComposerInstanceFactory<>(key, composer);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, composerInstanceFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(LinkedKeyBinding<? extends T> binding) {
-                if (binding.getKey().equals(binding.getLinkedKey())) {
+            public Boolean visit(LinkedKeyBinding<? extends T> linkedKeyBinding) {
+                var linkKey = linkedKeyBinding.getLinkedKey();
+
+                if (binding.getKey().equals(linkKey)) {
                     Errors.recursiveBinding(getErrorMessages(), binding);
+                    return false;
                 }
-                var linkKey = binding.getLinkedKey();
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new DelegatedKeyFactory<>(linkKey)));
-                putBinding(new LinkedKeyBindingImpl<>(key, linkKey, internalFactory));
+
+                var delegatedKeyFactory = new DelegatedKeyFactory<T>(linkKey);
+                scheduleInitialization(delegatedKeyFactory);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, delegatedKeyFactory));
                 return true;
             }
 
             @Override
-            public Boolean visit(UntargettedBinding<? extends T> binding) {
+            public Boolean visit(UntargetedBinding<? extends T> untargetedBinding) {
                 var providedBy = AnnotationUtils.findAnnotation(key.getRawType(), ProvidedBy.class);
                 if (providedBy != null) {
                     @SuppressWarnings("unchecked")
@@ -171,8 +251,11 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                         Errors.recursiveProviderType(getErrorMessages());
                         return false;
                     }
-                    var internalFactory = scope(key, scoping, new DelegatedProviderFactory<>(providerKey));
-                    putBinding(new ProviderKeyBindingImpl<>(key, providerKey, internalFactory));
+
+                    var delegatedProviderFactory = new DelegatedProviderFactory<>(providerKey);
+                    scheduleInitialization(delegatedProviderFactory);
+
+                    binding.setAttribute(InternalFactory.class, factory(binding, delegatedProviderFactory));
                     return true;
                 }
 
@@ -183,18 +266,22 @@ class DefaultBindingProcessor extends AbstractBindingProcessor {
                         Errors.recursiveComposerType(getErrorMessages());
                         return false;
                     }
-                    var internalFactory = scope(key, scoping, new DelegatedComposerFactory<>(composerKey));
-                    putBinding(new ComposerKeyBindingImpl<>(key, composerKey, internalFactory));
+
+                    var delegatedComposerFactory = new DelegatedComposerFactory<>(key, composerKey);
+                    scheduleInitialization(delegatedComposerFactory);
+
+                    binding.setAttribute(InternalFactory.class, factory(binding, delegatedComposerFactory));
                     return true;
                 }
 
-                var injectionPoint = InjectionPoint.forConstructorOf(key.getFullType());
+                var injectionPoint = InjectionPoint.forConstructorOf(key.getType());
                 @SuppressWarnings("unchecked")
                 var constructor = (Constructor<T>) injectionPoint.getMember();
-                var constructorInjector = new ConstructorInjector<>(injectionPoint, new ReflectConstructionProxy<>(constructor));
-                var internalFactory = scope(key, scoping,
-                        provisionListener(key, new ConstructorFactory<>(constructorInjector)));
-                putBinding(new ConstructorBindingImpl<>(key, injectionPoint, internalFactory));
+                var constructionProxy = new ReflectConstructionProxy<>(constructor);
+                var constructorFactory = new ConstructorFactory<>(injectionPoint, constructionProxy);
+                scheduleInitialization(constructorFactory);
+
+                binding.setAttribute(InternalFactory.class, factory(binding, constructorFactory));
                 return true;
             }
         });

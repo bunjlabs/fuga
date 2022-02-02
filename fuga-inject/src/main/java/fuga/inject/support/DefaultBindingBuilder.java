@@ -17,7 +17,10 @@
 package fuga.inject.support;
 
 import fuga.common.Key;
-import fuga.inject.*;
+import fuga.inject.Composer;
+import fuga.inject.InjectionPoint;
+import fuga.inject.Provider;
+import fuga.inject.Scope;
 import fuga.inject.builder.BindingBuilder;
 import fuga.inject.builder.ScopedBindingBuilder;
 
@@ -40,20 +43,20 @@ class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements Bind
     @Override
     public ScopedBindingBuilder to(Key<? extends T> target) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new LinkedKeyBindingImpl<>(base.getKey(), base.getScoping(), target));
+        setBinding(new LinkedKeyBindingImpl<>(base.getKey(), target));
         return this;
     }
 
     @Override
     public void toInstance(T instance) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new InstanceBindingImpl<>(base.getKey(), base.getScoping(), instance));
+        setBinding(new InstanceBindingImpl<>(base.getKey(), instance));
     }
 
     @Override
     public <S extends T> ScopedBindingBuilder toConstructor(Constructor<S> constructor) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ConstructorBindingImpl<>(base.getKey(), base.getScoping(), InjectionPoint.forConstructor(constructor)));
+        setBinding(new ConstructorBindingImpl<>(base.getKey(), InjectionPoint.forConstructor(constructor)));
         return this;
     }
 
@@ -66,21 +69,21 @@ class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements Bind
     @Override
     public ScopedBindingBuilder toProvider(Key<? extends Provider<? extends T>> provider) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ProviderKeyBindingImpl<>(base.getKey(), base.getScoping(), provider));
+        setBinding(new ProviderKeyBindingImpl<>(base.getKey(), provider));
         return this;
     }
 
     @Override
     public ScopedBindingBuilder toProvider(Provider<? extends T> provider) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ProviderBindingImpl<>(base.getKey(), base.getScoping(), provider));
+        setBinding(new ProviderBindingImpl<>(base.getKey(), provider));
         return this;
     }
 
     @Override
     public ScopedBindingBuilder toComposer(Composer composer) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ComposerBindingImpl<>(base.getKey(), base.getScoping(), composer));
+        setBinding(new ComposerBindingImpl<>(base.getKey(), composer));
         return this;
     }
 
@@ -93,17 +96,22 @@ class DefaultBindingBuilder<T> extends AbstractBindingBuilder<T> implements Bind
     @Override
     public ScopedBindingBuilder toComposer(Key<? extends Composer> composer) {
         AbstractBinding<T> base = getBinding();
-        setBinding(new ComposerKeyBindingImpl<>(base.getKey(), base.getScoping(), composer));
+        setBinding(new ComposerKeyBindingImpl<>(base.getKey(), composer));
         return this;
     }
 
     @Override
     public void in(Class<? extends Annotation> scopeAnnotation) {
-        setBinding(getBinding().withScoping(Scoping.forAnnotation(scopeAnnotation)));
+        getBinding().setAttribute(Scoping.class, Scoping.forAnnotation(scopeAnnotation));
     }
 
     @Override
-    public void in(Scope scope) {
-        setBinding(getBinding().withScoping(Scoping.forInstance(scope)));
+    public void inScope(Key<? extends Scope> scopeKey) {
+        getBinding().setAttribute(Scoping.class, Scoping.forKey(scopeKey));
+    }
+
+    @Override
+    public void inScope(Scope scope) {
+        getBinding().setAttribute(Scoping.class, Scoping.forInstance(scope));
     }
 }

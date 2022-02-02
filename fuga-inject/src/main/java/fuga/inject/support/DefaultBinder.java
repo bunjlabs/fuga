@@ -16,56 +16,31 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Binder;
 import fuga.common.Key;
-import fuga.inject.Scope;
+import fuga.inject.Binder;
 import fuga.inject.builder.BindingBuilder;
-import fuga.inject.builder.KeyedWatchingBuilder;
-import fuga.inject.builder.MatchedWatchingBuilder;
-import fuga.lang.FullType;
-import fuga.util.Assert;
+import fuga.inject.builder.MatchBuilder;
+import fuga.lang.TypeLiteral;
 import fuga.util.Matcher;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
 class DefaultBinder implements Binder {
 
     private final List<AbstractBinding<?>> bindings = new ArrayList<>();
-    private final List<ScopeBinding> scopeBindings = new ArrayList<>();
-    private final List<AbstractKeyedWatching<?>> keyedWatchings = new ArrayList<>();
-    private final List<AbstractMatchedWatching> matchedWatchings = new ArrayList<>();
+    private final List<BindingAttachment<?>> attachments = new ArrayList<>();
+    private final List<BindingEncounter<?>> encounters = new ArrayList<>();
+    private final List<BindingWatching<?>> watchings = new ArrayList<>();
 
     DefaultBinder() {
     }
 
     @Override
-    public void bindScope(Class<? extends Annotation> annotationType, Scope scope) {
-        Assert.notNull(annotationType);
-        Assert.notNull(scope);
-        scopeBindings.add(new ScopeBinding(annotationType, scope));
+    public <T> MatchBuilder<T> match(Matcher<? super TypeLiteral<T>> matcher) {
+        return new DefaultMatchBuilder<>(matcher, attachments, encounters, watchings);
     }
 
-    @Override
-    public <T> KeyedWatchingBuilder<T> watch(Class<T> type) {
-        return watch(Key.of(type));
-    }
-
-    @Override
-    public <T> KeyedWatchingBuilder<T> watch(Key<T> type) {
-        return new DefaultKeyedWatchingBuilder<>(type, keyedWatchings);
-    }
-
-    @Override
-    public MatchedWatchingBuilder watch(Matcher<FullType<?>> matcher) {
-        return new DefaultMatchedWatchingBuilder(matcher, matchedWatchings);
-    }
-
-    @Override
-    public <T> BindingBuilder<T> bind(Class<T> type) {
-        return bind(Key.of(type));
-    }
 
     @Override
     public <T> BindingBuilder<T> bind(Key<T> type) {
@@ -76,15 +51,15 @@ class DefaultBinder implements Binder {
         return bindings;
     }
 
-    List<ScopeBinding> getScopeBindings() {
-        return scopeBindings;
+    List<BindingAttachment<?>> getAttachments() {
+        return attachments;
     }
 
-    List<AbstractKeyedWatching<?>> getKeyedWatchings() {
-        return keyedWatchings;
+    List<BindingEncounter<?>> getEncounters() {
+        return encounters;
     }
 
-    List<AbstractMatchedWatching> getMatchedWatchings() {
-        return matchedWatchings;
+    List<BindingWatching<?>> getWatchings() {
+        return watchings;
     }
 }

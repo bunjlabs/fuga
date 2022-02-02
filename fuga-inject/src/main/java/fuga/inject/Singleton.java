@@ -24,7 +24,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(value = {CONSTRUCTOR})
 @Retention(value = RUNTIME)
-@ScopeAnnotation
+@ScopeAnnotation(scope = SingletonScope.class)
 public @interface Singleton {
 
 }

@@ -16,38 +16,40 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Composer;
-import fuga.inject.Dependency;
 import fuga.common.Key;
+import fuga.inject.Composer;
+import fuga.inject.ConfigurationException;
+import fuga.inject.Dependency;
 
-class DelegatedComposerFactory<T> implements InternalFactory<T> {
+class DelegatedComposerFactory<T> implements InternalFactory<T>, Initializable {
 
+    private final Key<T> targetKey;
     private final Key<? extends Composer> composerKey;
+    private DependencyInjector<? extends Composer> composerInjector;
 
-    DelegatedComposerFactory(Key<? extends Composer> composerKey) {
+    DelegatedComposerFactory(Key<T> targetKey, Key<? extends Composer> composerKey) {
+        this.targetKey = targetKey;
         this.composerKey = composerKey;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var composer = context.getInjector().getInstance(composerKey);
+    public void initialize(InjectorImpl injector) {
+        var dependency = Dependency.of(composerKey);
 
-        try {
-            T instance = getFromComposer(composer, context.getDependency().getKey(), dependency.getKey());
-
-            if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
-                        context.getDependency().getKey().getRawType(), dependency);
-            }
-
-            return instance;
-        } catch (RuntimeException e) {
-            throw InternalProvisionException.errorInComposer(e);
+        composerInjector = injector.getDependencyInjector(dependency);
+        if (composerInjector == null) {
+            throw new ConfigurationException("Unsatisfied composer dependency: " + dependency);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private T getFromComposer(Composer composer, Key<?> requester, Key<?> requested) {
-        return (T) composer.get(requester, requested);
+    @Override
+    public T get(InjectorContext context) throws InternalProvisionException {
+        var composer = composerInjector.inject(context);
+
+        try {
+            return composer.get(context.getDependency().getKey(), targetKey);
+        } catch (RuntimeException e) {
+            throw InternalProvisionException.errorInComposer(e);
+        }
     }
 }

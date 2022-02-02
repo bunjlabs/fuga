@@ -17,18 +17,14 @@
 package fuga.settings;
 
 import fuga.environment.Environment;
-import fuga.inject.Singleton;
-import fuga.inject.Unit;
 import fuga.inject.UnitBuilder;
 import fuga.settings.source.SettingsSource;
-import fuga.settings.support.DefaultSettingsComposer;
-import fuga.settings.support.DefaultSettingsContainer;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SettingsUnitBuilder implements UnitBuilder {
+public class SettingsUnitBuilder implements UnitBuilder<SettingsUnit> {
 
     private final List<SettingsSource> settingsSourcesSet = new LinkedList<>();
 
@@ -55,19 +51,7 @@ public class SettingsUnitBuilder implements UnitBuilder {
     }
 
     @Override
-    public Unit build() {
-        return c -> {
-            if (settingsTree != null) {
-                c.bind(SettingsContainer.class).toProvider(() -> new DefaultSettingsContainer(settingsTree));
-            } else {
-                c.bind(SettingsContainer.class).toProvider(DefaultSettingsContainer::new);
-            }
-
-            c.watch(SettingsContainer.class).with((key, container) ->
-                    settingsSourcesSet.forEach(source -> container.load(source, environment)));
-
-            c.bind(DefaultSettingsComposer.class).in(Singleton.class);
-            c.bind(SettingsComposer.class).to(DefaultSettingsComposer.class);
-        };
+    public SettingsUnit build() {
+        return new SettingsUnit(environment, settingsTree, settingsSourcesSet);
     }
 }

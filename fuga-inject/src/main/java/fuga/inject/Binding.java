@@ -19,8 +19,24 @@ package fuga.inject;
 import fuga.common.Key;
 
 public interface Binding<T> {
+    default <A> A getAttribute(Class<A> attributeType) {
+        return getAttribute(Key.of(attributeType));
+    }
+
+    <A> A getAttribute(Key<A> attributeType);
+
+    default <A> void setAttribute(Class<A> attributeType, A value) {
+        setAttribute(Key.of(attributeType), value);
+    }
+
+    <A> void setAttribute(Key<A> attributeType, A value);
 
     Key<T> getKey();
 
+    default Injector getInjector() {
+        return getAttribute(Injector.class);
+    }
+
     <V> V acceptVisitor(BindingVisitor<? super T, V> visitor);
+
 }

@@ -16,8 +16,8 @@
 
 package fuga.inject.support;
 
-import fuga.inject.BindingVisitor;
 import fuga.common.Key;
+import fuga.inject.BindingVisitor;
 import fuga.inject.bindings.LinkedKeyBinding;
 import fuga.util.ObjectUtils;
 
@@ -27,13 +27,8 @@ class LinkedKeyBindingImpl<T> extends AbstractBinding<T> implements LinkedKeyBin
 
     private final Key<? extends T> linkedKey;
 
-    LinkedKeyBindingImpl(Key<T> key, Scoping scoping, Key<? extends T> linkedKey) {
-        super(key, scoping);
-        this.linkedKey = linkedKey;
-    }
-
-    LinkedKeyBindingImpl(Key<T> key, Key<? extends T> linkedKey, InternalFactory<T> internalFactory) {
-        super(key, internalFactory);
+    LinkedKeyBindingImpl(Key<T> key, Key<? extends T> linkedKey) {
+        super(key);
         this.linkedKey = linkedKey;
     }
 
@@ -44,11 +39,6 @@ class LinkedKeyBindingImpl<T> extends AbstractBinding<T> implements LinkedKeyBin
 
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
-        return new LinkedKeyBindingImpl<>(getKey(), scoping, linkedKey);
     }
 
     @Override

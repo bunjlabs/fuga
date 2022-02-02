@@ -32,13 +32,13 @@ class ProviderToInternalFactoryAdapter<T> implements Provider<T>, Initializable 
         if (injector == null) {
             throw new IllegalStateException("Injector is not ready");
         }
-        var ctx = injector.getContext();
-        var dependency = ctx.getDependency();
+
+        var context = injector.getContext();
 
         try {
-            return internalFactory.get(ctx, dependency);
+            return internalFactory.get(context);
         } catch (InternalProvisionException e) {
-            throw e.toProvisionException();
+            throw new RuntimeException(e);
         }
     }
 

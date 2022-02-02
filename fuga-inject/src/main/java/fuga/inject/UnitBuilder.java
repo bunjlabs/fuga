@@ -16,7 +16,7 @@
 
 package fuga.inject;
 
-public interface UnitBuilder {
+public interface UnitBuilder<T extends Unit> {
 
-    Unit build();
+    T build();
 }

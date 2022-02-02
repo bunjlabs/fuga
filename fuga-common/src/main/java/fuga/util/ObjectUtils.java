@@ -85,6 +85,11 @@ public abstract class ObjectUtils {
             return this;
         }
 
+        public ToStringJoiner add(Object value) {
+            stringJoiner.add(value.toString());
+            return this;
+        }
+
         @Override
         public String toString() {
             return stringJoiner.toString();

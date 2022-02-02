@@ -16,15 +16,17 @@
 
 package fuga.inject.support;
 
-import fuga.inject.BindingVisitor;
 import fuga.common.Key;
+import fuga.inject.BindingVisitor;
 
 abstract class AbstractBindingVisitor<T, V> implements BindingVisitor<T, V> {
 
+    final AbstractBinding<T> binding;
     final Key<T> key;
     final Scoping scoping;
 
     AbstractBindingVisitor(AbstractBinding<T> binding) {
+        this.binding = binding;
         this.key = binding.getKey();
         this.scoping = binding.getScoping();
     }

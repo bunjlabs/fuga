@@ -16,9 +16,7 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Binding;
-
 interface BindingProcessor {
 
-    <T> boolean process(Binding<T> binding);
+    <T> boolean process(AbstractBinding<T> binding);
 }

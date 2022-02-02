@@ -31,7 +31,7 @@ public class InjectorBuilder {
         return this;
     }
 
-    public InjectorBuilder withUnits(Iterable<Unit> units) {
+    public InjectorBuilder withUnits(Iterable<? extends Unit> units) {
         units.forEach(this.units::add);
         return this;
     }

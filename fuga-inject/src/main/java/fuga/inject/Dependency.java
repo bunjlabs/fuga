@@ -18,71 +18,89 @@ package fuga.inject;
 
 import fuga.common.Key;
 import fuga.common.annotation.AnnotationUtils;
-import fuga.lang.FullType;
+import fuga.inject.InjectHint.Target;
+import fuga.lang.TypeLiteral;
 import fuga.util.ObjectUtils;
 import fuga.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static fuga.util.Assert.notNull;
 
 public class Dependency<T> {
 
+    enum Modifier {
+        ALL, NULLABLE
+    }
+
     private final Key<T> key;
-    private final boolean nullable;
-    private final boolean requestedAll;
+    private final EnumSet<Modifier> modifiers;
+    private final Target target;
+
     private final Key<?> realKey;
     private final int hashCode;
     private String toString;
 
-    private Dependency(Key<T> key, boolean nullable, boolean requestedAll) {
-        this(key, nullable, requestedAll, key);
-    }
-
-    private Dependency(Key<T> key, boolean nullable, boolean requestedAll, Key<?> realKey) {
+    private Dependency(Key<T> key, EnumSet<Modifier> modifiers, Target target, Key<?> realKey) {
         this.key = notNull(key);
-        this.nullable = nullable;
-        this.requestedAll = requestedAll;
+        this.modifiers = modifiers;
+        this.target = target;
         this.realKey = realKey;
         this.hashCode = computeHashCode();
     }
 
     public static <T> Dependency<T> of(Key<T> key) {
-        return new Dependency<>(key, true, false);
+        return new Dependency<>(key, EnumSet.noneOf(Modifier.class), Target.BINDING, key);
     }
 
     public static <T> Dependency<T> of(Class<T> clazz) {
-        return new Dependency<>(Key.of(clazz), true, false);
+        return of(Key.of(clazz));
     }
 
-    public static List<Dependency<?>> fromMember(Member member, FullType<?> declaredType, Annotation[][] parametersAnnotations) {
+    public static <T> Dependency<Collection<T>> ofAll(Key<T> key) {
+        @SuppressWarnings("unchecked")
+        var collectionKey = (Key<Collection<T>>) Key.<Collection<T>>of(Collection.class);
+        return new Dependency<>(collectionKey, EnumSet.of(Modifier.ALL), Target.BINDING, key);
+    }
+
+    public static <T> Dependency<Collection<T>> ofAll(Class<T> clazz) {
+        return ofAll(Key.of(clazz));
+    }
+
+    public static List<Dependency<?>> fromMember(Member member, TypeLiteral<?> declaredType, Annotation[][] parametersAnnotations) {
         var dependencies = new ArrayList<Dependency<?>>();
 
         int index = 0;
-        for (FullType<?> parameterType : declaredType.getParameterTypes(member)) {
+        for (TypeLiteral<?> parameterType : declaredType.getParameterTypes(member)) {
             var parameterAnnotations = parametersAnnotations[index];
-
             var parameterKey = Key.of(parameterType);
-            var nullable = ReflectionUtils.allowsNull(parameterAnnotations);
-            var requestedAll = AnnotationUtils.hasAnnotation(parameterAnnotations, InjectAll.class);
 
-            if (requestedAll) {
+            var hint = AnnotationUtils.findAnnotation(parameterAnnotations, InjectHint.class);
+            var target = hint == null ? Target.BINDING : hint.target();
+
+            var modifiers = EnumSet.noneOf(Modifier.class);
+            if (ReflectionUtils.allowsNull(parameterAnnotations) || (hint != null && hint.nullable())) {
+                modifiers.add(Modifier.NULLABLE);
+            }
+
+            if (AnnotationUtils.hasAnnotation(parameterAnnotations, InjectAll.class) || (hint != null && hint.all())) {
+                modifiers.add(Modifier.ALL);
+            }
+
+            var realKey = parameterKey;
+            if (modifiers.contains(Modifier.ALL)) {
                 if (!parameterKey.getRawType().isAssignableFrom(Set.class)) {
                     throw new ConfigurationException("Not a Set" + parameterKey);
                 }
 
                 var realType = ((ParameterizedType) parameterType.getType()).getActualTypeArguments();
-                var realKey = Key.of(realType[0]);
-                dependencies.add(new Dependency<>(parameterKey, nullable, true, realKey));
-            } else {
-                dependencies.add(new Dependency<>(parameterKey, nullable, false));
+                realKey = Key.of(realType[0]);
             }
+
+            dependencies.add(new Dependency<>(parameterKey, modifiers, target, realKey));
 
             index++;
         }
@@ -91,7 +109,7 @@ public class Dependency<T> {
     }
 
     private int computeHashCode() {
-        return Objects.hash(key, nullable);
+        return Objects.hash(key, modifiers);
     }
 
     public Key<T> getKey() {
@@ -99,15 +117,27 @@ public class Dependency<T> {
     }
 
     public boolean isNullable() {
-        return nullable;
+        return modifiers.contains(Modifier.NULLABLE);
     }
 
     public boolean isRequestedAll() {
-        return requestedAll;
+        return modifiers.contains(Modifier.ALL);
+    }
+
+    public boolean isTargetAttr() {
+        return target == Target.ATTRIBUTE;
+    }
+
+    public boolean isTargetSource() {
+        return target == Target.SOURCE;
     }
 
     public Key<?> getRealKey() {
         return realKey;
+    }
+
+    public TypeLiteral<T> getType() {
+        return key.getType();
     }
 
     @Override
@@ -116,8 +146,7 @@ public class Dependency<T> {
         if (o == null || getClass() != o.getClass()) return false;
         Dependency<?> dep = (Dependency<?>) o;
         return key.equals(dep.key)
-                && requestedAll == dep.requestedAll
-                && nullable == dep.nullable;
+                && modifiers.equals(dep.modifiers);
     }
 
     @Override
@@ -128,13 +157,13 @@ public class Dependency<T> {
     @Override
     public String toString() {
         String s = toString;
-        if (s == null) {
-            s = ObjectUtils.toStringJoiner(this)
-                    .add("key", key)
-                    .add("requestedAll", requestedAll)
-                    .add("nullable", nullable)
-                    .toString();
-            toString = s;
+        if (toString == null) {
+            var j = ObjectUtils.toStringJoiner(this)
+                    .add(key.getType());
+            if (!modifiers.isEmpty()) {
+                j.add(modifiers);
+            }
+            toString = s = j.toString();
         }
         return s;
     }

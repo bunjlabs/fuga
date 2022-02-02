@@ -21,44 +21,44 @@ import fuga.common.Key;
 import fuga.inject.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 class InjectorImpl implements Injector {
 
     private final Injector parent;
     private final Container container;
-    private InjectorContext context;
+    private final ThreadLocal<InjectorContext> context = ThreadLocal.withInitial(() -> new InjectorContext(this));
 
     InjectorImpl(Injector parent, Container container) {
         this.parent = parent;
         this.container = container;
     }
 
-    <T> InternalFactory<T> getInternalFactory(Key<T> key) {
-        return getBinding(key).getInternalFactory();
-    }
-
-    <T> Collection<InternalFactory<T>> getInternalFactories(Key<T> key) {
-        var bindingList = container.getAllExplicitBindings(key);
-        var factories = new ArrayList<InternalFactory<T>>(bindingList.size());
-        bindingList.forEach(b -> factories.add(b.getInternalFactory()));
-
-        return factories;
-    }
-
     <T> DependencyInjector<T> getDependencyInjector(Dependency<T> dependency) {
-        if (dependency.isRequestedAll()) {
+        if (dependency.isTargetAttr()) {
+            return new AttributeDependencyInjector<>(dependency);
+        } else if (dependency.isTargetSource()) {
+            return new SourceDependencyInjector<>(dependency);
+        } else if (dependency.isRequestedAll()) {
             // T is actually a Collection
             var realKey = dependency.getRealKey();
             var realDependency = Dependency.of(realKey);
-
-            var bindingList = container.getAllExplicitBindings(realKey);
-            var factories = new ArrayList<InternalFactory<?>>(bindingList.size());
-            bindingList.forEach(b -> factories.add(b.getInternalFactory()));
-
-            return new MultiDependencyInjector<>(realDependency, factories);
+            var bindings = new ArrayList<AbstractBinding<?>>(container.getAllExplicitBindings(realKey));
+            return new MultiBindingDependencyInjector<T>(realDependency, bindings);
         } else {
-            return new SingleDependencyInjector<>(dependency, getInternalFactory(dependency.getKey()));
+            var key = dependency.getKey();
+            var localContext = getContext();
+            var binding = localContext.findBinding(key);
+            if (binding == null) {
+                binding = getBinding(key);
+            }
+
+            return new BindingDependencyInjector<>(dependency, binding);
         }
+    }
+
+    <T> DependencyInjector<T> getBindingDependencyInjector(AbstractBinding<T> binding) {
+        return new BindingDependencyInjector<>(Dependency.of(binding.getKey()), binding);
     }
 
     Container getContainer() {
@@ -66,11 +66,7 @@ class InjectorImpl implements Injector {
     }
 
     InjectorContext getContext() {
-        if (context == null) {
-            context = new InjectorContext(this);
-        }
-
-        return context;
+        return context.get();
     }
 
     @Override
@@ -79,107 +75,58 @@ class InjectorImpl implements Injector {
     }
 
     @Override
-    public Injector createChildInjector(Unit... units) {
-        return createChildInjector(Arrays.asList(units));
-    }
-
-    @Override
-    public Injector createChildInjector(Iterable<Unit> units) {
+    public Injector createChildInjector(Iterable<? extends Unit> units) {
         return new InternalInjectorBuilder().withParent(this).withUnits(units).build();
-    }
-
-    @Override
-    public <T> AbstractBinding<T> getBinding(Class<T> type) {
-        return getBinding(Key.of(type));
     }
 
     @Override
     public <T> AbstractBinding<T> getBinding(Key<T> key) {
         var binding = container.getExplicitBinding(key);
-
-        if (binding != null) {
-            return binding;
+        if (binding == null) {
+            throw new ConfigurationException("No binding available for " + key);
         }
 
-        throw new ProvisionException("No binding available for " + key);
-    }
-
-    @Override
-    public <T> Set<Binding<T>> getAllBindings(Class<T> type) {
-        return getAllBindings(Key.of(type));
+        return binding;
     }
 
     @Override
     public <T> Set<Binding<T>> getAllBindings(Key<T> key) {
-        var bindingList = container.getAllExplicitBindings(key);
-        return new HashSet<>(bindingList);
-    }
-
-    @Override
-    public <T> Provider<T> getProvider(Class<T> type) {
-        return getProvider(Key.of(type));
+        return new HashSet<>(container.getAllExplicitBindings(key));
     }
 
     @Override
     public <T> Provider<T> getProvider(Key<T> key) {
         var binding = getBinding(key);
-        var internalFactory = binding.getInternalFactory();
-
-        return () -> doGetInstance(key, internalFactory);
-    }
-
-    @Override
-    public <T> Set<Provider<T>> getAllProviders(Class<T> type) {
-        return getAllProviders(Key.of(type));
+        return () -> doGetInstance(binding);
     }
 
     @Override
     public <T> Set<Provider<T>> getAllProviders(Key<T> key) {
-        var internalFactories = getInternalFactories(key);
-        var providers = new HashSet<Provider<T>>();
-
-        internalFactories.forEach(internalFactory -> providers.add(() -> doGetInstance(key, internalFactory)));
-
-        return providers;
-    }
-
-    @Override
-    public <T> T getInstance(Class<T> type) {
-        return getInstance(Key.of(type));
+        return container.getAllExplicitBindings(key).stream()
+                .map(b -> (Provider<T>) () -> doGetInstance(b))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public <T> T getInstance(Key<T> key) {
-        return getProvider(key).get();
-    }
-
-    @Override
-    public <T> Set<T> getAllInstances(Class<T> type) {
-        return getAllInstances(Key.of(type));
+        return doGetInstance(getBinding(key));
     }
 
     @Override
     public <T> Set<T> getAllInstances(Key<T> key) {
-        var providers = getAllProviders(key);
-        var instances = new HashSet<T>();
-
-        for (var provider : providers) {
-            instances.add(provider.get());
-        }
-
-        return instances;
+        return container.getAllExplicitBindings(key).stream()
+                .map(this::doGetInstance)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
-    private <T> T doGetInstance(Key<T> key, InternalFactory<T> internalFactory) {
-        var dependency = Dependency.of(key);
+    private <T> T doGetInstance(AbstractBinding<T> binding) {
         var localContext = getContext();
-        localContext.pushDependency(dependency);
+        var dependencyInjector = new BindingDependencyInjector<>(Dependency.of(binding.getKey()), binding);
+
         try {
-            return internalFactory.get(localContext, dependency);
+            return dependencyInjector.inject(localContext);
         } catch (InternalProvisionException e) {
             throw e.toProvisionException();
-        } finally {
-            localContext.popDependency();
         }
     }
 }

@@ -16,8 +16,8 @@
 
 package fuga.inject.support;
 
-import fuga.inject.BindingVisitor;
 import fuga.common.Key;
+import fuga.inject.BindingVisitor;
 import fuga.inject.bindings.InstanceBinding;
 import fuga.util.ObjectUtils;
 
@@ -27,13 +27,8 @@ class InstanceBindingImpl<T> extends AbstractBinding<T> implements InstanceBindi
 
     private final T instance;
 
-    InstanceBindingImpl(Key<T> key, Scoping scoping, T instance) {
-        super(key, scoping);
-        this.instance = instance;
-    }
-
-    InstanceBindingImpl(Key<T> key, T instance, InternalFactory<T> internalFactory) {
-        super(key, internalFactory);
+    InstanceBindingImpl(Key<T> key, T instance) {
+        super(key);
         this.instance = instance;
     }
 
@@ -44,11 +39,6 @@ class InstanceBindingImpl<T> extends AbstractBinding<T> implements InstanceBindi
 
     public <V> V acceptVisitor(BindingVisitor<? super T, V> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    protected AbstractBinding<T> withScoping(Scoping scoping) {
-        return new InstanceBindingImpl<>(getKey(), scoping, instance);
     }
 
     @Override

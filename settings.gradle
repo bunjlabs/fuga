@@ -2,7 +2,6 @@ rootProject.name = 'fuga'
 
 include 'fuga-common'
 include 'fuga-inject'
-include 'fuga-context'
 include 'fuga-settings'
 include 'fuga-logging'
 include 'fuga-event'

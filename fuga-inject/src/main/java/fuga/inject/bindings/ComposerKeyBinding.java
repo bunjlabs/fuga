@@ -16,9 +16,9 @@
 
 package fuga.inject.bindings;
 
+import fuga.common.Key;
 import fuga.inject.Binding;
 import fuga.inject.Composer;
-import fuga.common.Key;
 
 public interface ComposerKeyBinding<T> extends Binding<T> {
 

@@ -16,10 +16,9 @@
 
 package fuga.inject.support;
 
-import fuga.common.errors.ErrorMessages;
 import fuga.common.Key;
+import fuga.common.errors.ErrorMessages;
 
-import java.lang.annotation.Annotation;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,35 +26,31 @@ abstract class AbstractBindingProcessor implements BindingProcessor {
 
     private final Container container;
     private final ErrorMessages errorMessages;
-    private final List<Initializable> uninitialized = new LinkedList<>();
+    private final List<Initializable> initializables = new LinkedList<>();
 
     AbstractBindingProcessor(Container container, ErrorMessages errorMessages) {
         this.container = container;
         this.errorMessages = errorMessages;
     }
 
-    ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
-        return container.getScopeBinding(annotationType);
+    <T> List<BindingAttachment<T>> getAttachments(Key<T> key) {
+        return container.getAttachments(key);
     }
 
-    <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key) {
-        return container.getKeyedWatchings(key);
+    <T> List<BindingEncounter<T>> getEncounters(Key<T> key) {
+        return container.getEncounters(key);
     }
 
-    List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key) {
-        return container.getMatchedWatchings(key);
-    }
-
-    <T> void putBinding(AbstractBinding<T> binding) {
-        container.putBinding(binding);
+    <T> List<BindingWatching<T>> getWatchings(Key<T> key) {
+        return container.getWatchings(key);
     }
 
     void scheduleInitialization(Initializable initializable) {
-        uninitialized.add(initializable);
+        initializables.add(initializable);
     }
 
-    List<Initializable> getUninitialized() {
-        return uninitialized;
+    void initialize(InjectorImpl injector) {
+        initializables.forEach(u -> u.initialize(injector));
     }
 
     ErrorMessages getErrorMessages() {

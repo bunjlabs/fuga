@@ -16,30 +16,30 @@
 
 package fuga.common;
 
-import fuga.lang.FullType;
+import fuga.lang.TypeLiteral;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
 
 public class Key<T> {
 
-    private final FullType<T> type;
+    private final TypeLiteral<T> type;
     private final int hashCode;
     private String toString;
 
     public static Key<?> of(Type type) {
-        return new Key<>(FullType.of(type));
+        return new Key<>(TypeLiteral.of(type));
     }
 
     public static <T> Key<T> of(Class<T> type) {
-        return new Key<>(FullType.of(type));
+        return new Key<>(TypeLiteral.of(type));
     }
 
-    public static <T> Key<T> of(FullType<T> type) {
+    public static <T> Key<T> of(TypeLiteral<T> type) {
         return new Key<>(type);
     }
 
-    private Key(FullType<T> type) {
+    private Key(TypeLiteral<T> type) {
         this.type = type;
         this.hashCode = computeHashCode();
     }
@@ -48,7 +48,7 @@ public class Key<T> {
         return type.getRawType();
     }
 
-    public FullType<T> getFullType() {
+    public TypeLiteral<T> getType() {
         return type;
     }
 

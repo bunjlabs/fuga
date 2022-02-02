@@ -16,16 +16,39 @@
 
 package fuga.app;
 
-import fuga.context.ApplicationContext;
+import fuga.common.Key;
 import fuga.inject.Unit;
+
+import java.util.Arrays;
 
 public final class FugaBoot {
 
-    public static ApplicationContext start(Unit appUnit) {
-        var context = new ApplicationContextBuilder().withUnits(appUnit).build();
+    private FugaBoot() {
+    }
 
-        context.start();
+    public static <T> T start(Class<T> applicationClass, Unit... units) {
+        return start(applicationClass, Arrays.asList(units));
+    }
 
-        return context;
+    public static <T> T start(Key<T> applicationClass, Unit... units) {
+        return start(applicationClass, Arrays.asList(units));
+    }
+
+    public static <T> T start(Class<T> applicationClass, Iterable<? extends Unit> units) {
+        return start(Key.of(applicationClass), units);
+    }
+
+    public static <T> T start(Key<T> applicationClass, Iterable<? extends Unit> units) {
+        var context = new ApplicationContextBuilder().withUnits(units).build();
+        var injector = context.getInjector();
+
+        var configurableContext = injector.getInstance(ConfigurableApplicationContext.class);
+
+        var application = injector.getInstance(applicationClass);
+
+        configurableContext.init();
+        configurableContext.start();
+
+        return application;
     }
 }

@@ -18,8 +18,8 @@ package fuga.inject.support;
 
 import fuga.common.Key;
 
-import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.function.Consumer;
 
 interface Container {
 
@@ -29,17 +29,19 @@ interface Container {
 
     <T> List<AbstractBinding<T>> getAllExplicitBindings(Key<T> key);
 
-    ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType);
+    <T> List<BindingAttachment<T>> getAttachments(Key<T> key);
 
-    List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key);
+    <T> List<BindingEncounter<T>> getEncounters(Key<T> key);
 
-    <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key);
+    <T> List<BindingWatching<T>> getWatchings(Key<T> key);
 
     void putBinding(AbstractBinding<?> binding);
 
-    void putScopeBinding(ScopeBinding scopeBinding);
+    void putAttachment(BindingAttachment<?> attachment);
 
-    <T> void putKeyedWatching(AbstractKeyedWatching<T> watching);
+    void putEncounter(BindingEncounter<?> encounter);
 
-    void putMatchedWatching(AbstractMatchedWatching watching);
+    void putWatching(BindingWatching<?> watching);
+
+    void forEach(Consumer<? extends AbstractBinding<?>> action);
 }

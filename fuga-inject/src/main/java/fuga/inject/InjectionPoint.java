@@ -16,7 +16,7 @@
 
 package fuga.inject;
 
-import fuga.lang.FullType;
+import fuga.lang.TypeLiteral;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -38,15 +38,15 @@ public class InjectionPoint {
 
     public static <T> InjectionPoint forConstructor(Constructor<T> constructor) {
         return new InjectionPoint(
-                constructor, Dependency.fromMember(constructor, FullType.of(constructor.getDeclaringClass()), constructor.getParameterAnnotations()), false);
+                constructor, Dependency.fromMember(constructor, TypeLiteral.of(constructor.getDeclaringClass()), constructor.getParameterAnnotations()), false);
     }
 
-    public static <T> InjectionPoint forConstructor(Constructor<T> constructor, FullType<T> declaredType) {
+    public static <T> InjectionPoint forConstructor(Constructor<T> constructor, TypeLiteral<T> declaredType) {
         return new InjectionPoint(
                 constructor, Dependency.fromMember(constructor, declaredType, constructor.getParameterAnnotations()), false);
     }
 
-    public static <T> InjectionPoint forConstructorOf(FullType<T> type) {
+    public static <T> InjectionPoint forConstructorOf(TypeLiteral<T> type) {
         var injectableConstructors = getInjectableConstructors(type.getRawType());
 
         if (injectableConstructors.size() > 1) {

@@ -16,6 +16,7 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.inject.Scope;
 import fuga.inject.Scopes;
 
@@ -50,6 +51,20 @@ abstract class Scoping {
         };
     }
 
+    static Scoping forKey(final Key<? extends Scope> scopeKey) {
+        return new Scoping() {
+            @Override
+            Key<? extends Scope> getScopeKey() {
+                return scopeKey;
+            }
+
+            @Override
+            public String toString() {
+                return scopeKey.toString();
+            }
+        };
+    }
+
     static Scoping forInstance(final Scope scope) {
         return new Scoping() {
             @Override
@@ -65,6 +80,11 @@ abstract class Scoping {
     }
 
     Scope getScopeInstance() {
+        return null;
+    }
+
+
+    Key<? extends Scope> getScopeKey() {
         return null;
     }
 

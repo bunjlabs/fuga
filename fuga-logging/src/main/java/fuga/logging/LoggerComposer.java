@@ -16,8 +16,8 @@
 
 package fuga.logging;
 
-import fuga.inject.Composer;
 import fuga.common.Key;
+import fuga.inject.Composer;
 import fuga.inject.ProvisionException;
 
 public interface LoggerComposer extends Composer {

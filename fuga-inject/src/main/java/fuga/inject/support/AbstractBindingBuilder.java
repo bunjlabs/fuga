@@ -27,7 +27,7 @@ abstract class AbstractBindingBuilder<T> {
     private AbstractBinding<T> binding;
 
     AbstractBindingBuilder(Key<T> key, List<AbstractBinding<?>> bindingList) {
-        this.binding = new UntargettedBindingImpl<>(key, Scoping.UNSCOPED);
+        this.binding = new UntargetedBindingImpl<>(key);
         this.bindingList = bindingList;
         this.position = bindingList.size();
         this.bindingList.add(this.position, this.binding);

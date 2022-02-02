@@ -62,7 +62,7 @@ class InternalProvisionException extends Exception {
     }
 
     static InternalProvisionException nullInjectedIntoNonNullableDependency(Object source, Dependency<?> dependency) {
-        return create("null returned by binding at %s%n but %s is not @Nullable", source, dependency);
+        return create("Null returned by binding at %s%n but %s is not @Nullable", source, dependency);
     }
 
     static InternalProvisionException errorInProvider(Throwable cause) {
@@ -81,8 +81,16 @@ class InternalProvisionException extends Exception {
         return create(cause, "Error in provision listener, %s", cause);
     }
 
+    static InternalProvisionException nullProvisionListener(Object source) {
+        return create("Got null provision listener while provision %s", source);
+    }
+
     static InternalProvisionException circularDependencies(Class<?> expectedType) {
         return create("Found a circular dependency involving %s.", expectedType);
+    }
+
+    static InternalProvisionException sourceDependencyHasUnexpectedType(Object expected, Object source) {
+        return create("Unexpected type %s returned for source dependency %s.", source, expected);
     }
 
     ProvisionException toProvisionException() {

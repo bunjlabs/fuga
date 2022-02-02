@@ -1,25 +1,21 @@
 package fuga.event;
 
-import fuga.common.annotation.AnnotationUtils;
-import fuga.event.support.DefaultEventBus;
-import fuga.inject.Singleton;
-import fuga.inject.Unit;
 import fuga.inject.UnitBuilder;
+import fuga.util.concurrent.CurrentThreadExecutor;
 
-import java.util.Arrays;
+import java.util.concurrent.Executor;
 
-public class EventUnitBuilder implements UnitBuilder {
+public class EventUnitBuilder implements UnitBuilder<EventUnit> {
+
+    private Executor executor = CurrentThreadExecutor.INSTANCE;
+
+    public EventUnitBuilder withExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
 
     @Override
-    public Unit build() {
-        return c -> {
-            c.watch(t -> Arrays.stream(t.getRawType().getMethods()).anyMatch(m ->
-                        AnnotationUtils.hasAnnotation(m, Subscribe.class))).with(InjectSubscriberRegistrar.class);
-
-            c.bind(DefaultEventBus.class).in(Singleton.class);
-            c.bind(EventBus.class).to(DefaultEventBus.class);
-
-            c.bind(InjectSubscriberRegistrar.class).in(Singleton.class);
-        };
+    public EventUnit build() {
+        return new EventUnit(executor);
     }
 }

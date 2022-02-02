@@ -16,18 +16,26 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.inject.Configuration;
 import fuga.inject.Unit;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 class DefaultConfiguration extends DefaultBinder implements Configuration {
 
+    private final Set<Key<? extends Unit>> requiredUnits = new HashSet<>();
     private final List<Unit> installedUnits = new LinkedList<>();
 
     DefaultConfiguration() {
         super();
+    }
+
+    Set<Key<? extends Unit>> getRequiredUnits() {
+        return requiredUnits;
     }
 
     List<Unit> getInstalledUnits() {
@@ -35,7 +43,13 @@ class DefaultConfiguration extends DefaultBinder implements Configuration {
     }
 
     @Override
+    public void depends(Key<? extends Unit> unitType) {
+        requiredUnits.add(unitType);
+    }
+
+    @Override
     public void install(Unit unit) {
         installedUnits.add(unit);
     }
+
 }

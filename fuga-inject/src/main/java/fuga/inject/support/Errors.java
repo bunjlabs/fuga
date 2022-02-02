@@ -19,24 +19,10 @@ package fuga.inject.support;
 import fuga.common.errors.ErrorMessages;
 import fuga.inject.Binding;
 
-import java.lang.annotation.Annotation;
-
 abstract class Errors {
-
-    static void missingScopeAnnotation(ErrorMessages errorMessages, Class<? extends Annotation> annotation) {
-        errorMessages.addMessage("%s should be annotated with @ScopeAnnotation.", annotation);
-    }
-
-    static void missingRuntimeRetention(ErrorMessages errorMessages, Class<? extends Annotation> annotation) {
-        errorMessages.addMessage("%s should be annotated with @Retention(RUNTIME).", annotation);
-    }
 
     static void recursiveBinding(ErrorMessages errorMessages, Binding<?> binding) {
         errorMessages.addMessage("Binding %s points to itself.", binding);
-    }
-
-    static void noScopeBinding(ErrorMessages errorMessages, Class<? extends Annotation> annotation) {
-        errorMessages.addMessage("No %s scope binding found.", annotation);
     }
 
     static void noScopedProvider(ErrorMessages errorMessages, Scoping scoping) {

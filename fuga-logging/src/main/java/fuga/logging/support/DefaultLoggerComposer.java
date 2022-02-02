@@ -24,15 +24,24 @@ import org.slf4j.LoggerFactory;
 public class DefaultLoggerComposer implements LoggerComposer {
     @Override
     public <T> T get(Key<?> requester, Key<T> requested) throws ProvisionException {
-        if (!org.slf4j.Logger.class.equals(requested.getRawType())) {
-            throw new ProvisionException("This composer can create org.slf4j.Logger only");
+        if (java.util.logging.Logger.class.equals(requested.getRawType())) {
+            return doJavaGet(requester.getRawType(), requested.getRawType());
         }
 
-        return doSlf4jGet(requester.getRawType(), requested.getRawType());
+        if (org.slf4j.Logger.class.equals(requested.getRawType())) {
+            return doSlf4jGet(requester.getRawType(), requested.getRawType());
+        }
+
+        throw new ProvisionException("This composer can create org.slf4j.Logger or java.util.logging.Logger only");
     }
 
     @SuppressWarnings("unchecked")
     private <T> T doSlf4jGet(Class<?> requester, Class<T> cast) {
         return (T) LoggerFactory.getLogger(requester);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T doJavaGet(Class<?> requester, Class<T> cast) {
+        return (T) java.util.logging.Logger.getLogger(requester.getName());
     }
 }

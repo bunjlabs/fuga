@@ -5,11 +5,11 @@ public interface Matcher<T> {
 
     boolean match(T t);
 
-    default Matcher<T> and(Matcher<T> other) {
+    default Matcher<T> and(Matcher<? super T> other) {
         return t -> match(t) && other.match(t);
     }
 
-    default Matcher<T> or(Matcher<T> other) {
+    default Matcher<T> or(Matcher<? super T> other) {
         return t -> match(t) || other.match(t);
     }
 }

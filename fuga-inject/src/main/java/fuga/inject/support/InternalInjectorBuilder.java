@@ -16,23 +16,26 @@
 
 package fuga.inject.support;
 
+import fuga.common.Key;
 import fuga.common.errors.ErrorMessages;
 import fuga.inject.*;
 
-import java.util.Collections;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.stream.Collectors;
 
 public class InternalInjectorBuilder {
 
-    private Iterable<Unit> units = Collections.emptyList();
+    private Iterable<? extends Unit> units = Collections.emptyList();
     private InjectorImpl parent = null;
 
-    public InternalInjectorBuilder withUnits(Iterable<Unit> units) {
+    public InternalInjectorBuilder withUnits(Iterable<? extends Unit> units) {
         this.units = units;
         return this;
     }
 
-    public InternalInjectorBuilder withParent(InjectorImpl injector) {
-        this.parent = injector;
+    public InternalInjectorBuilder withParent(InjectorImpl parentInjector) {
+        this.parent = parentInjector;
         return this;
     }
 
@@ -44,21 +47,17 @@ public class InternalInjectorBuilder {
         }
 
         var container = new InheritedContainer(parent.getContainer());
-        var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
-        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
-        var listenerBindingProcessor = new DefaultWatchingProcessor(container, errorMessages);
-
-        var context = new SetupContext(bindingProcessor, scopeBindingProcessor, listenerBindingProcessor);
+        var context = new SetupContext(container, errorMessages);
+        context.pushResolverInjector(parent);
 
         var injectorUnit = new InjectorUnit();
-        bindingProcessor.scheduleInitialization(injectorUnit.adapter);
+        context.bindingProcessor.scheduleInitialization(injectorUnit.adapter);
 
-        setupUnit(injectorUnit, context);
-
-        units.forEach(u -> setupUnit(u, context));
+        setupUnits(context, injectorUnit);
+        setupUnits(context, units);
 
         var injector = new InjectorImpl(parent, container);
-        bindingProcessor.getUninitialized().forEach(i -> i.initialize(injector));
+        context.bindingProcessor.initialize(injector);
 
         if (errorMessages.hasErrors()) {
             throw new ConfigurationException(errorMessages.formatMessages());
@@ -67,40 +66,71 @@ public class InternalInjectorBuilder {
         return injector;
     }
 
-    private void setupUnit(Unit unit, SetupContext context) {
+    private void setupUnits(SetupContext context, Unit... units) {
+        setupUnits(context, Arrays.asList(units));
+    }
+
+    private void setupUnits(SetupContext context, Iterable<? extends Unit> units) {
         var configuration = new DefaultConfiguration();
 
-        try {
-            unit.setup(configuration);
-        } catch (RuntimeException e) {
-            throw new ConfigurationException("Unable to setup unit " + unit, e);
+        for (var unit : units) {
+            try {
+                unit.setup(configuration);
+            } catch (RuntimeException e) {
+                throw new ConfigurationException("Unable to setup unit " + unit, e);
+            }
         }
 
-        configuration.getInstalledUnits().forEach(u -> setupUnit(u, context));
+        if (!configuration.getInstalledUnits().isEmpty()) {
+            setupUnits(context, configuration.getInstalledUnits());
+        }
 
-        configuration.getScopeBindings().removeIf(context.scopeBindingProcessor::process);
-        configuration.getKeyedWatchings().removeIf(context.watchingsProcessor::process);
-        configuration.getMatchedWatchings().removeIf(context.watchingsProcessor::process);
-        configuration.getBindings().removeIf(context.bindingProcessor::process);
+        configuration.getInstalledUnits().forEach(u -> context.satisfiedUnits.add(Key.of(u.getClass())));
+        configuration.getRequiredUnits().removeIf(context.satisfiedUnits::contains);
+
+        if (!configuration.getRequiredUnits().isEmpty()) {
+            var resolverUnit = (Unit) c -> configuration.getRequiredUnits().forEach(c::bind);
+            var resolverInjector = context.pushResolverInjector(resolverUnit);
+            if (resolverInjector != null) {
+                var resolvedUnits = configuration.getRequiredUnits().stream()
+                        .map(resolverInjector::getInstance)
+                        .collect(Collectors.toUnmodifiableList());
+
+                configuration.getRequiredUnits().clear();
+                setupUnits(context, resolvedUnits);
+                context.satisfiedUnits.addAll(configuration.getRequiredUnits());
+
+                context.popResolverInjector();
+            }
+        }
+
+        configuration.getAttachments()
+                .forEach(context.container::putAttachment);
+
+        configuration.getEncounters()
+                .forEach(context.container::putEncounter);
+
+        configuration.getWatchings()
+                .forEach(context.container::putWatching);
+
+        configuration.getBindings().stream()
+                .filter(context.bindingProcessor::process)
+                .forEachOrdered(context.container::putBinding);
     }
 
     private InjectorImpl createRootInjector(ErrorMessages errorMessages) {
-        var container = new InheritedContainer(Container.EMPTY);
-        var bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
-        var scopeBindingProcessor = new DefaultScopeBindingProcessor(container, errorMessages);
-        var listenerBindingProcessor = new DefaultWatchingProcessor(container, errorMessages);
+        var context = new SetupContext(errorMessages);
 
-        var context = new SetupContext(bindingProcessor, scopeBindingProcessor, listenerBindingProcessor);
-        setupUnit(new RootUnit(), context);
+        setupUnits(context, new RootUnit());
 
-        return new InjectorImpl(null, container);
+        return new InjectorImpl(null, context.container);
     }
 
     private static class RootUnit implements Unit {
 
         @Override
         public void setup(Configuration c) {
-            c.bindScope(Singleton.class, new SingletonScope());
+            c.bind(SingletonScope.class).toInstance(new SingletonScope());
         }
     }
 
@@ -114,15 +144,46 @@ public class InternalInjectorBuilder {
         }
     }
 
-    private static class SetupContext {
-        final BindingProcessor bindingProcessor;
-        final ScopeBindingProcessor scopeBindingProcessor;
-        final DefaultWatchingProcessor watchingsProcessor;
+    private static class InjectorFactory implements InternalFactory<Injector> {
+        @Override
+        public Injector get(InjectorContext context) throws InternalProvisionException {
+            return context.getInjector();
+        }
+    }
 
-        public SetupContext(BindingProcessor bindingProcessor, ScopeBindingProcessor scopeBindingProcessor, DefaultWatchingProcessor watchingsProcessor) {
-            this.bindingProcessor = bindingProcessor;
-            this.scopeBindingProcessor = scopeBindingProcessor;
-            this.watchingsProcessor = watchingsProcessor;
+    private static class SetupContext {
+        final Container container;
+
+        final Deque<Injector> resolverInjectors = new ConcurrentLinkedDeque<>();
+        final Set<Key<? extends Unit>> satisfiedUnits = new HashSet<>();
+
+        final AbstractBindingProcessor bindingProcessor;
+
+        SetupContext(ErrorMessages errorMessages) {
+            this(new InheritedContainer(Container.EMPTY), errorMessages);
+        }
+
+        SetupContext(Container container, ErrorMessages errorMessages) {
+            this.container = container;
+            this.bindingProcessor = new DefaultBindingProcessor(container, errorMessages);
+        }
+
+        Injector pushResolverInjector(Unit u) {
+            var baseInjector = resolverInjectors.peek();
+            if (baseInjector == null) {
+                return null;
+            }
+
+            return pushResolverInjector(baseInjector.createChildInjector(u));
+        }
+
+        Injector pushResolverInjector(Injector injector) {
+            resolverInjectors.push(injector);
+            return injector;
+        }
+
+        void popResolverInjector() {
+            resolverInjectors.pop();
         }
     }
 }

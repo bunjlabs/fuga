@@ -16,31 +16,36 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Dependency;
 import fuga.common.Key;
+import fuga.inject.ConfigurationException;
+import fuga.inject.Dependency;
 import fuga.inject.Provider;
 
-class DelegatedProviderFactory<T> implements InternalFactory<T> {
+class DelegatedProviderFactory<T> implements InternalFactory<T>, Initializable {
 
     private final Key<? extends Provider<? extends T>> providerKey;
+    private DependencyInjector<? extends Provider<? extends T>> providerInjector;
 
     DelegatedProviderFactory(Key<? extends Provider<? extends T>> providerKey) {
         this.providerKey = providerKey;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
-        var provider = context.getInjector().getInstance(providerKey);
+    public void initialize(InjectorImpl injector) {
+        var dependency = Dependency.of(providerKey);
+
+        providerInjector = injector.getDependencyInjector(dependency);
+        if (providerInjector == null) {
+            throw new ConfigurationException("Unsatisfied provider dependency: " + dependency);
+        }
+    }
+
+    @Override
+    public T get(InjectorContext context) throws InternalProvisionException {
+        var provider = providerInjector.inject(context);
 
         try {
-            var instance = provider.get();
-
-            if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(
-                        context.getDependency().getKey().getRawType(), dependency);
-            }
-
-            return instance;
+            return provider.get();
         } catch (RuntimeException e) {
             throw InternalProvisionException.errorInProvider(e);
         }

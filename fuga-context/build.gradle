@@ -1,5 +1,0 @@
-dependencies {
-    api project(":fuga-common")
-    api project(":fuga-inject")
-    api project(":fuga-event")
-}

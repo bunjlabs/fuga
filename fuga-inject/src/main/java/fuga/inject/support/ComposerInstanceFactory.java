@@ -16,33 +16,30 @@
 
 package fuga.inject.support;
 
-import fuga.inject.Composer;
-import fuga.inject.Dependency;
 import fuga.common.Key;
+import fuga.inject.Composer;
 
 class ComposerInstanceFactory<T> implements InternalFactory<T> {
 
+    private final Key<T> targetKey;
     private final Composer proxiedComposer;
 
-    ComposerInstanceFactory(Composer proxiedComposer) {
+    ComposerInstanceFactory(Key<T> targetKey, Composer proxiedComposer) {
+        this.targetKey = targetKey;
         this.proxiedComposer = proxiedComposer;
     }
 
     @Override
-    public T get(InjectorContext context, Dependency<?> dependency) throws InternalProvisionException {
+    public T get(InjectorContext context) throws InternalProvisionException {
         var requester = context.getRequester().getKey();
         try {
-            var instance = getFromProxiedFactory(requester, dependency.getKey());
+            var instance = getFromProxiedFactory(requester, targetKey);
 
-            if (instance == null && !dependency.isNullable()) {
-                throw InternalProvisionException.nullInjectedIntoNonNullableDependency(requester.getRawType(), dependency);
-            }
-
-            if (instance != null && !dependency.getKey().getRawType().isAssignableFrom(instance.getClass())) {
+            if (instance != null && !targetKey.getRawType().isAssignableFrom(instance.getClass())) {
                 throw new ClassCastException("Composer returned unexpected type: "
                         + instance.getClass() +
                         ". Expected: "
-                        + dependency.getKey().getRawType());
+                        + targetKey.getRawType());
             }
 
             return instance;

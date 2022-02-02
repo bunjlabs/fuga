@@ -17,9 +17,11 @@
 package fuga.inject.support;
 
 import fuga.common.Key;
+import fuga.lang.TypeLiteral;
+import fuga.util.Matcher;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,9 +29,9 @@ class InheritedContainer implements Container {
 
     private final Map<Key<?>, List<AbstractBinding<?>>> explicitBindingsMutable = new LinkedHashMap<>();
     private final Map<Key<?>, List<AbstractBinding<?>>> explicitBindings = Collections.unmodifiableMap(explicitBindingsMutable);
-    private final Map<Class<? extends Annotation>, ScopeBinding> scopeBindings = new LinkedHashMap<>();
-    private final List<AbstractKeyedWatching<?>> keyedWatchings = new LinkedList<>();
-    private final List<AbstractMatchedWatching> matchedWatchings = new LinkedList<>();
+    private final List<BindingAttachment<?>> attachments = new ArrayList<>();
+    private final List<BindingEncounter<?>> encounters = new ArrayList<>();
+    private final List<BindingWatching<?>> watchings = new ArrayList<>();
     private final Container parent;
 
     InheritedContainer(Container parent) {
@@ -51,31 +53,57 @@ class InheritedContainer implements Container {
     }
 
     @Override
-    public ScopeBinding getScopeBinding(Class<? extends Annotation> annotationType) {
-        var scopeBinding = scopeBindings.get(annotationType);
-        return scopeBinding != null ? scopeBinding : parent.getScopeBinding(annotationType);
+    public <T> List<BindingAttachment<T>> getAttachments(Key<T> key) {
+        var streamA = parent.getAttachments(key).stream();
+
+        var streamB = attachments.stream().filter(a -> {
+            @SuppressWarnings("unchecked")
+            var matcher = (Matcher<? super TypeLiteral<?>>) a.getMatcher();
+
+            return matcher.match(key.getType());
+        }).map(a -> {
+            @SuppressWarnings("unchecked")
+            var cast = (BindingAttachment<T>) a;
+            return cast;
+        });
+
+        return Stream.concat(streamA, streamB).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
-    public List<AbstractMatchedWatching> getMatchedWatchings(Key<?> key) {
-        return Stream.concat(parent.getMatchedWatchings(key).stream(),
-                        matchedWatchings.stream().filter(b -> b.getMatcher().match(key.getFullType())))
-                .collect(Collectors.toUnmodifiableList());
+    public <T> List<BindingEncounter<T>> getEncounters(Key<T> key) {
+        var streamA = parent.getEncounters(key).stream();
+
+        var streamB = encounters.stream().filter(a -> {
+            @SuppressWarnings("unchecked")
+            var matcher = (Matcher<? super TypeLiteral<?>>) a.getMatcher();
+
+            return matcher.match(key.getType());
+        }).map(a -> {
+            @SuppressWarnings("unchecked")
+            var cast = (BindingEncounter<T>) a;
+            return cast;
+        });
+
+        return Stream.concat(streamA, streamB).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
-    public <T> List<AbstractKeyedWatching<T>> getKeyedWatchings(Key<T> key) {
-        var list = new LinkedList<AbstractKeyedWatching<T>>();
+    public <T> List<BindingWatching<T>> getWatchings(Key<T> key) {
+        var streamA = parent.getWatchings(key).stream();
 
-        Stream.concat(parent.getKeyedWatchings(key).stream(),
-                        keyedWatchings.stream().filter(b -> b.getKey().equals(key)))
-                .forEach(w -> {
-                    @SuppressWarnings("unchecked")
-                    var casted = (AbstractKeyedWatching<T>) w;
-                    list.add(casted);
-                });
+        var streamB = watchings.stream().filter(a -> {
+            @SuppressWarnings("unchecked")
+            var matcher = (Matcher<? super TypeLiteral<?>>) a.getMatcher();
 
-        return list;
+            return matcher.match(key.getType());
+        }).map(a -> {
+            @SuppressWarnings("unchecked")
+            var cast = (BindingWatching<T>) a;
+            return cast;
+        });
+
+        return Stream.concat(streamA, streamB).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
@@ -84,18 +112,27 @@ class InheritedContainer implements Container {
     }
 
     @Override
-    public void putScopeBinding(ScopeBinding scopeBinding) {
-        scopeBindings.put(scopeBinding.getAnnotationType(), scopeBinding);
+    public void putAttachment(BindingAttachment<?> attachment) {
+        attachments.add(attachment);
     }
 
     @Override
-    public <T> void putKeyedWatching(AbstractKeyedWatching<T> watching) {
-        keyedWatchings.add(watching);
+    public void putEncounter(BindingEncounter<?> encounter) {
+        encounters.add(encounter);
     }
 
     @Override
-    public void putMatchedWatching(AbstractMatchedWatching watching) {
-        matchedWatchings.add(watching);
+    public void putWatching(BindingWatching<?> watching) {
+        watchings.add(watching);
+    }
+
+    @Override
+    public void forEach(Consumer<? extends AbstractBinding<?>> action) {
+        @SuppressWarnings("unchecked")
+        var castedAction = (Consumer<? super AbstractBinding<?>>) action;
+
+        explicitBindings.values().forEach(bindings -> bindings.forEach(castedAction));
+        parent.forEach(action);
     }
 
     @SuppressWarnings("unchecked")
@@ -114,18 +151,19 @@ class InheritedContainer implements Container {
         }
 
         var localBindings = new ArrayList<AbstractBinding<T>>(bindings.size());
-        for (AbstractBinding<?> binding : bindings) {
+        for (var binding : bindings) {
             // key is obtained from the binding, so that key and binding inner types will always be the same
             localBindings.add((AbstractBinding<T>) binding);
         }
+
 
         return Collections.unmodifiableList(localBindings);
     }
 
     private void doPutBinding(AbstractBinding<?> binding) {
-        List<AbstractBinding<?>> bindings;
         var key = binding.getKey();
 
+        List<AbstractBinding<?>> bindings;
         if (explicitBindingsMutable.containsKey(key)) {
             bindings = explicitBindingsMutable.get(key);
         } else {

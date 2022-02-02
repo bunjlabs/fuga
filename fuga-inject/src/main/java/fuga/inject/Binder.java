@@ -18,24 +18,30 @@ package fuga.inject;
 
 import fuga.common.Key;
 import fuga.inject.builder.BindingBuilder;
-import fuga.inject.builder.KeyedWatchingBuilder;
-import fuga.inject.builder.MatchedWatchingBuilder;
-import fuga.lang.FullType;
+import fuga.inject.builder.MatchBuilder;
+import fuga.lang.TypeLiteral;
 import fuga.util.Matcher;
-
-import java.lang.annotation.Annotation;
+import fuga.util.Matchers;
 
 public interface Binder {
 
-    void bindScope(Class<? extends Annotation> annotationType, Scope scope);
+    default <T> MatchBuilder<T> match(Class<T> type) {
+        return match(Matchers.only(type));
+    }
 
-    <T> KeyedWatchingBuilder<T> watch(Class<T> type);
+    default <T> MatchBuilder<T> match(Key<T> key) {
+        return match(key.getType());
+    }
 
-    <T> KeyedWatchingBuilder<T> watch(Key<T> type);
+    default <T> MatchBuilder<T> match(TypeLiteral<T> type) {
+        return match(Matchers.only(type));
+    }
 
-    MatchedWatchingBuilder watch(Matcher<FullType<?>> matcher);
+    <T> MatchBuilder<T> match(Matcher<? super TypeLiteral<T>> matcher);
 
-    <T> BindingBuilder<T> bind(Class<T> type);
+    default <T> BindingBuilder<T> bind(Class<T> type) {
+        return bind(Key.of(type));
+    }
 
     <T> BindingBuilder<T> bind(Key<T> type);
 }
