@@ -1,4 +1,4 @@
-# Fuga Framework [![master](https://github.com/bunjlabs/fuga/workflows/master/badge.svg)](https://github.com/bunjlabs/fuga/actions/runs/40065560)
+# Fuga Framework [![Test](https://github.com/bunjlabs/fuga/actions/workflows/gradle-test.yml/badge.svg?branch=master)](https://github.com/bunjlabs/fuga/actions/workflows/gradle-test.yml)
 
 Java framework for fast and scalable applications.
 
