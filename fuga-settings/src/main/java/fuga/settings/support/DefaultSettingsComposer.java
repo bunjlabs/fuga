@@ -16,98 +16,34 @@
 
 package fuga.settings.support;
 
-import fuga.inject.Inject;
 import fuga.common.Key;
-import fuga.settings.*;
-import fuga.util.Assert;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import fuga.inject.Inject;
+import fuga.inject.InjectHint;
+import fuga.settings.SettingsComposer;
+import fuga.settings.SettingsException;
 
 public class DefaultSettingsComposer implements SettingsComposer {
 
-    private final SettingsContainer container;
-    private final Map<Class<?>, Object> settingsCache;
+    private final SettingsAgent agent;
 
     @Inject
-    public DefaultSettingsComposer(SettingsContainer container) {
-        this.container = container;
-        this.settingsCache = new HashMap<>();
+    public DefaultSettingsComposer(@InjectHint(target = InjectHint.Target.ATTRIBUTE) SettingsAgent agent) {
+        this.agent = agent;
     }
 
     @Override
     public <T> T get(Key<?> requester, Key<T> requested) throws SettingsException {
-        Assert.notNull(requested);
-        Assert.isTrue(requested.getRawType().isInterface(), "requested type argument must be an interface");
-
-        var requestedClass = requested.getRawType();
-        @SuppressWarnings("unchecked")
-        var cached = (T) settingsCache.get(requestedClass);
-
-        if (cached != null) {
-            return cached;
+        if (!requested.getType().isAssignableFrom(agent.getProxiedClass())) {
+            throw new SettingsException(String.format(
+                    "Requested type %s does not assignable from configured type %s",
+                    requested.getType(), agent.getProxiedClass()));
         }
 
-        var settingsTree = new DefaultSettingsNode();
-        var settingsScopeAnnotation = requestedClass.getAnnotation(Settings.class);
-        var scopeName = settingsScopeAnnotation != null ? settingsScopeAnnotation.value() : requestedClass.getSimpleName();
-
-        if (scopeName.isEmpty()) {
-            scopeName = requestedClass.getSimpleName();
-        }
-
-        var proxy = generateProxy(settingsTree.node(scopeName), requestedClass);
-
-        container.persist(settingsTree);
-        settingsCache.put(requestedClass, proxy);
-
-        return proxy;
+        return getCastedProxy();
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T generateProxy(MutableSettingsNode settingsTree, Class<T> requiredClass) throws SettingsException {
-        var handler = new DefaultSettingsHandler();
-        fillHandlerWithValues(settingsTree, handler, requiredClass);
-        return (T) Proxy.newProxyInstance(requiredClass.getClassLoader(), new Class[]{requiredClass}, handler);
-    }
-
-    private <T> void fillHandlerWithValues(MutableSettingsNode currentNode, SettingsHandler invocationHandler, Class<T> requiredSettings) {
-        for (Method method : requiredSettings.getDeclaredMethods()) {
-            var settingNameAnnotation = method.getAnnotation(SettingName.class);
-            var settingDefaultAnnotation = method.getAnnotation(SettingDefault.class);
-            var settingName = settingNameAnnotation != null ? settingNameAnnotation.value() : method.getName();
-            var settingType = method.getReturnType();
-            Object defaultValue = null;
-
-            if (!settingType.isInterface() || Collection.class.isAssignableFrom(settingType)) {
-                if (settingDefaultAnnotation != null) {
-                    String defaultValueString = settingDefaultAnnotation.value();
-                    if (defaultValueString.isEmpty()) {
-                        throw new SettingsException("Default value for method '" + method + "' is empty.");
-                    }
-
-                    try {
-                        defaultValue = TypeUtils.convertStringToPrimitive(defaultValueString, settingType);
-                    } catch (Exception e) {
-                        throw new SettingsException("Default value for method '" + method + "' contains unsupported format.", e);
-                    }
-                }
-
-                var settingsValue = new DefaultSettingsValue(method.getReturnType(), defaultValue);
-                currentNode.set(settingName, settingsValue);
-
-                invocationHandler.putSupplier(method, settingsValue::value);
-            } else {
-                var value = generateProxy(currentNode.node(settingName), settingType);
-                invocationHandler.putSupplier(method, () -> value);
-            }
-
-            for (var innerSettings : requiredSettings.getInterfaces()) {
-                fillHandlerWithValues(currentNode, invocationHandler, innerSettings);
-            }
-        }
+    private <T> T getCastedProxy() {
+        return (T) agent.getProxyObject();
     }
 }

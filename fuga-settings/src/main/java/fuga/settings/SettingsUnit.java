@@ -7,6 +7,7 @@ import fuga.inject.Singleton;
 import fuga.inject.Unit;
 import fuga.settings.source.SettingsSource;
 import fuga.settings.support.DefaultSettingsComposer;
+import fuga.settings.support.DefaultSettingsConfigurator;
 import fuga.settings.support.DefaultSettingsContainer;
 import fuga.settings.support.DefaultSettingsNode;
 import fuga.util.Matchers;
@@ -35,14 +36,15 @@ public class SettingsUnit implements Unit {
 
     @Override
     public void setup(Configuration c) {
-        if (settingsTree != null) {
-            c.bind(SettingsContainer.class).toProvider(() -> new DefaultSettingsContainer(settingsTree));
-        } else {
-            c.bind(SettingsContainer.class).toProvider(DefaultSettingsContainer::new);
-        }
-
+        c.bind(SettingsContainer.class)
+                .toProvider(() -> new DefaultSettingsContainer(settingsTree))
+                .in(Singleton.class);
         c.match(SettingsContainer.class)
                 .watch(container -> settingsSources.forEach(source -> container.load(source, environment)));
+
+        c.bind(DefaultSettingsConfigurator.class).in(Singleton.class);
+        c.bind(SettingsConfigurator.class).to(DefaultSettingsConfigurator.class);
+        c.match(Matchers.has(Settings.class)).configure(SettingsConfigurator.class);
 
         c.bind(DefaultSettingsComposer.class).in(Singleton.class);
         c.bind(SettingsComposer.class).to(DefaultSettingsComposer.class);

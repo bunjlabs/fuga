@@ -16,6 +16,8 @@
 
 package fuga.common.annotation;
 
+import fuga.lang.TypeLiteral;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,6 +29,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class AnnotationUtils {
+
+    public static boolean hasAnnotation(TypeLiteral<?> source, Class<? extends Annotation> annotationType) {
+        return findAnnotation(source.getRawType(), annotationType) != null;
+    }
 
     public static boolean hasAnnotation(AnnotatedElement source, Class<? extends Annotation> annotationType) {
         return findAnnotation(source, annotationType) != null;

@@ -226,6 +226,10 @@ public class TypeLiteral<T> {
         return rawType.isAssignableFrom(right.rawType);
     }
 
+    public boolean isInterface() {
+        return rawType != null && rawType.isInterface();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

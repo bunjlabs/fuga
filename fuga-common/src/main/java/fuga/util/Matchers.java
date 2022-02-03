@@ -1,7 +1,9 @@
 package fuga.util;
 
+import fuga.common.annotation.AnnotationUtils;
 import fuga.lang.TypeLiteral;
 
+import java.lang.annotation.Annotation;
 import java.util.function.Predicate;
 
 public abstract class Matchers {
@@ -35,5 +37,9 @@ public abstract class Matchers {
 
     public static <T> Matcher<TypeLiteral<T>> is(Predicate<TypeLiteral<T>> predicate) {
         return predicate::test;
+    }
+
+    public static <T> Matcher<TypeLiteral<?>> has(Class<? extends Annotation> annotation) {
+        return type -> AnnotationUtils.hasAnnotation(type, annotation);
     }
 }
