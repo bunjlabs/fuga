@@ -52,9 +52,8 @@ public class LocalFilesSettingsSource implements SettingsSource {
     }
 
     public LocalFilesSettingsSource(String root, String... settingFiles) {
-        this(root, Arrays.stream(settingFiles).map(s -> Paths.get(s)).collect(Collectors.toList()));
+        this(root, Arrays.stream(settingFiles).map(Paths::get).collect(Collectors.toList()));
     }
-
 
     public LocalFilesSettingsSource(String root, Path... settingFiles) {
         this(root, Arrays.asList(settingFiles));
